@@ -108,7 +108,7 @@ export function IntegrationSettings() {
         : "var(--text-muted)";
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2 mb-1">
         <Plug size={18} className="text-[var(--accent)]" />
         <h3 className="text-sm font-semibold text-[var(--text-primary)]">
@@ -117,66 +117,70 @@ export function IntegrationSettings() {
       </div>
 
       {/* MCP Server Status */}
-      <div className="flex flex-col gap-2">
-        <label className="text-xs text-[var(--text-muted)]">
+      <div className="rounded-xl bg-[var(--bg-primary)]/50 border border-[var(--border)] p-4">
+        <label className="text-sm font-medium text-[var(--text-secondary)] mb-3 block">
           MCP Server Status
         </label>
-        <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)]">
-          <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ backgroundColor: statusColor }}
-          />
-          <span className="text-sm text-[var(--text-secondary)] flex-1">
-            {status.message}
-          </span>
-          <span className="text-[10px] text-[var(--text-muted)]">
-            Port 3847
-          </span>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)]">
+            <div
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ backgroundColor: statusColor }}
+            />
+            <span className="text-sm text-[var(--text-secondary)] flex-1">
+              {status.message}
+            </span>
+            <span className="text-xs text-[var(--text-muted)]">
+              Port 3847
+            </span>
+          </div>
+          <button
+            onClick={testConnection}
+            disabled={status.state === "checking"}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent-soft)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-colors duration-150 ease-in-out cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          >
+            <RefreshCw
+              size={14}
+              className={status.state === "checking" ? "animate-spin" : ""}
+            />
+            Test Connection
+          </button>
         </div>
-        <button
-          onClick={testConnection}
-          disabled={status.state === "checking"}
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-[var(--accent-soft)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-colors duration-150 ease-in-out cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-        >
-          <RefreshCw
-            size={12}
-            className={status.state === "checking" ? "animate-spin" : ""}
-          />
-          Test Connection
-        </button>
       </div>
 
       {/* Copy MCP Config */}
-      <div className="flex flex-col gap-2">
-        <label className="text-xs text-[var(--text-muted)]">
+      <div className="rounded-xl bg-[var(--bg-primary)]/50 border border-[var(--border)] p-4">
+        <label className="text-sm font-medium text-[var(--text-secondary)] mb-3 block">
           MCP Configuration
         </label>
-        <div className="relative">
-          <pre className="text-[10px] text-[var(--text-secondary)] whitespace-pre-wrap break-words font-mono leading-relaxed p-2 rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)]">
-            {MCP_CONFIG}
-          </pre>
-          <button
-            onClick={() => copyToClipboard(MCP_CONFIG, "mcp")}
-            className="absolute top-1.5 right-1.5 p-1 rounded bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-            title="Copy MCP config"
-          >
-            {copied === "mcp" ? (
-              <Check size={12} className="text-[var(--green)]" />
-            ) : (
-              <Copy size={12} className="text-[var(--text-muted)]" />
-            )}
-          </button>
+        <div className="flex flex-col gap-2">
+          <div className="relative">
+            <pre className="text-[11px] text-[var(--text-secondary)] whitespace-pre-wrap break-words font-mono leading-relaxed p-3 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)]">
+              {MCP_CONFIG}
+            </pre>
+            <button
+              onClick={() => copyToClipboard(MCP_CONFIG, "mcp")}
+              className="absolute top-2 right-2 p-1.5 rounded-md bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+              title="Copy MCP config"
+            >
+              {copied === "mcp" ? (
+                <Check size={12} className="text-[var(--green)]" />
+              ) : (
+                <Copy size={12} className="text-[var(--text-muted)]" />
+              )}
+            </button>
+          </div>
+          <p className="text-xs text-[var(--text-muted)]">
+            Add this to your project&apos;s <code>.mcp.json</code> file.
+          </p>
         </div>
-        <p className="text-[10px] text-[var(--text-muted)]">
-          Add this to your project&apos;s <code>.mcp.json</code> file.
-        </p>
       </div>
 
       {/* Setup Instructions */}
-      <div className="flex flex-col gap-1">
+      <div className="rounded-xl bg-[var(--bg-primary)]/50 border border-[var(--border)] p-4">
         <button
           onClick={() => setSetupExpanded(!setupExpanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm"
+          className="flex items-center gap-1.5 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm w-full"
         >
           {setupExpanded ? (
             <ChevronDown size={14} />
@@ -186,13 +190,13 @@ export function IntegrationSettings() {
           Setup Instructions
         </button>
         {setupExpanded && (
-          <div className="flex flex-col gap-2 mt-1 pl-5 text-xs text-[var(--text-secondary)]">
+          <div className="flex flex-col gap-2 mt-2 pl-5 text-xs text-[var(--text-secondary)]">
             <p>1. Make sure the Cortex app is running</p>
             <p>
               2. Navigate to the <code>claude-skill/</code> directory in Cortex
             </p>
             <p>3. Run the setup script:</p>
-            <pre className="text-[10px] font-mono bg-[var(--bg-tertiary)] p-2 rounded-md border border-[var(--border)]">
+            <pre className="text-[11px] font-mono bg-[var(--bg-tertiary)] p-3 rounded-lg border border-[var(--border)]">
               {`chmod +x setup.sh\n./setup.sh`}
             </pre>
             <p>
@@ -206,10 +210,10 @@ export function IntegrationSettings() {
       </div>
 
       {/* Hook Configuration */}
-      <div className="flex flex-col gap-1">
+      <div className="rounded-xl bg-[var(--bg-primary)]/50 border border-[var(--border)] p-4">
         <button
           onClick={() => setHooksExpanded(!hooksExpanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm"
+          className="flex items-center gap-1.5 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm w-full"
         >
           {hooksExpanded ? (
             <ChevronDown size={14} />
@@ -219,18 +223,18 @@ export function IntegrationSettings() {
           Session Capture Hooks
         </button>
         {hooksExpanded && (
-          <div className="flex flex-col gap-2 mt-1 pl-5">
-            <p className="text-[10px] text-[var(--text-muted)]">
+          <div className="flex flex-col gap-2 mt-2 pl-5">
+            <p className="text-xs text-[var(--text-muted)]">
               Add to <code>~/.claude/settings.json</code> for automatic session
               capture:
             </p>
             <div className="relative">
-              <pre className="text-[10px] text-[var(--text-secondary)] whitespace-pre-wrap break-words font-mono leading-relaxed p-2 rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)]">
+              <pre className="text-[11px] text-[var(--text-secondary)] whitespace-pre-wrap break-words font-mono leading-relaxed p-3 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)]">
                 {HOOK_CONFIG}
               </pre>
               <button
                 onClick={() => copyToClipboard(HOOK_CONFIG, "hook")}
-                className="absolute top-1.5 right-1.5 p-1 rounded bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+                className="absolute top-2 right-2 p-1.5 rounded-md bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
                 title="Copy hook config"
               >
                 {copied === "hook" ? (
@@ -245,26 +249,26 @@ export function IntegrationSettings() {
       </div>
 
       {/* Session Stats */}
-      <div className="flex flex-col gap-2">
-        <label className="text-xs text-[var(--text-muted)]">
+      <div className="rounded-xl bg-[var(--bg-primary)]/50 border border-[var(--border)] p-4">
+        <label className="text-sm font-medium text-[var(--text-secondary)] mb-3 block">
           Capture Statistics
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col items-center p-2 rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)]">
-            <Activity size={14} className="text-[var(--accent)] mb-1" />
-            <span className="text-lg font-semibold text-[var(--text-primary)]">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col items-center p-4 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)]">
+            <Activity size={16} className="text-[var(--accent)] mb-1.5" />
+            <span className="text-2xl font-semibold text-[var(--text-primary)]">
               --
             </span>
-            <span className="text-[10px] text-[var(--text-muted)]">
+            <span className="text-xs text-[var(--text-muted)]">
               Sessions
             </span>
           </div>
-          <div className="flex flex-col items-center p-2 rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)]">
-            <Activity size={14} className="text-[var(--accent)] mb-1" />
-            <span className="text-lg font-semibold text-[var(--text-primary)]">
+          <div className="flex flex-col items-center p-4 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)]">
+            <Activity size={16} className="text-[var(--accent)] mb-1.5" />
+            <span className="text-2xl font-semibold text-[var(--text-primary)]">
               --
             </span>
-            <span className="text-[10px] text-[var(--text-muted)]">
+            <span className="text-xs text-[var(--text-muted)]">
               Insights
             </span>
           </div>
@@ -283,7 +287,7 @@ export function IntegrationSettings() {
             });
           });
         }}
-        className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm rounded-lg font-medium border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
       >
         <ExternalLink size={12} />
         Open Skill Directory

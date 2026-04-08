@@ -92,14 +92,14 @@ export function Sidebar() {
         }}
       >
         {/* Panel header */}
-        <div className="flex items-center h-10 px-4 border-b border-[var(--border)]">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+        <div className="flex items-center h-10 px-5 border-b border-[var(--border)]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">
             {activePanel}
           </span>
         </div>
 
         {/* Panel body */}
-        <div className="p-4 overflow-y-auto h-[calc(100%-2.5rem)]">
+        <div className="p-5 overflow-y-auto h-[calc(100%-2.5rem)]">
           {activePanel === "files" && <FileExplorer />}
           {activePanel === "search" && <SearchPanel />}
           {activePanel === "backlinks" && <BacklinksPanel />}
@@ -123,16 +123,16 @@ function GraphPanel() {
 
   if (!isVaultOpen) {
     return (
-      <div className="flex flex-col items-center gap-3 pt-8 text-center">
-        <GitFork size={32} className="text-[var(--text-muted)]" />
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+        <GitFork size={40} className="text-[var(--text-muted)]" />
+        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
           No graph to display.
           <br />
           Open a vault to explore connections.
         </p>
         <button
           onClick={() => openVault()}
-          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          className="px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         >
           Open a vault
         </button>
@@ -149,12 +149,12 @@ function GraphPanel() {
 
 function VoicePanel() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <VoiceNoteCreator />
       <div className="w-full border-b border-[var(--border)] my-1" />
-      <div className="flex flex-col items-center gap-3 pt-4 text-center">
-        <Mic size={24} className="text-[var(--text-muted)]" />
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+      <div className="flex flex-col items-center gap-4 pt-8 text-center">
+        <Mic size={40} className="text-[var(--text-muted)]" />
+        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
           Record voice notes or dictate text
           <br />
           directly into your editor.
@@ -169,9 +169,9 @@ function TagsPanel() {
   const openVault = useVaultStore((s) => s.openVault);
 
   return (
-    <div className="flex flex-col items-center gap-3 pt-8 text-center">
-      <Tags size={32} className="text-[var(--text-muted)]" />
-      <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+    <div className="flex flex-col items-center gap-4 pt-12 text-center">
+      <Tags size={40} className="text-[var(--text-muted)]" />
+      <p className="text-sm text-[var(--text-muted)] leading-relaxed">
         No tags found.
         <br />
         Open a vault to see tags.
@@ -179,7 +179,7 @@ function TagsPanel() {
       {!isVaultOpen && (
         <button
           onClick={() => openVault()}
-          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          className="px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         >
           Open a vault
         </button>

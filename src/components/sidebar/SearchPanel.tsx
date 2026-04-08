@@ -57,16 +57,16 @@ export function SearchPanel() {
 
   if (!isVaultOpen) {
     return (
-      <div className="flex flex-col items-center gap-3 pt-8 text-center">
-        <FolderOpen size={32} className="text-[var(--text-muted)]" />
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+        <FolderOpen size={40} className="text-[var(--text-muted)]" />
+        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
           No vault open.
           <br />
           Open a vault to search notes.
         </p>
         <button
           onClick={() => openVault()}
-          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          className="px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         >
           Open Vault
         </button>
@@ -88,7 +88,7 @@ export function SearchPanel() {
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Search notes..."
-          className="w-full pl-7 pr-3 py-2 text-xs rounded-md bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:border-[var(--accent)] transition-colors duration-150"
+          className="w-full pl-7 pr-3 py-2.5 text-sm rounded-lg bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:border-[var(--accent)] transition-colors duration-150"
         />
         {isSearching && (
           <Loader2
@@ -113,7 +113,7 @@ export function SearchPanel() {
         </p>
       ) : (
         <div className="flex flex-col gap-1">
-          <p className="text-[10px] text-[var(--text-muted)] px-1 pb-1">
+          <p className="text-xs text-[var(--text-muted)] px-1 pb-1">
             {results.length} result{results.length !== 1 ? "s" : ""}
           </p>
           {results.map((result) => (

@@ -49,8 +49,16 @@ body {
   font-size: var(--font-size);
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.section-card {
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  padding: 16px;
 }
 
 .font-mono {
