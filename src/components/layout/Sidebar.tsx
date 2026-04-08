@@ -91,26 +91,29 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-shrink-0" style={{ width: sidebarCollapsed ? 0 : width, overflow: 'hidden', transition: 'width 200ms ease' }}>
       {/* Icon rail */}
-      <div className="flex flex-col items-center justify-center w-14 flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 56, flexShrink: 0, padding: '16px 0', gap: 4, background: 'var(--bg-primary)', borderRight: '1px solid var(--border)' }}>
         <DailyNoteButton />
-        <div className="h-px bg-[var(--border)] mx-2 my-1.5" />
+        <div style={{ height: 1, background: 'var(--border)', margin: '6px 8px', alignSelf: 'stretch' }} />
         {navItems.map(({ id, icon: Icon, label }) => {
           const isActive = activePanel === id;
           return (
             <Tooltip key={id} content={label} side="right">
               <button
                 onClick={() => setActivePanel(id)}
-                className={`relative flex items-center justify-center h-12 w-12 p-0 m-1 rounded-[var(--radius-lg)] transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
-                  isActive
-                    ? "bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-[var(--accent)] shadow-sm border border-[var(--accent)]/20"
-                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] border border-transparent"
-                }`}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 40, height: 40, padding: 0,
+                  borderRadius: 'var(--radius-lg)',
+                  border: isActive ? '1px solid var(--accent-soft)' : '1px solid transparent',
+                  background: isActive ? 'var(--accent-soft)' : 'transparent',
+                  color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                  cursor: 'pointer', transition: 'all 200ms', outline: 'none',
+                }}
+                onMouseEnter={(e) => { if (!isActive) { (e.currentTarget).style.background = 'var(--muted)'; (e.currentTarget).style.color = 'var(--text-secondary)'; }}}
+                onMouseLeave={(e) => { if (!isActive) { (e.currentTarget).style.background = 'transparent'; (e.currentTarget).style.color = 'var(--text-muted)'; }}}
                 aria-label={label}
               >
                 <Icon className="h-5 w-5" strokeWidth={isActive ? 2 : 1.5} />
-                {isActive && (
-                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[var(--accent)]" />
-                )}
               </button>
             </Tooltip>
           );
