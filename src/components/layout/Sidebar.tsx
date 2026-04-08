@@ -189,31 +189,33 @@ function SidebarEmptyState({
   actionLabel?: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', textAlign: 'center' }}>
       {/* Icon with glow ring */}
-      <div className="relative w-12 h-12 mb-6">
+      <div style={{ position: 'relative', width: 48, height: 48, marginBottom: 20 }}>
         <div
-          className={`absolute inset-0 rounded-[var(--radius-xl)] ${gradient} blur-lg opacity-30`}
-          style={{ animation: "glow-pulse 3s ease-in-out infinite" }}
+          className={`absolute inset-0 ${gradient} blur-lg`}
+          style={{ borderRadius: 'var(--radius-xl)', opacity: 0.3, animation: "glow-pulse 3s ease-in-out infinite" }}
         />
         <div
-          className={`relative w-full h-full rounded-[var(--radius-xl)] ${gradient} border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-sm)]`}
+          className={`relative ${gradient} flex items-center justify-center`}
+          style={{ width: '100%', height: '100%', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
         >
-          <Icon className={`w-5 h-5 ${accentColor}`} />
+          <div style={{ color: accentColor }}>
+            <Icon className="w-5 h-5" />
+          </div>
         </div>
       </div>
-      <div className="text-center max-w-[200px]">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">
-          {title}
-        </h3>
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed mt-0">
-          {description}
-        </p>
-      </div>
+      <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
+        {title}
+      </h3>
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 200 }}>
+        {description}
+      </p>
       {onAction && actionLabel && (
         <button
           onClick={onAction}
-          className="mt-8 inline-flex items-center justify-center h-10 px-6 text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+          className="btn-primary text-white border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+          style={{ marginTop: 24, height: 36, paddingLeft: 24, paddingRight: 24, fontSize: 13, fontWeight: 500, borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
         >
           {actionLabel}
         </button>
@@ -232,7 +234,7 @@ function GraphPanel() {
         title="Knowledge Graph"
         description="Open a vault to explore connections between your notes."
         gradient="glow-cyan"
-        accentColor="text-[var(--cyan)]"
+        accentColor="var(--cyan)"
       />
     );
   }
@@ -246,12 +248,12 @@ function GraphPanel() {
 
 function VoicePanel() {
   return (
-    <div className="flex flex-col gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <VoiceNoteCreator />
-      <div className="border-b border-[var(--border)]" />
-      <div className="flex flex-col items-center text-center pt-4">
-        <Mic className="w-5 h-5 text-[var(--text-muted)] mb-3" />
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed max-w-[180px]">
+      <div style={{ borderBottom: '1px solid var(--border)' }} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', paddingTop: 16 }}>
+        <Mic style={{ width: 20, height: 20, color: 'var(--text-muted)', marginBottom: 12 }} />
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 180 }}>
           Record voice notes or dictate text directly into your editor.
         </p>
       </div>
@@ -268,7 +270,7 @@ function TagsPanel() {
       title={isVaultOpen ? "No Tags" : "Tags"}
       description={isVaultOpen ? "No tags found in your vault yet." : "Open a vault to browse tags."}
       gradient="glow-green"
-      accentColor="text-[var(--green)]"
+      accentColor="var(--green)"
     />
   );
 }

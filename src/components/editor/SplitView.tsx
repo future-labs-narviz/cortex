@@ -278,14 +278,14 @@ function EmptyState() {
 
 function EmptyEditor() {
   return (
-    <div className="flex flex-col items-center text-center px-8 max-w-sm">
-      <div className="w-14 h-14 rounded-[var(--radius-xl)] bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center mb-5">
-        <FileText className="w-6 h-6 text-[var(--text-muted)]" />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '0 32px', maxWidth: 360 }}>
+      <div style={{ width: 48, height: 48, borderRadius: 'var(--radius-xl)', background: 'var(--muted)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+        <FileText style={{ width: 22, height: 22, color: 'var(--text-muted)' }} />
       </div>
-      <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-2">
+      <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
         No file open
       </h3>
-      <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
         Select a file from the sidebar to start editing.
       </p>
     </div>

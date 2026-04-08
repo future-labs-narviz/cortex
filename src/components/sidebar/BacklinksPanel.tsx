@@ -54,12 +54,10 @@ export function BacklinksPanel() {
 
   if (!activeFilePath) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
-        <Link2 size={24} className="text-[var(--text-muted)]" />
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-          Select a note to see
-          <br />
-          its backlinks.
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: '0 24px' }}>
+        <Link2 style={{ width: 20, height: 20, color: 'var(--text-muted)', marginBottom: 12 }} />
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+          Select a note to see its backlinks.
         </p>
       </div>
     );
@@ -67,31 +65,27 @@ export function BacklinksPanel() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
-        <p className="text-xs text-[var(--text-muted)]">Loading backlinks...</p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center' }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Loading backlinks...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
-        <Link2 size={24} className="text-[var(--text-muted)]" />
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-          {error}
-        </p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: '0 24px' }}>
+        <Link2 style={{ width: 20, height: 20, color: 'var(--text-muted)', marginBottom: 12 }} />
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{error}</p>
       </div>
     );
   }
 
   if (backlinks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
-        <Link2 size={24} className="text-[var(--text-muted)]" />
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-          No backlinks found
-          <br />
-          for this note.
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: '0 24px' }}>
+        <Link2 style={{ width: 20, height: 20, color: 'var(--text-muted)', marginBottom: 12 }} />
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+          No backlinks found for this note.
         </p>
       </div>
     );

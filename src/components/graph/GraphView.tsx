@@ -118,30 +118,21 @@ export function GraphView({ compact = false }: GraphViewProps) {
     >
       {/* Loading state */}
       {isLoading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
-          <Loader2
-            size={24}
-            className="animate-spin text-[var(--text-muted)]"
-          />
-          <p className="text-sm text-[var(--text-muted)]">
-            Loading graph...
-          </p>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
+          <Loader2 style={{ width: 20, height: 20, color: 'var(--text-muted)', marginBottom: 12 }} className="animate-spin" />
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading graph...</p>
         </div>
       )}
 
       {/* Error state */}
       {error && !isLoading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-3">
-          <AlertTriangle size={24} className="text-[var(--yellow)]" />
-          <p className="text-sm text-[var(--text-muted)]">
-            {error}
-          </p>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
+          <AlertTriangle style={{ width: 20, height: 20, color: 'var(--yellow)', marginBottom: 12 }} />
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{error}</p>
           <button
             onClick={() => fetchGraphData(activeFilePath ?? undefined)}
-            className="px-4 py-1.5 text-xs font-medium rounded-[var(--radius-md)] text-white transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
-            style={{
-              background: "linear-gradient(135deg, var(--accent), var(--purple))",
-            }}
+            className="btn-primary text-white transition-all duration-200 cursor-pointer"
+            style={{ height: 32, paddingLeft: 16, paddingRight: 16, fontSize: 12, fontWeight: 500, borderRadius: 'var(--radius-md)' }}
           >
             Retry
           </button>
@@ -150,11 +141,9 @@ export function GraphView({ compact = false }: GraphViewProps) {
 
       {/* Empty state */}
       {!isLoading && !error && data && data.nodes.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
-          <Network size={24} className="text-[var(--text-muted)]" />
-          <p className="text-sm text-[var(--text-muted)]">
-            No notes to display.
-          </p>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20 }}>
+          <Network style={{ width: 20, height: 20, color: 'var(--text-muted)', marginBottom: 12 }} />
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>No notes to display.</p>
         </div>
       )}
 
