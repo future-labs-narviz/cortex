@@ -1,13 +1,13 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type CSSProperties } from "react";
 import {
   Plug,
   Copy,
   Check,
-  ExternalLink,
   ChevronDown,
   ChevronRight,
   RefreshCw,
   Activity,
+  Zap,
 } from "lucide-react";
 
 interface ConnectionStatus {
@@ -44,6 +44,37 @@ const HOOK_CONFIG = JSON.stringify(
   2,
 );
 
+/* Reusable styles */
+const card: CSSProperties = {
+  background: 'var(--muted)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-xl)',
+  padding: 16,
+};
+
+const sectionLabel: CSSProperties = {
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  color: 'var(--text-muted)',
+  fontFamily: '"JetBrains Mono", monospace',
+  marginBottom: 12,
+};
+
+const codeBlock: CSSProperties = {
+  fontSize: 11,
+  color: 'var(--text-secondary)',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-all',
+  fontFamily: '"JetBrains Mono", monospace',
+  lineHeight: 1.7,
+  padding: 12,
+  borderRadius: 'var(--radius-lg)',
+  background: 'var(--bg-primary)',
+  border: '1px solid var(--border)',
+};
+
 export function IntegrationSettings() {
   const [status, setStatus] = useState<ConnectionStatus>({
     state: "idle",
@@ -59,31 +90,17 @@ export function IntegrationSettings() {
       const res = await fetch("http://localhost:3847/mcp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          method: "tools/list",
-          id: 1,
-        }),
+        body: JSON.stringify({ jsonrpc: "2.0", method: "tools/list", id: 1 }),
       });
       if (res.ok) {
         const data = await res.json();
-        const toolCount =
-          data?.result?.tools?.length ?? 0;
-        setStatus({
-          state: "connected",
-          message: `Connected (${toolCount} tools available)`,
-        });
+        const toolCount = data?.result?.tools?.length ?? 0;
+        setStatus({ state: "connected", message: `Connected (${toolCount} tools)` });
       } else {
-        setStatus({
-          state: "disconnected",
-          message: `Server responded with ${res.status}`,
-        });
+        setStatus({ state: "disconnected", message: `Server responded ${res.status}` });
       }
     } catch {
-      setStatus({
-        state: "disconnected",
-        message: "Could not reach MCP server",
-      });
+      setStatus({ state: "disconnected", message: "Could not reach server" });
     }
   }, []);
 
@@ -94,154 +111,120 @@ export function IntegrationSettings() {
         setCopied(label);
         setTimeout(() => setCopied(null), 2000);
       } catch {
-        console.warn("[Cortex] Failed to copy to clipboard");
+        console.warn("[Cortex] Clipboard write failed");
       }
     },
     [],
   );
 
-  const statusColor =
-    status.state === "connected"
-      ? "var(--green)"
-      : status.state === "disconnected"
-        ? "var(--red)"
-        : "var(--text-muted)";
+  const statusDotColor =
+    status.state === "connected" ? "var(--green)"
+    : status.state === "disconnected" ? "var(--red)"
+    : "var(--text-muted)";
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-2 mb-1">
-        <Plug size={18} className="text-[var(--accent)]" />
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* Title */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Plug style={{ width: 18, height: 18, color: 'var(--accent)' }} />
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
           Claude Code Integration
-        </h3>
+        </span>
       </div>
 
       {/* MCP Server Status */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
-        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">
-          MCP Server Status
-        </label>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-lg)] bg-[var(--bg-primary)] border border-[var(--border)]">
-            <div
-              className="w-2 h-2 rounded-[var(--radius-full)] flex-shrink-0"
-              style={{ backgroundColor: statusColor }}
-            />
-            <span className="text-sm text-[var(--text-secondary)] flex-1">
-              {status.message}
-            </span>
-            <span className="text-xs text-[var(--text-muted)]">
-              Port 3847
-            </span>
-          </div>
+      <div style={card}>
+        <div style={sectionLabel}>Server Status</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', border: '1px solid var(--border)', marginBottom: 12 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: statusDotColor, flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1 }}>
+            {status.message}
+          </span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: '"JetBrains Mono", monospace' }}>
+            :3847
+          </span>
+        </div>
+        <button
+          onClick={testConnection}
+          disabled={status.state === "checking"}
+          className="btn-primary text-white border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-50"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', height: 36, fontSize: 13, fontWeight: 500, borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}
+        >
+          <RefreshCw
+            style={{ width: 14, height: 14 }}
+            className={status.state === "checking" ? "animate-spin" : ""}
+          />
+          Test Connection
+        </button>
+      </div>
+
+      {/* MCP Configuration */}
+      <div style={card}>
+        <div style={sectionLabel}>MCP Configuration</div>
+        <div style={{ position: 'relative', marginBottom: 8 }}>
+          <pre style={codeBlock}>{MCP_CONFIG}</pre>
           <button
-            onClick={testConnection}
-            disabled={status.state === "checking"}
-            className="flex items-center justify-center gap-2 text-sm rounded-[var(--radius-lg)] font-medium btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-50"
-            style={{ height: 36, paddingLeft: 16, paddingRight: 16 }}
+            onClick={() => copyToClipboard(MCP_CONFIG, "mcp")}
+            style={{ position: 'absolute', top: 8, right: 8, padding: 6, borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex' }}
+            title="Copy"
           >
-            <RefreshCw
-              size={14}
-              className={status.state === "checking" ? "animate-spin" : ""}
-            />
-            Test Connection
+            {copied === "mcp" ? (
+              <Check style={{ width: 12, height: 12, color: 'var(--green)' }} />
+            ) : (
+              <Copy style={{ width: 12, height: 12, color: 'var(--text-muted)' }} />
+            )}
           </button>
         </div>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          Add to your project's <code style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, padding: '1px 4px', borderRadius: 4, background: 'var(--bg-primary)', border: '1px solid var(--border)' }}>.mcp.json</code> file.
+        </p>
       </div>
 
-      {/* Copy MCP Config */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
-        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">
-          MCP Configuration
-        </label>
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            <pre className="text-[11px] text-[var(--text-secondary)] whitespace-pre-wrap break-words font-mono leading-relaxed p-3 rounded-[var(--radius-lg)] bg-[var(--bg-primary)] border border-[var(--border)]">
-              {MCP_CONFIG}
-            </pre>
-            <button
-              onClick={() => copyToClipboard(MCP_CONFIG, "mcp")}
-              className="absolute top-2 right-2 p-1.5 rounded-[var(--radius-md)] bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--muted)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-              title="Copy MCP config"
-            >
-              {copied === "mcp" ? (
-                <Check size={12} className="text-[var(--green)]" />
-              ) : (
-                <Copy size={12} className="text-[var(--text-muted)]" />
-              )}
-            </button>
-          </div>
-          <p className="text-xs text-[var(--text-muted)]">
-            Add this to your project&apos;s <code>.mcp.json</code> file.
-          </p>
-        </div>
-      </div>
-
-      {/* Setup Instructions */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
+      {/* Expandable: Setup Instructions */}
+      <div style={card}>
         <button
           onClick={() => setSetupExpanded(!setupExpanded)}
-          className="flex items-center gap-1.5 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-[var(--radius-md)] w-full"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 0', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
         >
-          {setupExpanded ? (
-            <ChevronDown size={14} />
-          ) : (
-            <ChevronRight size={14} />
-          )}
+          {setupExpanded ? <ChevronDown style={{ width: 14, height: 14 }} /> : <ChevronRight style={{ width: 14, height: 14 }} />}
           Setup Instructions
         </button>
         {setupExpanded && (
-          <div className="flex flex-col gap-2 mt-2 pl-5 text-xs text-[var(--text-secondary)]">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8, paddingLeft: 22, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
             <p>1. Make sure the Cortex app is running</p>
-            <p>
-              2. Navigate to the <code>claude-skill/</code> directory in Cortex
-            </p>
-            <p>3. Run the setup script:</p>
-            <pre className="text-[11px] font-mono bg-[var(--bg-primary)] p-3 rounded-[var(--radius-lg)] border border-[var(--border)]">
-              {`chmod +x setup.sh\n./setup.sh`}
-            </pre>
-            <p>
-              4. Restart Claude Code to load the skill
-            </p>
-            <p>
-              5. Use <code>/cortex search &lt;query&gt;</code> to test
-            </p>
+            <p>2. Copy the MCP configuration above</p>
+            <p>3. Restart Claude Code to load the server</p>
+            <p>4. Test with <code style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, padding: '1px 4px', borderRadius: 4, background: 'var(--bg-primary)', border: '1px solid var(--border)' }}>/cortex search query</code></p>
           </div>
         )}
       </div>
 
-      {/* Hook Configuration */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
+      {/* Expandable: Session Capture Hooks */}
+      <div style={card}>
         <button
           onClick={() => setHooksExpanded(!hooksExpanded)}
-          className="flex items-center gap-1.5 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-[var(--radius-md)] w-full"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 0', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
         >
-          {hooksExpanded ? (
-            <ChevronDown size={14} />
-          ) : (
-            <ChevronRight size={14} />
-          )}
+          {hooksExpanded ? <ChevronDown style={{ width: 14, height: 14 }} /> : <ChevronRight style={{ width: 14, height: 14 }} />}
           Session Capture Hooks
         </button>
         {hooksExpanded && (
-          <div className="flex flex-col gap-2 mt-2 pl-5">
-            <p className="text-xs text-[var(--text-muted)]">
-              Add to <code>~/.claude/settings.json</code> for automatic session
-              capture:
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8, paddingLeft: 22 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Add to <code style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, padding: '1px 4px', borderRadius: 4, background: 'var(--bg-primary)', border: '1px solid var(--border)' }}>settings.json</code> for auto-capture:
             </p>
-            <div className="relative">
-              <pre className="text-[11px] text-[var(--text-secondary)] whitespace-pre-wrap break-words font-mono leading-relaxed p-3 rounded-[var(--radius-lg)] bg-[var(--bg-primary)] border border-[var(--border)]">
-                {HOOK_CONFIG}
-              </pre>
+            <div style={{ position: 'relative' }}>
+              <pre style={codeBlock}>{HOOK_CONFIG}</pre>
               <button
                 onClick={() => copyToClipboard(HOOK_CONFIG, "hook")}
-                className="absolute top-2 right-2 p-1.5 rounded-[var(--radius-md)] bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--muted)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-                title="Copy hook config"
+                style={{ position: 'absolute', top: 8, right: 8, padding: 6, borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex' }}
+                title="Copy"
               >
                 {copied === "hook" ? (
-                  <Check size={12} className="text-[var(--green)]" />
+                  <Check style={{ width: 12, height: 12, color: 'var(--green)' }} />
                 ) : (
-                  <Copy size={12} className="text-[var(--text-muted)]" />
+                  <Copy style={{ width: 12, height: 12, color: 'var(--text-muted)' }} />
                 )}
               </button>
             </div>
@@ -249,51 +232,23 @@ export function IntegrationSettings() {
         )}
       </div>
 
-      {/* Session Stats */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
-        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">
-          Capture Statistics
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col items-center p-4 rounded-[var(--radius-xl)] bg-[var(--muted)] border border-[var(--border)]">
-            <Activity size={16} className="text-[var(--accent)] mb-1.5" />
-            <span className="text-2xl font-semibold text-[var(--text-primary)]">
-              --
-            </span>
-            <span className="text-xs text-[var(--text-muted)]">
-              Sessions
-            </span>
+      {/* Stats */}
+      <div style={card}>
+        <div style={sectionLabel}>Capture Statistics</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 16, borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', border: '1px solid var(--border)' }}>
+            <Zap style={{ width: 16, height: 16, color: 'var(--accent)', marginBottom: 6 }} />
+            <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace' }}>--</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Sessions</span>
           </div>
-          <div className="flex flex-col items-center p-4 rounded-[var(--radius-xl)] bg-[var(--muted)] border border-[var(--border)]">
-            <Activity size={16} className="text-[var(--accent)] mb-1.5" />
-            <span className="text-2xl font-semibold text-[var(--text-primary)]">
-              --
-            </span>
-            <span className="text-xs text-[var(--text-muted)]">
-              Insights
-            </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 16, borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', border: '1px solid var(--border)' }}>
+            <Activity style={{ width: 16, height: 16, color: 'var(--accent)', marginBottom: 6 }} />
+            <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace' }}>--</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Insights</span>
           </div>
         </div>
       </div>
 
-      {/* Open Skill Directory */}
-      <button
-        onClick={() => {
-          // Use Tauri shell open to reveal the directory
-          import("@tauri-apps/api/core").then(({ invoke }) => {
-            invoke("open_in_explorer", {
-              path: "claude-skill",
-            }).catch(() => {
-              console.warn("[Cortex] Could not open skill directory");
-            });
-          });
-        }}
-        className="flex items-center justify-center gap-2 text-sm rounded-[var(--radius-lg)] font-medium border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--muted)] hover:border-[var(--border-hover)] transition-all duration-200 cursor-pointer"
-        style={{ height: 36, paddingLeft: 16, paddingRight: 16 }}
-      >
-        <ExternalLink size={12} />
-        Open Skill Directory
-      </button>
     </div>
   );
 }

@@ -120,7 +120,7 @@ export function Sidebar() {
       <div className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)]">
         {/* Panel header */}
         <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ height: 44, paddingLeft: 20, paddingRight: 16 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.02em', color: 'var(--text-primary)' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: 'var(--text-muted)', fontFamily: '"JetBrains Mono", monospace' }}>
             {panelLabels[activePanel]}
           </span>
         </div>
