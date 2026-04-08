@@ -8,7 +8,6 @@ import {
 } from "@codemirror/view";
 import { Facet, Extension } from "@codemirror/state";
 import {
-  autocompletion,
   CompletionContext,
   CompletionResult,
 } from "@codemirror/autocomplete";
@@ -125,10 +124,8 @@ function wikilinkCompletionSource(
   };
 }
 
-const wikilinkAutocomplete = autocompletion({
-  override: [wikilinkCompletionSource],
-  activateOnTyping: true,
-});
+// Export the completion source for use in a unified autocompletion config
+export { wikilinkCompletionSource };
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -143,6 +140,5 @@ export function wikilinkExtension(config: {
     wikilinkCompletions.of(config.noteNames),
     wikilinkHighlighter,
     wikilinkClickHandler,
-    wikilinkAutocomplete,
   ];
 }

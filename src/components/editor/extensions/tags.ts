@@ -8,7 +8,6 @@ import {
 } from "@codemirror/view";
 import { Facet, Extension } from "@codemirror/state";
 import {
-  autocompletion,
   CompletionContext,
   CompletionResult,
 } from "@codemirror/autocomplete";
@@ -92,10 +91,8 @@ function tagCompletionSource(
   };
 }
 
-const tagAutocomplete = autocompletion({
-  override: [tagCompletionSource],
-  activateOnTyping: true,
-});
+// Export the completion source for use in a unified autocompletion config
+export { tagCompletionSource };
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -105,6 +102,5 @@ export function tagExtension(config: { availableTags: string[] }): Extension[] {
   return [
     tagCompletions.of(config.availableTags),
     tagHighlighter,
-    tagAutocomplete,
   ];
 }

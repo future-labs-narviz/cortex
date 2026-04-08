@@ -18,12 +18,12 @@ import {
 } from "@codemirror/commands";
 import { searchKeymap, search } from "@codemirror/search";
 import { bracketMatching, indentOnInput, syntaxHighlighting } from "@codemirror/language";
-import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
+import { autocompletion, closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 
 import { markdownExtension } from "./extensions/markdown";
 import { frontmatterPlugin } from "./extensions/frontmatter";
-import { wikilinkExtension } from "./extensions/wikilinks";
-import { tagExtension } from "./extensions/tags";
+import { wikilinkExtension, wikilinkCompletionSource } from "./extensions/wikilinks";
+import { tagExtension, tagCompletionSource } from "./extensions/tags";
 import { mathExtension } from "./extensions/math";
 import { mermaidExtension } from "./extensions/mermaid";
 import { calloutExtension } from "./extensions/callouts";
@@ -129,6 +129,12 @@ export function Editor({ content, onChange, onSave, filePath }: EditorProps) {
         }),
         ...tagExtension({
           availableTags: [], // Will be populated later from the graph indexer
+        }),
+
+        // Unified autocompletion — single instance combining all completion sources
+        autocompletion({
+          override: [wikilinkCompletionSource, tagCompletionSource],
+          activateOnTyping: true,
         }),
 
         // Theme (base layout/colors via CSS vars)
