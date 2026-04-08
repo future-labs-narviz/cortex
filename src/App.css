@@ -10,10 +10,10 @@
   --bg-elevated: #252738;
 
   /* Foreground / text */
-  --foreground: #e2e8f0;
-  --text-primary: #e2e8f0;
-  --text-secondary: #a0aec0;
-  --text-muted: #5a6578;
+  --foreground: #f1f5f9;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8494a7;
 
   /* Accent */
   --accent: #3b82f6;
