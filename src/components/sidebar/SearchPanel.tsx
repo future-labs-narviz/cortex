@@ -69,6 +69,7 @@ export function SearchPanel() {
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Search notes..."
+          aria-label="Search vault"
           style={{
             height: 40,
             width: '100%',

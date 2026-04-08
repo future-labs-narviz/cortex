@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { EditorState } from "@codemirror/state";
+import { EditorState, Compartment } from "@codemirror/state";
 import {
   EditorView,
   keymap,
@@ -17,7 +17,7 @@ import {
   indentWithTab,
 } from "@codemirror/commands";
 import { searchKeymap, search } from "@codemirror/search";
-import { bracketMatching, indentOnInput } from "@codemirror/language";
+import { bracketMatching, indentOnInput, syntaxHighlighting } from "@codemirror/language";
 import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 
 import { markdownExtension } from "./extensions/markdown";
@@ -29,9 +29,10 @@ import { mermaidExtension } from "./extensions/mermaid";
 import { calloutExtension } from "./extensions/callouts";
 import { imageExtension } from "./extensions/images";
 import { codeBlockExtension } from "./extensions/codeblocks";
-import { tokyoNight } from "./themes/base";
+import { editorBaseTheme, darkHighlightStyle, lightHighlightStyle } from "./themes/base";
 import { setEditorView, setCurrentNoteId } from "@/lib/editorApi";
 import { useVaultStore } from "@/stores/vaultStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { findNoteByName } from "@/lib/utils/noteResolver";
 
 interface EditorProps {
@@ -41,12 +42,21 @@ interface EditorProps {
   filePath?: string;
 }
 
+const highlightCompartment = new Compartment();
+
+function getHighlightExtension(theme: string) {
+  const style = theme === "light" ? lightHighlightStyle : darkHighlightStyle;
+  return syntaxHighlighting(style);
+}
+
 export function Editor({ content, onChange, onSave, filePath }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   const onSaveRef = useRef(onSave);
   const isExternalUpdate = useRef(false);
+
+  const theme = useSettingsStore((s) => s.theme);
 
   // Keep refs up-to-date
   onChangeRef.current = onChange;
@@ -121,8 +131,11 @@ export function Editor({ content, onChange, onSave, filePath }: EditorProps) {
           availableTags: [], // Will be populated later from the graph indexer
         }),
 
-        // Theme
-        ...tokyoNight,
+        // Theme (base layout/colors via CSS vars)
+        editorBaseTheme,
+
+        // Syntax highlighting — swappable via Compartment
+        highlightCompartment.of(getHighlightExtension(theme)),
 
         // Change listener
         EditorView.updateListener.of((update) => {
@@ -162,6 +175,16 @@ export function Editor({ content, onChange, onSave, filePath }: EditorProps) {
     // content is intentionally excluded -- we sync it separately below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filePath]);
+
+  // Swap syntax highlighting when theme changes
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+
+    view.dispatch({
+      effects: highlightCompartment.reconfigure(getHighlightExtension(theme)),
+    });
+  }, [theme]);
 
   // Sync external content changes without cursor jump
   useEffect(() => {

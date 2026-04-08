@@ -81,9 +81,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           animation: 'settingsIn 150ms ease-out',
         }}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label="Settings"
       >
         {/* Sidebar */}
         <div
+          role="tablist"
+          aria-label="Settings sections"
           style={{
             width: 200,
             flexShrink: 0,
@@ -117,6 +121,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             return (
               <button
                 key={section.id}
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => setActiveSection(section.id)}
                 onMouseEnter={() => setHoveredSection(section.id)}
                 onMouseLeave={() => setHoveredSection(null)}

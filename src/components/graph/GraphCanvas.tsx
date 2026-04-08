@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
 import type { GraphData, GraphNode } from "@/lib/types";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 // ---------------------------------------------------------------------------
 // Types for D3 simulation
@@ -119,6 +120,7 @@ export function GraphCanvas({
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const currentTheme = useSettingsStore((s) => s.theme);
 
   // -----------------------------------------------------------------------
   // Zoom helpers exposed to parent via imperative handle-style callbacks
@@ -478,6 +480,7 @@ export function GraphCanvas({
     onNodeClick,
     onNodeHover,
     centerOnNode,
+    currentTheme,
   ]);
 
   return (

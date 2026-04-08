@@ -43,7 +43,7 @@ export function RecordingOverlay() {
   const levels = audioLevels.every((l) => l === 0) ? mockLevels : audioLevels;
 
   return (
-    <div className="recording-overlay fixed inset-0 z-50 bg-black/60 flex items-center gap-4 px-4 py-2 shrink-0" style={{ WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}>
+    <div role="status" aria-live="polite" className="recording-overlay fixed inset-0 z-50 bg-black/60 flex items-center gap-4 px-4 py-2 shrink-0" style={{ WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}>
       {/* Audio bars */}
       <div className="voice-bars">
         {levels.map((level, i) => (

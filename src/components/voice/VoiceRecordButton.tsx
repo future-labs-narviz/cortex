@@ -80,6 +80,7 @@ export function VoiceRecordButton({
             : "btn-primary text-white"
         }`}
         title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Start recording"}
+        aria-label={isRecording ? "Stop recording" : isTranscribing ? "Transcribing" : "Start recording"}
       >
         {isTranscribing ? (
           <Loader2 size={24} className="animate-spin" />
@@ -111,6 +112,7 @@ export function VoiceRecordButton({
             : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--muted)]"
       }`}
       title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Record voice (Cmd+Shift+R)"}
+      aria-label={isRecording ? "Stop recording" : isTranscribing ? "Transcribing" : "Start recording"}
     >
       {isTranscribing ? (
         <Loader2 size={15} className="animate-spin" />

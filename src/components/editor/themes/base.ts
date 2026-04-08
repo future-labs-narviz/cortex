@@ -1,8 +1,9 @@
 import { EditorView } from "@codemirror/view";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
+import { darkTheme, lightTheme, type ThemeTokens } from "@/themes/tokens";
 
-const tokyoNightTheme = EditorView.theme(
+const editorTheme = EditorView.theme(
   {
     "&": {
       backgroundColor: "var(--bg-primary)",
@@ -50,7 +51,7 @@ const tokyoNightTheme = EditorView.theme(
       width: "12px",
     },
     ".cm-searchMatch": {
-      backgroundColor: "rgba(224, 175, 104, 0.3)",
+      backgroundColor: "var(--accent-soft)",
       borderRadius: "4px",
     },
     ".cm-searchMatch.cm-searchMatch-selected": {
@@ -142,45 +143,121 @@ const tokyoNightTheme = EditorView.theme(
   { dark: true }
 );
 
-const tokyoNightHighlightStyle = HighlightStyle.define([
-  { tag: tags.heading1, color: "#7aa2f7", fontWeight: "bold" },
-  { tag: tags.heading2, color: "#7aa2f7", fontWeight: "bold" },
-  { tag: tags.heading3, color: "#7aa2f7", fontWeight: "bold" },
-  { tag: tags.heading4, color: "#7aa2f7", fontWeight: "bold" },
-  { tag: tags.heading5, color: "#7aa2f7", fontWeight: "bold" },
-  { tag: tags.heading6, color: "#7aa2f7", fontWeight: "bold" },
-  { tag: tags.strong, color: "#ff9e64", fontWeight: "bold" },
-  { tag: tags.emphasis, color: "#bb9af7", fontStyle: "italic" },
-  { tag: tags.strikethrough, textDecoration: "line-through", color: "#565f89" },
-  { tag: tags.link, color: "#73daca", textDecoration: "underline" },
-  { tag: tags.url, color: "#73daca" },
-  {
-    tag: tags.monospace,
-    color: "#9ece6a",
-    backgroundColor: "rgba(158, 206, 106, 0.1)",
-    borderRadius: "3px",
-    padding: "1px 4px",
-  },
-  { tag: tags.comment, color: "#565f89" },
-  { tag: tags.meta, color: "#565f89" },
-  { tag: tags.keyword, color: "#bb9af7" },
-  { tag: tags.string, color: "#9ece6a" },
-  { tag: tags.number, color: "#ff9e64" },
-  { tag: tags.bool, color: "#ff9e64" },
-  { tag: tags.operator, color: "#89ddff" },
-  { tag: tags.punctuation, color: "#89ddff" },
-  { tag: tags.bracket, color: "#a9b1d6" },
-  { tag: tags.className, color: "#7aa2f7" },
-  { tag: tags.function(tags.variableName), color: "#7aa2f7" },
-  { tag: tags.definition(tags.variableName), color: "#c0caf5" },
-  { tag: tags.propertyName, color: "#73daca" },
-  { tag: tags.typeName, color: "#2ac3de" },
-  { tag: tags.variableName, color: "#c0caf5" },
-  { tag: tags.quote, color: "#565f89", fontStyle: "italic" },
-  { tag: tags.processingInstruction, color: "#565f89" },
-]);
+// ---------------------------------------------------------------------------
+// Theme-aware syntax highlighting
+// ---------------------------------------------------------------------------
 
+// Light theme needs its own set of syntax colors that read well on white.
+// Dark theme uses Tokyo Night–inspired colors.
+interface SyntaxPalette {
+  heading: string;
+  strong: string;
+  emphasis: string;
+  strikethrough: string;
+  link: string;
+  code: string;
+  codeBg: string;
+  comment: string;
+  keyword: string;
+  string: string;
+  number: string;
+  operator: string;
+  bracket: string;
+  className: string;
+  definition: string;
+  property: string;
+  typeName: string;
+  variable: string;
+}
+
+const darkSyntax: SyntaxPalette = {
+  heading: "#7aa2f7",
+  strong: "#ff9e64",
+  emphasis: "#bb9af7",
+  strikethrough: "#565f89",
+  link: "#73daca",
+  code: "#9ece6a",
+  codeBg: "rgba(158, 206, 106, 0.1)",
+  comment: "#565f89",
+  keyword: "#bb9af7",
+  string: "#9ece6a",
+  number: "#ff9e64",
+  operator: "#89ddff",
+  bracket: "#a9b1d6",
+  className: "#7aa2f7",
+  definition: "#c0caf5",
+  property: "#73daca",
+  typeName: "#2ac3de",
+  variable: "#c0caf5",
+};
+
+const lightSyntax: SyntaxPalette = {
+  heading: lightTheme.accent,
+  strong: lightTheme.orange,
+  emphasis: lightTheme.purple,
+  strikethrough: lightTheme.textMuted,
+  link: lightTheme.cyan,
+  code: lightTheme.green,
+  codeBg: `${lightTheme.green}1a`,
+  comment: lightTheme.textMuted,
+  keyword: lightTheme.purple,
+  string: lightTheme.green,
+  number: lightTheme.orange,
+  operator: lightTheme.cyan,
+  bracket: lightTheme.textSecondary,
+  className: lightTheme.accent,
+  definition: lightTheme.textPrimary,
+  property: lightTheme.cyan,
+  typeName: lightTheme.cyan,
+  variable: lightTheme.textPrimary,
+};
+
+function buildHighlightStyle(p: SyntaxPalette) {
+  return HighlightStyle.define([
+    { tag: tags.heading1, color: p.heading, fontWeight: "bold" },
+    { tag: tags.heading2, color: p.heading, fontWeight: "bold" },
+    { tag: tags.heading3, color: p.heading, fontWeight: "bold" },
+    { tag: tags.heading4, color: p.heading, fontWeight: "bold" },
+    { tag: tags.heading5, color: p.heading, fontWeight: "bold" },
+    { tag: tags.heading6, color: p.heading, fontWeight: "bold" },
+    { tag: tags.strong, color: p.strong, fontWeight: "bold" },
+    { tag: tags.emphasis, color: p.emphasis, fontStyle: "italic" },
+    { tag: tags.strikethrough, textDecoration: "line-through", color: p.strikethrough },
+    { tag: tags.link, color: p.link, textDecoration: "underline" },
+    { tag: tags.url, color: p.link },
+    {
+      tag: tags.monospace,
+      color: p.code,
+      backgroundColor: p.codeBg,
+      borderRadius: "3px",
+      padding: "1px 4px",
+    },
+    { tag: tags.comment, color: p.comment },
+    { tag: tags.meta, color: p.comment },
+    { tag: tags.keyword, color: p.keyword },
+    { tag: tags.string, color: p.string },
+    { tag: tags.number, color: p.number },
+    { tag: tags.bool, color: p.number },
+    { tag: tags.operator, color: p.operator },
+    { tag: tags.punctuation, color: p.operator },
+    { tag: tags.bracket, color: p.bracket },
+    { tag: tags.className, color: p.className },
+    { tag: tags.function(tags.variableName), color: p.className },
+    { tag: tags.definition(tags.variableName), color: p.definition },
+    { tag: tags.propertyName, color: p.property },
+    { tag: tags.typeName, color: p.typeName },
+    { tag: tags.variableName, color: p.variable },
+    { tag: tags.quote, color: p.comment, fontStyle: "italic" },
+    { tag: tags.processingInstruction, color: p.comment },
+  ]);
+}
+
+export const darkHighlightStyle = buildHighlightStyle(darkSyntax);
+export const lightHighlightStyle = buildHighlightStyle(lightSyntax);
+
+// Default export — dark theme + dark highlight (Editor.tsx swaps highlight via Compartment)
+export const editorBaseTheme = editorTheme;
 export const tokyoNight = [
-  tokyoNightTheme,
-  syntaxHighlighting(tokyoNightHighlightStyle),
+  editorTheme,
+  syntaxHighlighting(darkHighlightStyle),
 ];

@@ -38,6 +38,7 @@ function ContextMenuItem({
 
   return (
     <button
+      role="menuitem"
       onClick={() => {
         action();
         onClose();
@@ -121,6 +122,7 @@ export function FileContextMenu({
   return (
     <div
       ref={menuRef}
+      role="menu"
       style={{
         position: 'fixed',
         zIndex: 50,

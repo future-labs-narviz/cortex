@@ -118,7 +118,7 @@ export function Calendar() {
       {/* Weekday headers */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 8 }}>
         {WEEKDAYS.map((wd) => (
-          <div key={wd} style={{ textAlign: 'center', fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '4px 0' }}>
+          <div key={wd} style={{ textAlign: 'center', fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 0', fontFamily: '"JetBrains Mono", "SF Mono", "Fira Code", monospace' }}>
             {wd}
           </div>
         ))}

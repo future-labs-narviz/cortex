@@ -272,7 +272,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         <div
           style={{
             height: 1,
-            background: 'linear-gradient(to right, transparent, rgba(59, 130, 246, 0.4), transparent)',
+            background: 'linear-gradient(to right, transparent, var(--accent-glow), transparent)',
           }}
         />
 
@@ -294,6 +294,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a command..."
+            aria-label="Search commands"
             style={{
               flex: 1,
               height: 48,
@@ -309,6 +310,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         {/* Results list */}
         <div
           ref={listRef}
+          role="listbox"
+          aria-label="Command results"
           style={{
             maxHeight: 400,
             overflowY: 'auto',
@@ -359,6 +362,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     <div
                       key={result.command.id}
                       data-index={currentIdx}
+                      role="option"
+                      aria-selected={isSelected}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -378,7 +383,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                             ? 'var(--muted-hover)'
                             : 'transparent',
                         border: isSelected
-                          ? '1px solid rgba(59, 130, 246, 0.2)'
+                          ? '1px solid var(--accent-soft)'
                           : '1px solid transparent',
                       }}
                       onClick={() => executeCommand(result.command)}

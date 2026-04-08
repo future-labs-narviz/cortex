@@ -230,7 +230,7 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
         <div
           style={{
             height: 1,
-            background: 'linear-gradient(to right, transparent, rgba(59, 130, 246, 0.4), transparent)',
+            background: 'linear-gradient(to right, transparent, var(--accent-glow), transparent)',
           }}
         />
 
@@ -252,6 +252,7 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search notes..."
+            aria-label="Search notes"
             style={{
               flex: 1,
               height: 48,
@@ -267,6 +268,8 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
         {/* Results list */}
         <div
           ref={listRef}
+          role="listbox"
+          aria-label="File results"
           style={{
             maxHeight: 400,
             overflowY: 'auto',
@@ -301,6 +304,8 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
                 <div
                   key={result.file.path}
                   data-index={index}
+                  role="option"
+                  aria-selected={isSelected}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -320,7 +325,7 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
                         ? 'var(--muted-hover)'
                         : 'transparent',
                     border: isSelected
-                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      ? '1px solid var(--accent-soft)'
                       : '1px solid transparent',
                   }}
                   onClick={() => openFile(result.file)}
