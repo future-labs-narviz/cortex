@@ -249,10 +249,10 @@ function EmptyState() {
           <FolderOpen className="w-7 h-7 text-[var(--accent)]" />
         </div>
       </div>
-      <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-3">
+      <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
         Open a vault to begin
       </h2>
-      <p className="text-[13px] text-[var(--text-muted)] leading-relaxed mb-8">
+      <p className="text-[13px] text-[var(--text-muted)] leading-relaxed mb-8 max-w-[280px]">
         Press{" "}
         <kbd className="px-2 py-1 rounded-[var(--radius-md)] bg-[var(--muted)] border border-[var(--border)] text-xs font-mono text-[var(--text-secondary)]">
           Cmd+O

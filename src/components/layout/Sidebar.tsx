@@ -127,21 +127,15 @@ export function Sidebar() {
 
         {/* Panel body */}
         <div className="p-4 overflow-y-auto h-[calc(100%-2.75rem)]">
-          {!isVaultOpen && activePanel !== "integrations" && activePanel !== "voice" && activePanel !== "calendar" ? (
-            <NoVaultState />
-          ) : (
-            <>
-              {activePanel === "files" && <FileExplorer />}
-              {activePanel === "search" && <SearchPanel />}
-              {activePanel === "backlinks" && <BacklinksPanel />}
-              {activePanel === "graph" && <GraphPanel />}
-              {activePanel === "tags" && <TagsPanel />}
-              {activePanel === "calendar" && <Calendar />}
-              {activePanel === "timeline" && <ContextTimeline />}
-              {activePanel === "voice" && <VoicePanel />}
-              {activePanel === "integrations" && <IntegrationSettings />}
-            </>
-          )}
+          {activePanel === "files" && (isVaultOpen ? <FileExplorer /> : <NoVaultState />)}
+          {activePanel === "search" && (isVaultOpen ? <SearchPanel /> : <NoVaultState />)}
+          {activePanel === "backlinks" && <BacklinksPanel />}
+          {activePanel === "graph" && <GraphPanel />}
+          {activePanel === "tags" && <TagsPanel />}
+          {activePanel === "calendar" && <Calendar />}
+          {activePanel === "timeline" && <ContextTimeline />}
+          {activePanel === "voice" && <VoicePanel />}
+          {activePanel === "integrations" && <IntegrationSettings />}
         </div>
       </div>
 
@@ -196,7 +190,7 @@ function SidebarEmptyState({
   return (
     <div className="flex flex-col items-center justify-center h-full px-6">
       {/* Icon with glow ring */}
-      <div className="relative w-12 h-12 mb-5">
+      <div className="relative w-12 h-12 mb-6">
         <div
           className={`absolute inset-0 rounded-[var(--radius-xl)] ${gradient} blur-lg opacity-30`}
           style={{ animation: "glow-pulse 3s ease-in-out infinite" }}
@@ -207,11 +201,11 @@ function SidebarEmptyState({
           <Icon className={`w-5 h-5 ${accentColor}`} />
         </div>
       </div>
-      <div className="text-center space-y-2 max-w-[200px]">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+      <div className="text-center max-w-[200px]">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">
           {title}
         </h3>
-        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed mt-0">
           {description}
         </p>
       </div>
@@ -231,7 +225,15 @@ function GraphPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
 
   if (!isVaultOpen) {
-    return null; // Unified NoVaultState handles this
+    return (
+      <SidebarEmptyState
+        icon={GitFork}
+        title="Knowledge Graph"
+        description="Open a vault to explore connections between your notes."
+        gradient="glow-cyan"
+        accentColor="text-[var(--cyan)]"
+      />
+    );
   }
 
   return (
@@ -260,15 +262,11 @@ function VoicePanel() {
 function TagsPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
 
-  if (!isVaultOpen) {
-    return null; // Unified NoVaultState handles this
-  }
-
   return (
     <SidebarEmptyState
       icon={Tags}
-      title="No Tags"
-      description="No tags found in your vault yet."
+      title={isVaultOpen ? "No Tags" : "Tags"}
+      description={isVaultOpen ? "No tags found in your vault yet." : "Open a vault to browse tags."}
       gradient="glow-green"
       accentColor="text-[var(--green)]"
     />
