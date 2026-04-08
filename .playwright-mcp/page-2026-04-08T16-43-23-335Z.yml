@@ -1,0 +1,83 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "Toggle sidebar" [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]: Cortex
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - button "Open daily note" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+        - button "Files" [ref=e18] [cursor=pointer]:
+          - img [ref=e19]
+        - button "Search" [ref=e23] [cursor=pointer]:
+          - img [ref=e24]
+        - button "Backlinks" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+        - button "Graph" [ref=e33] [cursor=pointer]:
+          - img [ref=e34]
+        - button "Tags" [ref=e40] [cursor=pointer]:
+          - img [ref=e41]
+        - button "Calendar" [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+        - button "Timeline" [ref=e50] [cursor=pointer]:
+          - img [ref=e51]
+        - button "Voice" [ref=e55] [cursor=pointer]:
+          - img [ref=e56]
+        - generic [ref=e59]:
+          - button "Integrations" [active] [ref=e60] [cursor=pointer]:
+            - img [ref=e61]
+          - generic: Integrations
+      - generic [ref=e63]:
+        - generic [ref=e65]: integrations
+        - generic [ref=e180]:
+          - generic [ref=e181]:
+            - img [ref=e182]
+            - heading "Claude Code Integration" [level=3] [ref=e184]
+          - generic [ref=e185]:
+            - generic [ref=e186]: MCP Server Status
+            - generic [ref=e187]:
+              - generic [ref=e189]: Not checked
+              - generic [ref=e190]: Port 3847
+            - button "Test Connection" [ref=e191] [cursor=pointer]:
+              - img [ref=e192]
+              - text: Test Connection
+          - generic [ref=e197]:
+            - generic [ref=e198]: MCP Configuration
+            - generic [ref=e199]:
+              - generic [ref=e200]: "{ \"mcpServers\": { \"cortex\": { \"type\": \"http\", \"url\": \"http://localhost:3847/mcp\" } } }"
+              - button "Copy MCP config" [ref=e201] [cursor=pointer]:
+                - img [ref=e202]
+            - paragraph [ref=e205]:
+              - text: Add this to your project's
+              - code [ref=e206]: .mcp.json
+              - text: file.
+          - button "Setup Instructions" [ref=e208] [cursor=pointer]:
+            - img [ref=e209]
+            - text: Setup Instructions
+          - button "Session Capture Hooks" [ref=e212] [cursor=pointer]:
+            - img [ref=e213]
+            - text: Session Capture Hooks
+          - generic [ref=e215]:
+            - generic [ref=e216]: Capture Statistics
+            - generic [ref=e217]:
+              - generic [ref=e218]:
+                - img [ref=e219]
+                - generic [ref=e221]: "--"
+                - generic [ref=e222]: Sessions
+              - generic [ref=e223]:
+                - img [ref=e224]
+                - generic [ref=e226]: "--"
+                - generic [ref=e227]: Insights
+          - button "Open Skill Directory" [ref=e228] [cursor=pointer]:
+            - img [ref=e229]
+            - text: Open Skill Directory
+    - generic [ref=e75]:
+      - img [ref=e77]
+      - generic [ref=e79]:
+        - heading "Open a vault to begin" [level=2] [ref=e80]
+        - paragraph [ref=e81]: Press Cmd+O to open an existing vault or create a new one.
+      - button "Open Vault" [ref=e82] [cursor=pointer]
+  - generic [ref=e83]:
+    - generic [ref=e85]: Cortex v0.1.0
+    - generic [ref=e89]: "MCP: disconnected"

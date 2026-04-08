@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Group, Panel, Separator } from "react-resizable-panels";
 import { TitleBar } from "./TitleBar";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
@@ -230,21 +231,26 @@ export function AppShell() {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
       <TitleBar />
-      <div className="flex flex-1 min-h-0">
-        <Sidebar />
-        {graphFullscreen ? (
-          <div className="flex-1 min-w-0 relative">
-            <GraphView />
-          </div>
-        ) : (
-          <div className="flex flex-col flex-1 min-w-0">
-            {(voice.isRecording || voice.isTranscribing) && (
-              <RecordingOverlay />
-            )}
-            <SplitView />
-          </div>
-        )}
-      </div>
+      <Group orientation="horizontal" className="flex-1 min-h-0">
+        <Panel defaultSize={25} minSize={15} maxSize={40}>
+          <Sidebar />
+        </Panel>
+        <Separator className="w-[3px] bg-[var(--border)] hover:bg-[var(--accent)] transition-colors duration-150 cursor-col-resize" />
+        <Panel>
+          {graphFullscreen ? (
+            <div className="h-full w-full relative">
+              <GraphView />
+            </div>
+          ) : (
+            <div className="flex flex-col h-full w-full">
+              {(voice.isRecording || voice.isTranscribing) && (
+                <RecordingOverlay />
+              )}
+              <SplitView />
+            </div>
+          )}
+        </Panel>
+      </Group>
       <StatusBar />
       <QuickSwitcher
         isOpen={quickSwitcherOpen}

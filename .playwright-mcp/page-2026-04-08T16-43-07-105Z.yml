@@ -1,0 +1,47 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "Toggle sidebar" [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]: Cortex
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - button "Open daily note" [ref=e13] [cursor=pointer]:
+          - img [ref=e14]
+        - button "Files" [ref=e18] [cursor=pointer]:
+          - img [ref=e19]
+        - button "Search" [ref=e23] [cursor=pointer]:
+          - img [ref=e24]
+        - button "Backlinks" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+        - button "Graph" [ref=e33] [cursor=pointer]:
+          - img [ref=e34]
+        - button "Tags" [ref=e40] [cursor=pointer]:
+          - img [ref=e41]
+        - button "Calendar" [ref=e46] [cursor=pointer]:
+          - img [ref=e47]
+        - generic [ref=e49]:
+          - button "Timeline" [active] [ref=e50] [cursor=pointer]:
+            - img [ref=e51]
+          - generic: Timeline
+        - button "Voice" [ref=e55] [cursor=pointer]:
+          - img [ref=e56]
+        - button "Integrations" [ref=e60] [cursor=pointer]:
+          - img [ref=e61]
+      - generic [ref=e63]:
+        - generic [ref=e65]: timeline
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - heading "Development Timeline" [level=3] [ref=e158]
+            - button "Refresh sessions" [ref=e159] [cursor=pointer]:
+              - img [ref=e160]
+          - generic [ref=e165]: Failed to fetch
+    - generic [ref=e75]:
+      - img [ref=e77]
+      - generic [ref=e79]:
+        - heading "Open a vault to begin" [level=2] [ref=e80]
+        - paragraph [ref=e81]: Press Cmd+O to open an existing vault or create a new one.
+      - button "Open Vault" [ref=e82] [cursor=pointer]
+  - generic [ref=e83]:
+    - generic [ref=e85]: Cortex v0.1.0
+    - generic [ref=e89]: "MCP: disconnected"

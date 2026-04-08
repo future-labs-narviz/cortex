@@ -44,23 +44,11 @@ const navItems: SidebarNavItem[] = [
 
 export function Sidebar() {
   const [activePanel, setActivePanel] = useState<SidebarPanel>("files");
-  const sidebarWidth = useSettingsStore((s) => s.sidebarWidth);
-  const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
 
   return (
-    <div
-      className="flex h-full transition-all duration-200 ease-in-out"
-      style={{ width: sidebarCollapsed ? 0 : sidebarWidth, minWidth: 0 }}
-    >
+    <div className="flex h-full w-full">
       {/* Icon rail */}
-      <div
-        className="flex flex-col items-center w-[52px] flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]"
-        style={{
-          opacity: sidebarCollapsed ? 0 : 1,
-          pointerEvents: sidebarCollapsed ? "none" : "auto",
-          transition: "opacity 150ms ease",
-        }}
-      >
+      <div className="flex flex-col items-center w-[52px] flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
         <DailyNoteButton />
         <div className="w-6 border-b border-[var(--border)] my-2" />
         {navItems.map(({ id, icon: Icon, label }) => {
@@ -84,22 +72,16 @@ export function Sidebar() {
       </div>
 
       {/* Panel content */}
-      <div
-        className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)]"
-        style={{
-          opacity: sidebarCollapsed ? 0 : 1,
-          transition: "opacity 150ms ease",
-        }}
-      >
+      <div className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)]">
         {/* Panel header */}
-        <div className="flex items-center h-12 px-6 border-b border-[var(--border)]">
-          <span className="text-sm font-bold uppercase tracking-wider text-[var(--text-primary)]">
+        <div className="flex items-center h-12 px-4 border-b border-[var(--border)]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
             {activePanel}
           </span>
         </div>
 
         {/* Panel body */}
-        <div className="px-5 py-5 overflow-y-auto h-[calc(100%-3rem)]">
+        <div className="px-4 py-4 overflow-y-auto h-[calc(100%-3rem)]">
           {activePanel === "files" && <FileExplorer />}
           {activePanel === "search" && <SearchPanel />}
           {activePanel === "backlinks" && <BacklinksPanel />}
