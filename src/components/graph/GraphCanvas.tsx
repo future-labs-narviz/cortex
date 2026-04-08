@@ -278,7 +278,7 @@ export function GraphCanvas({
       .join("line")
       .attr("stroke", edgeColor)
       .attr("stroke-width", 1)
-      .attr("stroke-opacity", 0.3);
+      .attr("stroke-opacity", 0.4);
 
     // --- Nodes ---
     const nodeGroup = g
@@ -455,7 +455,7 @@ export function GraphCanvas({
         }
 
         // Reset
-        linkGroup.attr("stroke-opacity", 0.3).attr("stroke-width", 1);
+        linkGroup.attr("stroke-opacity", 0.4).attr("stroke-width", 1);
         nodeGroup.select("circle").attr("opacity", 1).attr("filter", null);
         labelGroup.style("opacity", (d: SimNode) =>
           isLarge && d.weight <= 1 && d.id !== activeNodeId ? 0 : 0.8,

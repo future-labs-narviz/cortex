@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVaultStore, flattenFiles } from "@/stores/vaultStore";
@@ -77,24 +77,40 @@ export function Calendar() {
   for (let i = 0; i < startDay; i++) cells.push(null);
   for (let d = 1; d <= totalDays; d++) cells.push(d);
 
-  const navBtn: React.CSSProperties = {
+  const [prevHover, setPrevHover] = useState(false);
+  const [nextHover, setNextHover] = useState(false);
+
+  const navBtn = useCallback((hovered: boolean): React.CSSProperties => ({
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     width: 28, height: 28, borderRadius: 'var(--radius-md)',
-    background: 'none', border: 'none', color: 'var(--text-secondary)',
-    cursor: 'pointer',
-  };
+    background: hovered ? 'var(--muted-hover)' : 'transparent',
+    border: 'none', color: 'var(--text-secondary)',
+    cursor: 'pointer', transition: 'background 150ms',
+  }), []);
 
   return (
     <div style={{ userSelect: 'none' }}>
       {/* Month header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <button onClick={handlePrev} style={navBtn} aria-label="Previous month">
+        <button
+          onClick={handlePrev}
+          onMouseEnter={() => setPrevHover(true)}
+          onMouseLeave={() => setPrevHover(false)}
+          style={navBtn(prevHover)}
+          aria-label="Previous month"
+        >
           <ChevronLeft style={{ width: 16, height: 16 }} />
         </button>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
           {monthLabel}
         </span>
-        <button onClick={handleNext} style={navBtn} aria-label="Next month">
+        <button
+          onClick={handleNext}
+          onMouseEnter={() => setNextHover(true)}
+          onMouseLeave={() => setNextHover(false)}
+          style={navBtn(nextHover)}
+          aria-label="Next month"
+        >
           <ChevronRight style={{ width: 16, height: 16 }} />
         </button>
       </div>

@@ -151,7 +151,7 @@ export function ContextTimeline() {
               {/* Date header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <div style={{ height: 1, flex: 1, background: 'var(--border)' }} />
-                <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', whiteSpace: 'nowrap', fontFamily: '"JetBrains Mono", "SF Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {group.label}
                 </span>
                 <div style={{ height: 1, flex: 1, background: 'var(--border)' }} />
@@ -183,7 +183,18 @@ export function ContextTimeline() {
           {hasMore && (
             <button
               onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-              className="w-full text-center text-[11px] text-[var(--accent)] hover:underline py-2 cursor-pointer rounded focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                fontSize: 11,
+                color: 'var(--accent)',
+                paddingTop: 8,
+                paddingBottom: 8,
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                background: 'none',
+              }}
             >
               Load more ({entries.length - visibleCount} remaining)
             </button>

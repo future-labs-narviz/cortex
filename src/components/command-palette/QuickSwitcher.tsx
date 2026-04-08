@@ -24,22 +24,9 @@ function fuzzyMatch(
   for (let i = 0; i < lowerTarget.length && queryIdx < lowerQuery.length; i++) {
     if (lowerTarget[i] === lowerQuery[queryIdx]) {
       indices.push(i);
-
-      // Consecutive match bonus
-      if (i === lastMatchIdx + 1) {
-        score += 10;
-      }
-
-      // Word boundary bonus (start of string, after separator)
-      if (i === 0 || /[\s\-_/.]/.test(target[i - 1])) {
-        score += 8;
-      }
-
-      // Exact case match bonus
-      if (target[i] === query[queryIdx]) {
-        score += 2;
-      }
-
+      if (i === lastMatchIdx + 1) score += 10;
+      if (i === 0 || /[\s\-_/.]/.test(target[i - 1])) score += 8;
+      if (target[i] === query[queryIdx]) score += 2;
       score += 1;
       lastMatchIdx = i;
       queryIdx++;
@@ -47,8 +34,6 @@ function fuzzyMatch(
   }
 
   const match = queryIdx === lowerQuery.length;
-
-  // Penalize longer targets (prefer shorter, more relevant names)
   if (match) {
     score -= target.length * 0.5;
   }
@@ -70,7 +55,7 @@ function highlightMatches(text: string, indices: number[]): React.ReactNode {
       if (current) {
         parts.push(
           isHighlighted ? (
-            <span key={i} className="text-[var(--accent)] font-semibold">
+            <span key={i} style={{ color: 'var(--accent)', fontWeight: 600 }}>
               {current}
             </span>
           ) : (
@@ -86,7 +71,7 @@ function highlightMatches(text: string, indices: number[]): React.ReactNode {
   if (current) {
     parts.push(
       isHighlighted ? (
-        <span key="last" className="text-[var(--accent)] font-semibold">
+        <span key="last" style={{ color: 'var(--accent)', fontWeight: 600 }}>
           {current}
         </span>
       ) : (
@@ -106,6 +91,7 @@ interface QuickSwitcherProps {
 export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -127,7 +113,6 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
       .sort((a, b) => b.score - a.score);
   }, [query, allFiles]);
 
-  // Reset state when opening
   useEffect(() => {
     if (isOpen) {
       setQuery("");
@@ -136,15 +121,15 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
     }
   }, [isOpen]);
 
-  // Reset selection when results change
   useEffect(() => {
     setSelectedIndex(0);
   }, [results.length]);
 
-  // Scroll selected item into view
   useEffect(() => {
     if (!listRef.current) return;
-    const item = listRef.current.children[selectedIndex] as HTMLElement;
+    const item = listRef.current.querySelector(
+      `[data-index="${selectedIndex}"]`,
+    ) as HTMLElement;
     if (item) {
       item.scrollIntoView({ block: "nearest" });
     }
@@ -153,7 +138,6 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
   const openFile = useCallback(
     (file: VaultFile) => {
       setActiveFile(file.path);
-      // Content will be loaded by AppShell's activeFilePath effect
       onClose();
     },
     [setActiveFile, onClose],
@@ -187,28 +171,80 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
 
   if (!isOpen) return null;
 
+  const kbdStyle: React.CSSProperties = {
+    marginLeft: 4,
+    flexShrink: 0,
+    fontSize: 11,
+    paddingLeft: 6,
+    paddingRight: 6,
+    paddingTop: 2,
+    paddingBottom: 2,
+    borderRadius: 'var(--radius-sm)',
+    background: 'var(--bg-tertiary)',
+    color: 'var(--text-muted)',
+    fontFamily: '"JetBrains Mono", "SF Mono", "Fira Code", monospace',
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        paddingTop: '15vh',
+        animation: 'modalIn 200ms ease-out',
+      }}
       onClick={onClose}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60"
-        style={{ WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.6)',
+          WebkitBackdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(8px)',
+        }}
       />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg mx-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-lg)] overflow-hidden transition-all duration-300 ease-in-out"
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 512,
+          marginLeft: 16,
+          marginRight: 16,
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-2xl)',
+          boxShadow: 'var(--shadow-lg)',
+          overflow: 'hidden',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top accent */}
-        <div className="h-px bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
+        {/* Top accent line */}
+        <div
+          style={{
+            height: 1,
+            background: 'linear-gradient(to right, transparent, rgba(59, 130, 246, 0.4), transparent)',
+          }}
+        />
 
         {/* Search input */}
-        <div className="flex items-center px-4 border-b border-[var(--border)]">
-          <FileText size={16} className="text-[var(--text-muted)] mr-2" />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: 16,
+            paddingRight: 16,
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
+          <FileText size={16} style={{ color: 'var(--text-muted)', marginRight: 12, flexShrink: 0 }} />
           <input
             ref={inputRef}
             type="text"
@@ -216,17 +252,40 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search notes..."
-            className="flex-1 h-12 text-base bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none"
+            style={{
+              flex: 1,
+              height: 48,
+              fontSize: 16,
+              background: 'transparent',
+              color: 'var(--text-primary)',
+              border: 'none',
+              outline: 'none',
+            }}
           />
         </div>
 
         {/* Results list */}
         <div
           ref={listRef}
-          className="max-h-[300px] overflow-y-auto py-1"
+          style={{
+            maxHeight: 400,
+            overflowY: 'auto',
+            paddingTop: 4,
+            paddingBottom: 4,
+          }}
         >
           {results.length === 0 ? (
-            <div className="px-4 py-6 text-center text-xs text-[var(--text-muted)]">
+            <div
+              style={{
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingTop: 24,
+                paddingBottom: 24,
+                textAlign: 'center',
+                fontSize: 12,
+                color: 'var(--text-muted)',
+              }}
+            >
               No matching files found.
             </div>
           ) : (
@@ -235,28 +294,69 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
               const dir = relativePath.includes("/")
                 ? relativePath.replace(/\/[^/]+$/, "")
                 : "";
+              const isSelected = index === selectedIndex;
+              const isHovered = hoveredIndex === index;
 
               return (
                 <div
                   key={result.file.path}
-                  className={`flex items-center gap-2 px-4 py-3 cursor-pointer rounded-[var(--radius-lg)] transition-colors duration-150 mx-2 ${
-                    index === selectedIndex
-                      ? "bg-[var(--accent-soft)] border border-[var(--accent)]/20"
-                      : "hover:bg-[var(--muted)]"
-                  }`}
+                  data-index={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    paddingLeft: 16,
+                    paddingRight: 16,
+                    paddingTop: 10,
+                    paddingBottom: 10,
+                    marginLeft: 8,
+                    marginRight: 8,
+                    cursor: 'pointer',
+                    borderRadius: 'var(--radius-lg)',
+                    transition: 'background 150ms',
+                    background: isSelected
+                      ? 'var(--accent-soft)'
+                      : isHovered
+                        ? 'var(--muted-hover)'
+                        : 'transparent',
+                    border: isSelected
+                      ? '1px solid rgba(59, 130, 246, 0.2)'
+                      : '1px solid transparent',
+                  }}
                   onClick={() => openFile(result.file)}
-                  onMouseEnter={() => setSelectedIndex(index)}
+                  onMouseEnter={() => {
+                    setSelectedIndex(index);
+                    setHoveredIndex(index);
+                  }}
+                  onMouseLeave={() => setHoveredIndex(null)}
                 >
                   <FileText
                     size={14}
-                    className="flex-shrink-0 text-[var(--text-muted)]"
+                    style={{ flexShrink: 0, color: 'var(--text-muted)' }}
                   />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs text-[var(--text-primary)] truncate">
+                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: 'var(--text-primary)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {highlightMatches(result.file.name, result.indices)}
                     </span>
                     {dir && (
-                      <span className="text-[10px] text-[var(--text-muted)] truncate">
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: 'var(--text-muted)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+                        }}
+                      >
                         {dir}
                       </span>
                     )}
@@ -268,24 +368,28 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="flex items-center gap-3 px-4 py-2 border-t border-[var(--border)] text-[10px] text-[var(--text-muted)]">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingTop: 8,
+            paddingBottom: 8,
+            borderTop: '1px solid var(--border)',
+            fontSize: 11,
+            color: 'var(--text-muted)',
+          }}
+        >
           <span>
-            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
-              &uarr;&darr;
-            </kbd>{" "}
-            navigate
+            <kbd style={kbdStyle}>&uarr;&darr;</kbd>{" "}navigate
           </span>
           <span>
-            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
-              Enter
-            </kbd>{" "}
-            open
+            <kbd style={kbdStyle}>Enter</kbd>{" "}open
           </span>
           <span>
-            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
-              Esc
-            </kbd>{" "}
-            close
+            <kbd style={kbdStyle}>Esc</kbd>{" "}close
           </span>
         </div>
       </div>

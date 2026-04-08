@@ -31,6 +31,10 @@ function computeDuration(start: string | null, end: string | null): string {
   }
 }
 
+const mono: React.CSSProperties = {
+  fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+};
+
 export function SessionCard({ session }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -39,151 +43,208 @@ export function SessionCard({ session }: SessionCardProps) {
   const title = session.summary || session.goal || "Development session";
 
   return (
-    <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4 mb-2">
-      <div className="flex gap-3">
+    <div
+      style={{
+        background: 'var(--muted)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-xl)',
+        padding: 16,
+        marginBottom: 8,
+      }}
+    >
+      <div style={{ display: 'flex', gap: 12 }}>
         {/* Timeline dot */}
-        <div className="flex flex-col items-center pt-1">
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 4 }}>
           <div
-            className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-              isActive
-                ? "bg-[var(--green)]"
-                : "bg-[var(--accent)]"
-            }`}
-            style={isActive ? { boxShadow: '0 0 0 3px rgba(16,185,129,0.3)' } : undefined}
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: isActive ? 'var(--green)' : 'var(--accent)',
+              boxShadow: isActive ? '0 0 0 3px rgba(16,185,129,0.3)' : undefined,
+            }}
           />
-          <div className="w-px flex-1 bg-[var(--border)] mt-1" />
+          <div style={{ width: 1, flex: 1, background: 'var(--border)', marginTop: 4 }} />
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 pb-1">
+        <div style={{ flex: 1, minWidth: 0, paddingBottom: 4 }}>
           {/* Header */}
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-start gap-1.5 w-full text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded"
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 6,
+              width: '100%',
+              textAlign: 'left',
+              cursor: 'pointer',
+              border: 'none',
+              background: 'none',
+              padding: 0,
+            }}
           >
-          <span className="transition-transform duration-200" style={{ display: 'inline-flex', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
-            <ChevronRight size={12} className="mt-0.5 text-[var(--text-muted)] flex-shrink-0" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[10px] text-[var(--text-muted)] font-mono">
-                {formatTime(session.started_at)}
-                {session.ended_at ? ` - ${formatTime(session.ended_at)}` : ""}
-              </span>
-              {isActive && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--green)]/10 text-[var(--green)] font-medium">
-                  active
+            <span
+              style={{
+                display: 'inline-flex',
+                transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                transition: 'transform 200ms',
+              }}
+            >
+              <ChevronRight size={12} style={{ marginTop: 2, color: 'var(--text-muted)', flexShrink: 0 }} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', ...mono }}>
+                  {formatTime(session.started_at)}
+                  {session.ended_at ? ` - ${formatTime(session.ended_at)}` : ""}
                 </span>
+                {isActive && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      paddingLeft: 6,
+                      paddingRight: 6,
+                      paddingTop: 2,
+                      paddingBottom: 2,
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      color: 'var(--green)',
+                      fontWeight: 500,
+                    }}
+                  >
+                    active
+                  </span>
+                )}
+              </div>
+              <p
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: 'var(--text-primary)',
+                  lineHeight: 1.4,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {title}
+              </p>
+            </div>
+          </button>
+
+          {/* Stats row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6, marginLeft: 16 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-muted)' }}>
+              <Clock size={10} />
+              {duration}
+            </span>
+            {session.prompts_count > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-muted)' }}>
+                <Terminal size={10} />
+                {session.prompts_count} prompts
+              </span>
+            )}
+            {session.files_modified.length > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-muted)' }}>
+                <FileText size={10} />
+                {session.files_modified.length} files
+              </span>
+            )}
+          </div>
+
+          {/* Key decision preview (when not expanded) */}
+          {!expanded && session.key_decisions.length > 0 && (
+            <div style={{ marginTop: 6, marginLeft: 16 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-muted)' }}>
+                <Lightbulb size={10} style={{ color: 'var(--yellow)' }} />
+                {session.key_decisions[0]}
+              </span>
+            </div>
+          )}
+
+          {/* Expanded details */}
+          {expanded && (
+            <div style={{ marginTop: 8, marginLeft: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {session.key_decisions.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                    Key Decisions
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {session.key_decisions.map((decision, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
+                        <Lightbulb size={10} style={{ marginTop: 2, color: 'var(--yellow)', flexShrink: 0 }} />
+                        {decision}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {session.what_worked && (
+                <div>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--green)', marginBottom: 4 }}>
+                    What Worked
+                  </h4>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{session.what_worked}</p>
+                </div>
+              )}
+
+              {session.what_failed && (
+                <div>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--red)', marginBottom: 4 }}>
+                    What Failed
+                  </h4>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{session.what_failed}</p>
+                </div>
+              )}
+
+              {session.files_modified.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                    Files Modified
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {session.files_modified.map((file) => (
+                      <span key={file} style={{ fontSize: 11, color: 'var(--text-muted)', ...mono }}>
+                        {file}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {session.tools_used.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                    Tools Used
+                  </h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {session.tools_used.map((tool) => (
+                      <span
+                        key={tool}
+                        style={{
+                          fontSize: 10,
+                          paddingLeft: 6,
+                          paddingRight: 6,
+                          paddingTop: 2,
+                          paddingBottom: 2,
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'var(--bg-tertiary)',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        {tool}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-            <p className="text-xs font-medium text-[var(--text-primary)] leading-snug group-hover:text-[var(--accent)] transition-colors truncate">
-              {title}
-            </p>
-          </div>
-        </button>
-
-        {/* Stats row */}
-        <div className="flex items-center gap-3 mt-1.5 ml-4">
-          <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-            <Clock size={10} />
-            {duration}
-          </span>
-          {session.prompts_count > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-              <Terminal size={10} />
-              {session.prompts_count} prompts
-            </span>
-          )}
-          {session.files_modified.length > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-              <FileText size={10} />
-              {session.files_modified.length} files
-            </span>
           )}
         </div>
-
-        {/* Key decision preview (when not expanded) */}
-        {!expanded && session.key_decisions.length > 0 && (
-          <div className="mt-1.5 ml-4">
-            <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-              <Lightbulb size={10} className="text-[var(--yellow)]" />
-              {session.key_decisions[0]}
-            </span>
-          </div>
-        )}
-
-        {/* Expanded details */}
-        {expanded && (
-          <div className="mt-2 ml-4 space-y-2">
-            {session.key_decisions.length > 0 && (
-              <div>
-                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-                  Key Decisions
-                </h4>
-                <ul className="space-y-0.5">
-                  {session.key_decisions.map((decision, i) => (
-                    <li key={i} className="flex items-start gap-1.5 text-[11px] text-[var(--text-secondary)]">
-                      <Lightbulb size={10} className="mt-0.5 text-[var(--yellow)] flex-shrink-0" />
-                      {decision}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {session.what_worked && (
-              <div>
-                <h4 className="text-sm font-semibold text-[var(--green)] mb-1">
-                  What Worked
-                </h4>
-                <p className="text-[11px] text-[var(--text-secondary)]">{session.what_worked}</p>
-              </div>
-            )}
-
-            {session.what_failed && (
-              <div>
-                <h4 className="text-sm font-semibold text-[var(--red)] mb-1">
-                  What Failed
-                </h4>
-                <p className="text-[11px] text-[var(--text-secondary)]">{session.what_failed}</p>
-              </div>
-            )}
-
-            {session.files_modified.length > 0 && (
-              <div>
-                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-                  Files Modified
-                </h4>
-                <ul className="space-y-0.5">
-                  {session.files_modified.map((file) => (
-                    <li key={file} className="text-[11px] text-[var(--text-muted)] font-mono">
-                      {file}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {session.tools_used.length > 0 && (
-              <div>
-                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
-                  Tools Used
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {session.tools_used.map((tool) => (
-                    <span
-                      key={tool}
-                      className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--text-muted)]"
-                    >
-                      {tool}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
       </div>
     </div>
   );

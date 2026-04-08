@@ -15,28 +15,69 @@ function formatTime(iso: string): string {
 
 export function InsightCard({ insight }: InsightCardProps) {
   return (
-    <div className="bg-[var(--muted)] border border-[var(--border)] border-l-2 border-l-[var(--yellow)] rounded-[var(--radius-xl)] p-4 mb-2">
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs text-[var(--text-muted)] font-mono">
+    <div
+      style={{
+        background: 'var(--muted)',
+        border: '1px solid var(--border)',
+        borderLeft: '2px solid var(--yellow)',
+        borderRadius: 'var(--radius-xl)',
+        padding: 16,
+        marginBottom: 8,
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <span
+            style={{
+              fontSize: 12,
+              color: 'var(--text-muted)',
+              fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+            }}
+          >
             {formatTime(insight.created_at)}
           </span>
-          <span className="px-2 py-0.5 rounded-[var(--radius-sm)] bg-[var(--yellow)]/10 text-[var(--yellow)] text-xs font-medium">
+          <span
+            style={{
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingTop: 2,
+              paddingBottom: 2,
+              borderRadius: 'var(--radius-sm)',
+              background: 'rgba(245, 158, 11, 0.1)',
+              color: 'var(--yellow)',
+              fontSize: 12,
+              fontWeight: 500,
+            }}
+          >
             {insight.source}
           </span>
         </div>
 
-        <p className="text-xs text-[var(--text-primary)] leading-relaxed">
+        <p
+          style={{
+            fontSize: 12,
+            color: 'var(--text-primary)',
+            lineHeight: 1.6,
+          }}
+        >
           {insight.content}
         </p>
 
         {insight.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1.5">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
             {insight.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent)]"
+                style={{
+                  fontSize: 10,
+                  paddingLeft: 6,
+                  paddingRight: 6,
+                  paddingTop: 2,
+                  paddingBottom: 2,
+                  borderRadius: 9999,
+                  background: 'var(--accent-soft)',
+                  color: 'var(--accent)',
+                }}
               >
                 #{tag}
               </span>

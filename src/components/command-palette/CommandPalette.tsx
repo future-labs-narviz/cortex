@@ -59,7 +59,7 @@ function highlightMatches(text: string, indices: number[]): React.ReactNode {
       if (current) {
         parts.push(
           isHighlighted ? (
-            <span key={i} className="text-[var(--accent)] font-semibold">
+            <span key={i} style={{ color: 'var(--accent)', fontWeight: 600 }}>
               {current}
             </span>
           ) : (
@@ -75,7 +75,7 @@ function highlightMatches(text: string, indices: number[]): React.ReactNode {
   if (current) {
     parts.push(
       isHighlighted ? (
-        <span key="last" className="text-[var(--accent)] font-semibold">
+        <span key="last" style={{ color: 'var(--accent)', fontWeight: 600 }}>
           {current}
         </span>
       ) : (
@@ -96,6 +96,7 @@ interface FuzzyCommandResult {
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -103,7 +104,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     const allCommands = commandRegistry.getAll();
 
     if (!query.trim()) {
-      // Show recent first, then the rest
       const recent = commandRegistry.getRecent();
       const recentSet = new Set(recent.map((c) => c.id));
       const rest = allCommands.filter((c) => !recentSet.has(c.id));
@@ -117,7 +117,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     return allCommands
       .map((cmd) => {
         const result = fuzzyMatch(query, cmd.label);
-        // Also match against category
         if (!result.match) {
           const catResult = fuzzyMatch(query, cmd.category);
           if (catResult.match) {
@@ -135,7 +134,6 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       .sort((a, b) => b.score - a.score);
   }, [query]);
 
-  // Group results by category
   const groupedResults = useMemo(() => {
     const groups: { category: string; items: FuzzyCommandResult[] }[] = [];
     const categoryMap = new Map<string, FuzzyCommandResult[]>();
@@ -153,10 +151,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     return groups;
   }, [results]);
 
-  // Flat list for keyboard navigation
   const flatResults = results;
 
-  // Reset state when opening
   useEffect(() => {
     if (isOpen) {
       setQuery("");
@@ -165,12 +161,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     }
   }, [isOpen]);
 
-  // Reset selection when results change
   useEffect(() => {
     setSelectedIndex(0);
   }, [results.length]);
 
-  // Scroll selected item into view
   useEffect(() => {
     if (!listRef.current) return;
     const item = listRef.current.querySelector(
@@ -217,31 +211,82 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   if (!isOpen) return null;
 
-  // Build a flat index counter for matching selectedIndex to grouped items
   let flatIndex = 0;
+
+  const kbdStyle: React.CSSProperties = {
+    marginLeft: 8,
+    flexShrink: 0,
+    fontSize: 11,
+    paddingLeft: 6,
+    paddingRight: 6,
+    paddingTop: 2,
+    paddingBottom: 2,
+    borderRadius: 'var(--radius-sm)',
+    background: 'var(--bg-tertiary)',
+    color: 'var(--text-muted)',
+    fontFamily: '"JetBrains Mono", "SF Mono", "Fira Code", monospace',
+  };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        paddingTop: '15vh',
+        animation: 'modalIn 200ms ease-out',
+      }}
       onClick={onClose}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60"
-        style={{ WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.6)',
+          WebkitBackdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(8px)',
+        }}
       />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg mx-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-lg)] overflow-hidden transition-all duration-300 ease-in-out"
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 512,
+          marginLeft: 16,
+          marginRight: 16,
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-2xl)',
+          boxShadow: 'var(--shadow-lg)',
+          overflow: 'hidden',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top accent */}
-        <div className="h-px bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
+        {/* Top accent line */}
+        <div
+          style={{
+            height: 1,
+            background: 'linear-gradient(to right, transparent, rgba(59, 130, 246, 0.4), transparent)',
+          }}
+        />
 
         {/* Search input */}
-        <div className="flex items-center px-4 border-b border-[var(--border)]">
-          <CommandIcon size={16} className="text-[var(--text-muted)] mr-2" />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: 16,
+            paddingRight: 16,
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
+          <CommandIcon size={16} style={{ color: 'var(--text-muted)', marginRight: 12 }} />
           <input
             ref={inputRef}
             type="text"
@@ -249,43 +294,113 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a command..."
-            className="flex-1 h-12 text-base bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none"
+            style={{
+              flex: 1,
+              height: 48,
+              fontSize: 16,
+              background: 'transparent',
+              color: 'var(--text-primary)',
+              border: 'none',
+              outline: 'none',
+            }}
           />
         </div>
 
         {/* Results list */}
-        <div ref={listRef} className="max-h-[400px] overflow-y-auto py-1">
+        <div
+          ref={listRef}
+          style={{
+            maxHeight: 400,
+            overflowY: 'auto',
+            paddingTop: 4,
+            paddingBottom: 4,
+          }}
+        >
           {flatResults.length === 0 ? (
-            <div className="px-4 py-6 text-center text-xs text-[var(--text-muted)]">
+            <div
+              style={{
+                paddingLeft: 16,
+                paddingRight: 16,
+                paddingTop: 24,
+                paddingBottom: 24,
+                textAlign: 'center',
+                fontSize: 12,
+                color: 'var(--text-muted)',
+              }}
+            >
               No matching commands found.
             </div>
           ) : (
             groupedResults.map((group) => (
               <div key={group.category}>
                 {/* Category header */}
-                <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider px-4 py-2">
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: 'var(--text-secondary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    paddingLeft: 16,
+                    paddingRight: 16,
+                    paddingTop: 8,
+                    paddingBottom: 4,
+                    fontFamily: '"JetBrains Mono", "SF Mono", "Fira Code", monospace',
+                  }}
+                >
                   {group.category}
                 </div>
 
                 {group.items.map((result) => {
                   const currentIdx = flatIndex++;
+                  const isSelected = currentIdx === selectedIndex;
+                  const isHovered = hoveredIndex === currentIdx;
                   return (
                     <div
                       key={result.command.id}
                       data-index={currentIdx}
-                      className={`flex items-center justify-between px-4 py-3 cursor-pointer rounded-[var(--radius-lg)] transition-colors duration-150 mx-2 ${
-                        currentIdx === selectedIndex
-                          ? "bg-[var(--accent-soft)] border border-[var(--accent)]/20"
-                          : "hover:bg-[var(--muted)]"
-                      }`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                        marginLeft: 8,
+                        marginRight: 8,
+                        cursor: 'pointer',
+                        borderRadius: 'var(--radius-lg)',
+                        transition: 'background 150ms',
+                        background: isSelected
+                          ? 'var(--accent-soft)'
+                          : isHovered
+                            ? 'var(--muted-hover)'
+                            : 'transparent',
+                        border: isSelected
+                          ? '1px solid rgba(59, 130, 246, 0.2)'
+                          : '1px solid transparent',
+                      }}
                       onClick={() => executeCommand(result.command)}
-                      onMouseEnter={() => setSelectedIndex(currentIdx)}
+                      onMouseEnter={() => {
+                        setSelectedIndex(currentIdx);
+                        setHoveredIndex(currentIdx);
+                      }}
+                      onMouseLeave={() => setHoveredIndex(null)}
                     >
-                      <span className="text-xs text-[var(--text-primary)] truncate">
+                      <span
+                        style={{
+                          fontSize: 13,
+                          color: 'var(--text-primary)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
                         {highlightMatches(result.command.label, result.indices)}
                       </span>
                       {result.command.shortcut && (
-                        <kbd className="ml-4 shrink-0 text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
+                        <kbd style={kbdStyle}>
                           {result.command.shortcut}
                         </kbd>
                       )}
@@ -298,24 +413,28 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="flex items-center gap-3 px-4 py-2 border-t border-[var(--border)] text-[10px] text-[var(--text-muted)]">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingTop: 8,
+            paddingBottom: 8,
+            borderTop: '1px solid var(--border)',
+            fontSize: 11,
+            color: 'var(--text-muted)',
+          }}
+        >
           <span>
-            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
-              &uarr;&darr;
-            </kbd>{" "}
-            navigate
+            <kbd style={kbdStyle}>&uarr;&darr;</kbd>{" "}navigate
           </span>
           <span>
-            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
-              Enter
-            </kbd>{" "}
-            execute
+            <kbd style={kbdStyle}>Enter</kbd>{" "}execute
           </span>
           <span>
-            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
-              Esc
-            </kbd>{" "}
-            close
+            <kbd style={kbdStyle}>Esc</kbd>{" "}close
           </span>
         </div>
       </div>

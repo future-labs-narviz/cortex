@@ -5,42 +5,42 @@ import { tags } from "@lezer/highlight";
 const tokyoNightTheme = EditorView.theme(
   {
     "&": {
-      backgroundColor: "#0f1117",
-      color: "#e1e3eb",
+      backgroundColor: "var(--bg-primary)",
+      color: "var(--text-primary)",
       height: "100%",
     },
     "&.cm-focused": {
       outline: "none",
     },
     ".cm-content": {
-      caretColor: "#3b82f6",
+      caretColor: "var(--accent)",
       fontFamily: "var(--font-family)",
       fontSize: "var(--font-size)",
       lineHeight: "var(--line-height)",
       padding: "16px 0",
     },
     ".cm-cursor, .cm-dropCursor": {
-      borderLeftColor: "#3b82f6",
+      borderLeftColor: "var(--accent)",
       borderLeftWidth: "2px",
     },
     ".cm-selectionBackground": {
-      backgroundColor: "rgba(59, 130, 246, 0.15) !important",
+      backgroundColor: "var(--accent-soft) !important",
     },
     "&.cm-focused .cm-selectionBackground": {
-      backgroundColor: "rgba(59, 130, 246, 0.15) !important",
+      backgroundColor: "var(--accent-soft) !important",
     },
     ".cm-activeLine": {
-      backgroundColor: "rgba(255, 255, 255, 0.05)",
+      backgroundColor: "var(--muted)",
     },
     ".cm-gutters": {
-      backgroundColor: "#161821",
-      color: "#5a5f7a",
+      backgroundColor: "var(--bg-secondary)",
+      color: "var(--text-muted)",
       border: "none",
       paddingRight: "8px",
     },
     ".cm-activeLineGutter": {
-      backgroundColor: "rgba(255, 255, 255, 0.05)",
-      color: "#e1e3eb",
+      backgroundColor: "var(--muted)",
+      color: "var(--text-primary)",
     },
     ".cm-lineNumbers .cm-gutterElement": {
       fontSize: "12px",
@@ -54,47 +54,47 @@ const tokyoNightTheme = EditorView.theme(
       borderRadius: "4px",
     },
     ".cm-searchMatch.cm-searchMatch-selected": {
-      backgroundColor: "rgba(59, 130, 246, 0.15)",
+      backgroundColor: "var(--accent-soft)",
     },
     ".cm-panels": {
-      backgroundColor: "#161821",
-      color: "#e1e3eb",
+      backgroundColor: "var(--bg-secondary)",
+      color: "var(--text-primary)",
     },
     ".cm-panels.cm-panels-top": {
-      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+      borderBottom: "1px solid var(--border)",
     },
     ".cm-panel.cm-search": {
       padding: "8px",
     },
     ".cm-panel.cm-search input": {
-      backgroundColor: "#0f1117",
-      color: "#e1e3eb",
-      border: "1px solid rgba(255, 255, 255, 0.08)",
+      backgroundColor: "var(--bg-primary)",
+      color: "var(--text-primary)",
+      border: "1px solid var(--border)",
       borderRadius: "4px",
       padding: "4px 8px",
       outline: "none",
     },
     ".cm-panel.cm-search input:focus": {
-      borderColor: "#3b82f6",
+      borderColor: "var(--accent)",
     },
     ".cm-panel.cm-search button": {
-      backgroundColor: "#1e2030",
-      color: "#e1e3eb",
-      border: "1px solid rgba(255, 255, 255, 0.08)",
+      backgroundColor: "var(--bg-tertiary)",
+      color: "var(--text-primary)",
+      border: "1px solid var(--border)",
       borderRadius: "4px",
       padding: "4px 8px",
       cursor: "pointer",
     },
     ".cm-panel.cm-search button:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.08)",
+      backgroundColor: "var(--muted-hover)",
     },
     ".cm-panel.cm-search label": {
-      color: "#a0aec0",
+      color: "var(--text-secondary)",
       fontSize: "12px",
     },
     ".cm-tooltip": {
-      backgroundColor: "#161821",
-      border: "1px solid rgba(255, 255, 255, 0.08)",
+      backgroundColor: "var(--bg-secondary)",
+      border: "1px solid var(--border)",
       borderRadius: "6px",
     },
     ".cm-tooltip-autocomplete": {
@@ -102,20 +102,20 @@ const tokyoNightTheme = EditorView.theme(
         padding: "4px 8px",
       },
       "& > ul > li[aria-selected]": {
-        backgroundColor: "rgba(59, 130, 246, 0.15)",
-        color: "#e1e3eb",
+        backgroundColor: "var(--accent-soft)",
+        color: "var(--text-primary)",
       },
     },
-    // Markdown heading styles
+    // Markdown heading styles — clear hierarchy
     ".cm-header-1": {
-      fontSize: "1.6em",
+      fontSize: "1.8em",
       fontWeight: "700",
-      lineHeight: "1.4",
+      lineHeight: "1.3",
     },
     ".cm-header-2": {
       fontSize: "1.4em",
       fontWeight: "600",
-      lineHeight: "1.4",
+      lineHeight: "1.35",
     },
     ".cm-header-3": {
       fontSize: "1.2em",
@@ -136,7 +136,7 @@ const tokyoNightTheme = EditorView.theme(
     },
     // Frontmatter styling
     ".cm-frontmatter": {
-      backgroundColor: "rgba(59, 130, 246, 0.15)",
+      backgroundColor: "var(--accent-soft)",
     },
   },
   { dark: true }

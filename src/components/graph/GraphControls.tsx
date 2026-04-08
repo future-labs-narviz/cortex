@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Eye, EyeOff, Maximize, LocateFixed } from "lucide-react";
 import { useGraphStore } from "@/stores/graphStore";
 
@@ -6,6 +7,41 @@ interface GraphControlsProps {
   edgeCount: number;
   onFitView: () => void;
   onCenterActive: () => void;
+}
+
+function IconButton({
+  onClick,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 24,
+        height: 24,
+        borderRadius: 'var(--radius-md)',
+        color: hovered ? 'var(--text-secondary)' : 'var(--text-muted)',
+        background: hovered ? 'var(--muted)' : 'transparent',
+        transition: 'all 150ms',
+        cursor: 'pointer',
+        border: 'none',
+      }}
+    >
+      {children}
+    </button>
+  );
 }
 
 export function GraphControls({
@@ -21,37 +57,65 @@ export function GraphControls({
   const setDepth = useGraphStore((s) => s.setDepth);
   const toggleOrphans = useGraphStore((s) => s.toggleOrphans);
 
+  const [localHover, setLocalHover] = useState(false);
+  const [globalHover, setGlobalHover] = useState(false);
+
+  const modeButtonStyle = (active: boolean, hovered: boolean): React.CSSProperties => ({
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 4,
+    paddingBottom: 4,
+    fontSize: 10,
+    fontWeight: 500,
+    transition: 'all 150ms',
+    cursor: 'pointer',
+    border: 'none',
+    background: active ? 'var(--accent-soft)' : 'transparent',
+    color: active ? 'var(--accent)' : hovered ? 'var(--text-secondary)' : 'var(--text-muted)',
+  });
+
   return (
     <div
-      className="graph-controls absolute top-3 right-3 flex flex-col gap-2 p-2 border border-[var(--border)] rounded-[var(--radius-xl)]"
       style={{
-        background: "var(--bg-elevated)",
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        padding: 8,
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-xl)',
+        background: 'var(--bg-elevated)',
         opacity: 0.95,
-        WebkitBackdropFilter: "blur(12px)",
-        backdropFilter: "blur(12px)",
-        boxShadow: "var(--shadow-md)",
+        WebkitBackdropFilter: 'blur(12px)',
+        backdropFilter: 'blur(12px)',
+        boxShadow: 'var(--shadow-md)',
         zIndex: 10,
       }}
     >
       {/* Mode toggle */}
-      <div className="flex rounded-[var(--radius-md)] overflow-hidden border border-[var(--border)]">
+      <div
+        style={{
+          display: 'flex',
+          borderRadius: 'var(--radius-md)',
+          overflow: 'hidden',
+          border: '1px solid var(--border)',
+        }}
+      >
         <button
           onClick={() => setMode("local")}
-          className={`px-2.5 py-1 text-[10px] font-medium transition-colors duration-200 cursor-pointer focus:outline-none ${
-            mode === "local"
-              ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-              : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-          }`}
+          onMouseEnter={() => setLocalHover(true)}
+          onMouseLeave={() => setLocalHover(false)}
+          style={modeButtonStyle(mode === "local", localHover)}
         >
           Local
         </button>
         <button
           onClick={() => setMode("global")}
-          className={`px-2.5 py-1 text-[10px] font-medium transition-colors duration-200 cursor-pointer focus:outline-none ${
-            mode === "global"
-              ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-              : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
-          }`}
+          onMouseEnter={() => setGlobalHover(true)}
+          onMouseLeave={() => setGlobalHover(false)}
+          style={modeButtonStyle(mode === "global", globalHover)}
         >
           Global
         </button>
@@ -59,8 +123,14 @@ export function GraphControls({
 
       {/* Depth slider - local mode only */}
       {mode === "local" && (
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] text-[var(--text-muted)]">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label
+            style={{
+              fontSize: 10,
+              color: 'var(--text-muted)',
+              fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+            }}
+          >
             Depth: {depth}
           </label>
           <input
@@ -69,39 +139,39 @@ export function GraphControls({
             max={3}
             value={depth}
             onChange={(e) => setDepth(Number(e.target.value))}
-            className="w-full h-1 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: "var(--accent)" }}
+            style={{
+              width: '100%',
+              height: 4,
+              borderRadius: 9999,
+              cursor: 'pointer',
+              accentColor: 'var(--accent)',
+            }}
           />
         </div>
       )}
 
       {/* Action buttons */}
-      <div className="flex gap-1">
-        <button
-          onClick={onCenterActive}
-          className="flex items-center justify-center w-6 h-6 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-200 cursor-pointer focus:outline-none"
-          title="Center on active note"
-        >
+      <div style={{ display: 'flex', gap: 4 }}>
+        <IconButton onClick={onCenterActive} title="Center on active note">
           <LocateFixed size={13} />
-        </button>
-        <button
-          onClick={onFitView}
-          className="flex items-center justify-center w-6 h-6 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-200 cursor-pointer focus:outline-none"
-          title="Fit view"
-        >
+        </IconButton>
+        <IconButton onClick={onFitView} title="Fit view">
           <Maximize size={13} />
-        </button>
-        <button
-          onClick={toggleOrphans}
-          className="flex items-center justify-center w-6 h-6 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-200 cursor-pointer focus:outline-none"
-          title={showOrphans ? "Hide orphans" : "Show orphans"}
-        >
+        </IconButton>
+        <IconButton onClick={toggleOrphans} title={showOrphans ? "Hide orphans" : "Show orphans"}>
           {showOrphans ? <Eye size={13} /> : <EyeOff size={13} />}
-        </button>
+        </IconButton>
       </div>
 
       {/* Stats */}
-      <div className="text-[10px] text-[var(--text-muted)] text-center">
+      <div
+        style={{
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          textAlign: 'center',
+          fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+        }}
+      >
         {nodeCount} notes, {edgeCount} links
       </div>
     </div>

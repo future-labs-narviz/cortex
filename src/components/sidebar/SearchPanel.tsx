@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef } from "react";
-import { Search, Loader2, FolderOpen } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Search, Loader2 } from "lucide-react";
 import { useSearchStore } from "@/stores/searchStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -7,8 +7,6 @@ import { invoke } from "@tauri-apps/api/core";
 import type { NoteData } from "@/lib/types";
 
 export function SearchPanel() {
-  const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
-  const openVault = useVaultStore((s) => s.openVault);
   const query = useSearchStore((s) => s.query);
   const results = useSearchStore((s) => s.results);
   const isSearching = useSearchStore((s) => s.isSearching);
@@ -19,7 +17,6 @@ export function SearchPanel() {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Focus input on mount.
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -28,7 +25,6 @@ export function SearchPanel() {
     (value: string) => {
       setQuery(value);
 
-      // Clear previous debounce timer.
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
@@ -38,7 +34,6 @@ export function SearchPanel() {
         return;
       }
 
-      // Debounce search by 300ms.
       debounceRef.current = setTimeout(() => {
         search(value);
       }, 300);
@@ -46,7 +41,6 @@ export function SearchPanel() {
     [setQuery, search, clearResults],
   );
 
-  // Clean up debounce on unmount.
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
@@ -56,11 +50,18 @@ export function SearchPanel() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-2 pt-1">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
       {/* Search input */}
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]"
+          size={16}
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--text-muted)',
+          }}
         />
         <input
           ref={inputRef}
@@ -68,32 +69,59 @@ export function SearchPanel() {
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Search notes..."
-          className="h-10 w-full pl-10 pr-3 text-sm rounded-[var(--radius-xl)] bg-[var(--muted)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--border-active)] focus:ring-1 focus:ring-[var(--accent-soft)] focus:bg-[var(--muted-hover)] transition-all duration-200"
+          style={{
+            height: 40,
+            width: '100%',
+            paddingLeft: 40,
+            paddingRight: 12,
+            fontSize: 13,
+            borderRadius: 'var(--radius-xl)',
+            background: 'var(--muted)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-primary)',
+            outline: 'none',
+            transition: 'all 200ms',
+          }}
         />
         {isSearching && (
           <Loader2
             size={14}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] animate-spin"
+            className="animate-spin"
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--text-muted)',
+            }}
           />
         )}
       </div>
 
       {/* Results area */}
       {!query.trim() ? (
-        <p className="text-xs text-[var(--text-muted)] text-center pt-4">
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', paddingTop: 16 }}>
           Type to search across all notes.
         </p>
       ) : isSearching ? (
-        <p className="text-xs text-[var(--text-muted)] text-center pt-4">
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', paddingTop: 16 }}>
           Searching...
         </p>
       ) : results.length === 0 ? (
-        <p className="text-xs text-[var(--text-muted)] text-center pt-4">
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', paddingTop: 16 }}>
           No results found.
         </p>
       ) : (
-        <div className="space-y-1 mt-3">
-          <p className="text-xs text-[var(--text-muted)] px-1 pb-1">
+        <div style={{ marginTop: 12 }}>
+          <p
+            style={{
+              fontSize: 11,
+              color: 'var(--text-muted)',
+              paddingLeft: 4,
+              paddingBottom: 4,
+              fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+            }}
+          >
             {results.length} result{results.length !== 1 ? "s" : ""}
           </p>
           {results.map((result) => (
@@ -117,16 +145,15 @@ interface SearchResultItemProps {
 function SearchResultItem({ result }: SearchResultItemProps) {
   const setActiveFile = useVaultStore((s) => s.setActiveFile);
   const openTab = useEditorStore((s) => s.openTab);
+  const [hovered, setHovered] = useState(false);
 
   const handleClick = useCallback(async () => {
     setActiveFile(result.path);
 
-    // Try to load the note content and open in editor.
     try {
       const data = await invoke<NoteData>("read_note", { path: result.path });
       openTab(result.path, data.content);
     } catch {
-      // Backend may not be ready; just set active file.
       openTab(result.path, "");
     }
   }, [result.path, setActiveFile, openTab]);
@@ -134,21 +161,59 @@ function SearchResultItem({ result }: SearchResultItemProps) {
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col gap-1 px-3 py-2 rounded-[var(--radius-md)] text-left cursor-pointer hover:bg-[var(--muted)] transition-colors duration-150 focus:outline-none"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        width: '100%',
+        padding: 12,
+        borderRadius: 'var(--radius-md)',
+        textAlign: 'left',
+        cursor: 'pointer',
+        border: 'none',
+        borderBottom: '1px solid var(--border)',
+        background: hovered ? 'var(--muted-hover)' : 'transparent',
+        transition: 'background 150ms',
+      }}
     >
       {/* Title */}
-      <span className="text-sm font-medium text-[var(--text-primary)]">
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          color: 'var(--text-primary)',
+        }}
+      >
         {result.title || result.path}
       </span>
 
       {/* Snippet */}
       <p
-        className="text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed"
+        style={{
+          fontSize: 12,
+          color: 'var(--text-secondary)',
+          lineHeight: 1.5,
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+        }}
         dangerouslySetInnerHTML={{ __html: result.snippet }}
       />
 
       {/* Path */}
-      <span className="text-xs text-[var(--text-muted)] truncate">
+      <span
+        style={{
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+        }}
+      >
         {result.path}
       </span>
     </button>

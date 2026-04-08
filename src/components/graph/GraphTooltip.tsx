@@ -19,18 +19,43 @@ export function GraphTooltip({
 
   return (
     <div
-      className="graph-tooltip fixed z-50 px-3 py-2 border border-[var(--border)] rounded-[var(--radius-xl)] max-w-[240px]"
+      className="graph-tooltip"
       style={{
+        position: 'fixed',
+        zIndex: 50,
         left: x + 14,
         top: y + 14,
-        background: "var(--bg-elevated)",
-        boxShadow: "var(--shadow-lg)",
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-md)',
+        maxWidth: 240,
+        background: 'var(--bg-elevated)',
+        boxShadow: 'var(--shadow-md)',
       }}
     >
-      <div className="text-sm font-semibold truncate text-[var(--text-primary)]">
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {node.label}
       </div>
-      <div className="text-xs mt-0.5 text-[var(--text-muted)]">
+      <div
+        style={{
+          fontSize: 11,
+          marginTop: 2,
+          color: 'var(--text-muted)',
+          fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+        }}
+      >
         {connectionCount} connection{connectionCount !== 1 ? "s" : ""}
       </div>
     </div>

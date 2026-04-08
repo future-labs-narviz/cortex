@@ -22,6 +22,36 @@ const LANGUAGES = [
   { code: "ko", label: "Korean" },
 ];
 
+const sectionCard: React.CSSProperties = {
+  background: 'var(--bg-tertiary)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-md)',
+  padding: 16,
+};
+
+const sectionLabel: React.CSSProperties = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--text-primary)',
+  marginBottom: 12,
+  display: 'block',
+};
+
+const selectStyle: React.CSSProperties = {
+  width: '100%',
+  height: 36,
+  paddingLeft: 12,
+  paddingRight: 12,
+  fontSize: 13,
+  borderRadius: 'var(--radius-lg)',
+  background: 'var(--muted)',
+  border: '1px solid var(--border)',
+  color: 'var(--text-primary)',
+  cursor: 'pointer',
+  outline: 'none',
+  transition: 'border-color 150ms',
+};
+
 export function VoiceSettings() {
   const {
     selectedDevice,
@@ -37,12 +67,10 @@ export function VoiceSettings() {
   const [devices, setDevices] = useState<AudioDevice[]>([]);
   const [micLevel, setMicLevel] = useState(0);
 
-  // Load devices
   useEffect(() => {
     invoke<AudioDevice[]>("voice_get_devices")
       .then(setDevices)
       .catch(() => {
-        // Backend not implemented yet, show placeholder
         setDevices([
           { name: "Default Microphone", id: "default" },
           { name: "Built-in Microphone", id: "builtin" },
@@ -50,7 +78,6 @@ export function VoiceSettings() {
       });
   }, []);
 
-  // Mock mic level indicator
   useEffect(() => {
     const interval = setInterval(() => {
       setMicLevel(Math.random() * 0.6 + 0.1);
@@ -73,21 +100,21 @@ export function VoiceSettings() {
   );
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-2 mb-1">
-        <Mic size={18} className="text-[var(--accent)]" />
-        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        <Mic size={18} style={{ color: 'var(--accent)' }} />
+        <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
           Voice Settings
         </h3>
       </div>
 
       {/* Microphone selector */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
-        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">Microphone</label>
+      <div style={sectionCard}>
+        <label style={sectionLabel}>Microphone</label>
         <select
           value={selectedDevice ?? "default"}
           onChange={handleDeviceChange}
-          className="w-full h-9 px-3 text-sm rounded-[var(--radius-lg)] bg-[var(--muted)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
+          style={selectStyle}
         >
           {devices.map((d) => (
             <option key={d.id} value={d.id}>
@@ -97,32 +124,43 @@ export function VoiceSettings() {
         </select>
 
         {/* Mic level indicator */}
-        <div className="flex items-center gap-2 mt-3">
-          <Volume2 size={12} className="text-[var(--text-muted)]" />
-          <div className="flex-1 h-1.5 bg-[var(--border)] rounded-[var(--radius-full)] overflow-hidden">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+          <Volume2 size={12} style={{ color: 'var(--text-muted)' }} />
+          <div
+            style={{
+              flex: 1,
+              height: 6,
+              background: 'var(--border)',
+              borderRadius: 9999,
+              overflow: 'hidden',
+            }}
+          >
             <div
-              className="h-full bg-[var(--green)] rounded-[var(--radius-full)] transition-[width] duration-100"
-              style={{ width: `${micLevel * 100}%` }}
+              style={{
+                height: '100%',
+                background: 'var(--green)',
+                borderRadius: 9999,
+                transition: 'width 100ms',
+                width: `${micLevel * 100}%`,
+              }}
             />
           </div>
         </div>
       </div>
 
       {/* Model selector */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
-        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">
-          Transcription Model
-        </label>
+      <div style={sectionCard}>
+        <label style={sectionLabel}>Transcription Model</label>
         <ModelSelector />
       </div>
 
       {/* Language */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
-        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">Language</label>
+      <div style={sectionCard}>
+        <label style={sectionLabel}>Language</label>
         <select
           value={selectedLanguage}
           onChange={handleLanguageChange}
-          className="w-full h-9 px-3 text-sm rounded-[var(--radius-lg)] bg-[var(--muted)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
+          style={selectStyle}
         >
           {LANGUAGES.map((l) => (
             <option key={l.code} value={l.code}>
@@ -133,30 +171,30 @@ export function VoiceSettings() {
       </div>
 
       {/* Toggles */}
-      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
-        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">Behavior</label>
-        <div className="flex flex-col gap-3">
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-sm text-[var(--text-secondary)]">
+      <div style={sectionCard}>
+        <label style={sectionLabel}>Behavior</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
               Auto-transcribe after recording
             </span>
             <input
               type="checkbox"
               checked={autoTranscribe}
               onChange={(e) => setAutoTranscribe(e.target.checked)}
-              className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+              style={{ width: 16, height: 16, accentColor: 'var(--accent)', cursor: 'pointer' }}
             />
           </label>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-sm text-[var(--text-secondary)]">
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
               Create voice note (vs. insert at cursor)
             </span>
             <input
               type="checkbox"
               checked={createVoiceNote}
               onChange={(e) => setCreateVoiceNote(e.target.checked)}
-              className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+              style={{ width: 16, height: 16, accentColor: 'var(--accent)', cursor: 'pointer' }}
             />
           </label>
         </div>
