@@ -152,6 +152,29 @@ body {
   padding: 16px;
 }
 
+/* Primary button gradient — uses hex, NOT Tailwind colors (which output oklch that Safari 15 can't render) */
+.btn-primary {
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+}
+.btn-primary:hover {
+  background: linear-gradient(to right, #1d4ed8, #2563eb);
+}
+
+/* Destructive button gradient */
+.btn-destructive {
+  background: linear-gradient(to right, #dc2626, #ef4444);
+}
+.btn-destructive:hover {
+  background: linear-gradient(to right, #b91c1c, #dc2626);
+}
+
+/* Empty state glow gradients — hex-based for Safari 15 */
+.glow-blue { background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.05)); }
+.glow-cyan { background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(6,182,212,0.05)); }
+.glow-green { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.05)); }
+.glow-amber { background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.05)); }
+.glow-purple { background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(124,58,237,0.05)); }
+
 .font-mono {
   font-family: "JetBrains Mono", "SF Mono", "Fira Code", "Cascadia Code",
     monospace;

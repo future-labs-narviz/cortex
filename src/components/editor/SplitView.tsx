@@ -242,10 +242,10 @@ function EmptyState() {
       {/* Icon with glow ring */}
       <div className="relative w-24 h-24 mb-10">
         <div
-          className="absolute inset-0 rounded-[var(--radius-2xl)] bg-gradient-to-br from-blue-500/15 to-blue-600/5 blur-xl opacity-50"
+          className="absolute inset-0 rounded-[var(--radius-2xl)] glow-blue blur-xl opacity-50"
           style={{ animation: 'glow-pulse 3s ease-in-out infinite' }}
         />
-        <div className="relative w-full h-full rounded-[var(--radius-2xl)] bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-lg)]">
+        <div className="relative w-full h-full rounded-[var(--radius-2xl)] glow-blue border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-lg)]">
           <FolderOpen className="w-10 h-10 text-[var(--accent)]" />
         </div>
       </div>
@@ -261,7 +261,7 @@ function EmptyState() {
       </p>
       <button
         onClick={() => openVault()}
-        className="h-12 px-10 text-[15px] font-semibold rounded-[var(--radius-xl)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.03] hover:brightness-110 active:scale-[0.97] transition-all duration-200 cursor-pointer"
+        className="h-12 px-10 text-[15px] font-semibold rounded-[var(--radius-xl)] btn-primary text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 cursor-pointer"
       >
         Open Vault
       </button>

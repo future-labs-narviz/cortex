@@ -77,7 +77,7 @@ export function VoiceRecordButton({
         className={`voice-record-btn fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-[var(--radius-xl)] shadow-[var(--shadow-md)] transition-all duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] ${
           isRecording
             ? "recording bg-[var(--red)] text-[var(--bg-primary)]"
-            : "bg-gradient-to-r from-blue-600 to-blue-500 text-[var(--bg-primary)]"
+            : "btn-primary text-white"
         }`}
         title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Start recording"}
       >

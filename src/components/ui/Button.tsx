@@ -9,7 +9,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98]",
+    "btn-primary text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98]",
   secondary:
     "bg-[var(--muted)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--border-hover)] hover:bg-[var(--muted-hover)]",
   ghost:
@@ -17,7 +17,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   glass:
     "bg-[var(--muted)] [-webkit-backdrop-filter:blur(24px)] backdrop-blur-xl border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--muted-hover)]",
   destructive:
-    "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-[0_4px_12px_rgba(239,68,68,0.3)]",
+    "btn-destructive text-white shadow-[0_4px_12px_rgba(239,68,68,0.3)]",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

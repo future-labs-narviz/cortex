@@ -171,11 +171,11 @@ function SidebarEmptyState({
       {/* Icon with glow ring */}
       <div className="relative w-20 h-20 mb-8">
         <div
-          className={`absolute inset-0 rounded-[var(--radius-2xl)] bg-gradient-to-br ${gradient} blur-xl opacity-40`}
+          className={`absolute inset-0 rounded-[var(--radius-2xl)] ${gradient} blur-xl opacity-40`}
           style={{ animation: "glow-pulse 3s ease-in-out infinite" }}
         />
         <div
-          className={`relative w-full h-full rounded-[var(--radius-2xl)] bg-gradient-to-br ${gradient} border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-md)]`}
+          className={`relative w-full h-full rounded-[var(--radius-2xl)] ${gradient} border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-md)]`}
         >
           <Icon className={`w-8 h-8 ${accentColor}`} />
         </div>
@@ -191,7 +191,7 @@ function SidebarEmptyState({
       {onAction && actionLabel && (
         <button
           onClick={onAction}
-          className="mt-6 inline-flex items-center justify-center h-10 px-5 text-sm font-medium rounded-[var(--radius-lg)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+          className="mt-8 inline-flex items-center justify-center h-10 px-6 text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
         >
           {actionLabel}
         </button>
@@ -210,7 +210,7 @@ function GraphPanel() {
         icon={GitFork}
         title="Knowledge Graph"
         description="Open a vault to explore connections between your notes."
-        gradient="from-cyan-500/10 to-cyan-600/5"
+        gradient="glow-cyan"
         accentColor="text-[var(--cyan)]"
         onAction={() => openVault()}
         actionLabel="Open a Vault"
@@ -234,7 +234,7 @@ function VoicePanel() {
         icon={Mic}
         title="Voice Notes"
         description="Record voice notes or dictate text directly into your editor."
-        gradient="from-amber-500/10 to-amber-600/5"
+        gradient="glow-amber"
         accentColor="text-[var(--yellow)]"
       />
     </div>
@@ -254,7 +254,7 @@ function TagsPanel() {
           ? "No tags found in your vault yet."
           : "Open a vault to browse tags."
       }
-      gradient="from-green-500/10 to-green-600/5"
+      gradient="glow-green"
       accentColor="text-[var(--green)]"
       onAction={isVaultOpen ? undefined : () => openVault()}
       actionLabel={isVaultOpen ? undefined : "Open a Vault"}

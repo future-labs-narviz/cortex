@@ -104,7 +104,7 @@ export function FileExplorer() {
         </p>
         <button
           onClick={() => openVault()}
-          className="h-10 px-5 text-sm font-medium rounded-[var(--radius-lg)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+          className="h-10 px-6 text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
         >
           Open Vault
         </button>
@@ -119,7 +119,7 @@ export function FileExplorer() {
         <p className="text-sm text-[var(--text-muted)]">Vault is empty.</p>
         <button
           onClick={() => handleNewNote(vaultPath ?? "")}
-          className="flex items-center gap-1.5 h-10 px-5 text-sm font-medium rounded-[var(--radius-lg)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+          className="flex items-center gap-1.5 h-10 px-6 text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
         >
           <Plus size={12} />
           New Note
