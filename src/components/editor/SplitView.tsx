@@ -4,6 +4,7 @@ import { useVaultStore } from "@/stores/vaultStore";
 import { invoke } from "@tauri-apps/api/core";
 import { FileText, FolderOpen } from "lucide-react";
 import { Editor } from "./Editor";
+import { EditorErrorBoundary } from "./EditorErrorBoundary";
 import { EditorToolbar } from "./EditorToolbar";
 import { TabBar } from "./TabBar";
 import type { NoteData } from "@/lib/types";
@@ -223,12 +224,14 @@ function EditorPane({ paneIndex, pane }: EditorPaneProps) {
       ) : (
         <>
           <EditorToolbar />
-          <Editor
-            content={activeTab.content}
-            onChange={handleChange}
-            onSave={handleSave}
-            filePath={activeTab.id}
-          />
+          <EditorErrorBoundary filePath={activeTab.id}>
+            <Editor
+              content={activeTab.content}
+              onChange={handleChange}
+              onSave={handleSave}
+              filePath={activeTab.id}
+            />
+          </EditorErrorBoundary>
         </>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import {
   FileText,
   Search,
@@ -267,14 +268,129 @@ function VoicePanel() {
 
 function TagsPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
+  const setActiveFile = useVaultStore((s) => s.setActiveFile);
+  const [tags, setTags] = useState<{ name: string; count: number }[]>([]);
+  const [expandedTag, setExpandedTag] = useState<string | null>(null);
+  const [tagNotes, setTagNotes] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isVaultOpen) return;
+    invoke<{ name: string; count: number }[]>("get_all_tags")
+      .then(setTags)
+      .catch(() => setTags([]));
+  }, [isVaultOpen]);
+
+  const handleTagClick = useCallback(async (tagName: string) => {
+    if (expandedTag === tagName) {
+      setExpandedTag(null);
+      setTagNotes([]);
+      return;
+    }
+    setExpandedTag(tagName);
+    setLoading(true);
+    try {
+      const notes = await invoke<string[]>("get_notes_by_tag", { tag: tagName });
+      setTagNotes(notes);
+    } catch {
+      setTagNotes([]);
+    }
+    setLoading(false);
+  }, [expandedTag]);
+
+  if (!isVaultOpen) {
+    return (
+      <SidebarEmptyState
+        icon={Tags}
+        title="Tags"
+        description="Open a vault to browse tags."
+        gradient="glow-blue"
+        accentColor="var(--accent)"
+      />
+    );
+  }
+
+  if (tags.length === 0) {
+    return (
+      <SidebarEmptyState
+        icon={Tags}
+        title="No Tags"
+        description="No tags found in your vault yet."
+        gradient="glow-blue"
+        accentColor="var(--accent)"
+      />
+    );
+  }
 
   return (
-    <SidebarEmptyState
-      icon={Tags}
-      title={isVaultOpen ? "No Tags" : "Tags"}
-      description={isVaultOpen ? "No tags found in your vault yet." : "Open a vault to browse tags."}
-      gradient="glow-blue"
-      accentColor="var(--accent)"
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {tags.map((tag) => (
+        <div key={tag.name}>
+          <button
+            onClick={() => handleTagClick(tag.name)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              padding: '6px 8px',
+              borderRadius: 'var(--radius-md)',
+              border: 'none',
+              background: expandedTag === tag.name ? 'var(--accent-soft)' : 'transparent',
+              color: expandedTag === tag.name ? 'var(--accent)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: 13,
+              transition: 'background 150ms',
+              textAlign: 'left',
+            }}
+          >
+            <span>#{tag.name}</span>
+            <span
+              style={{
+                fontSize: 11,
+                color: 'var(--text-muted)',
+                fontFamily: '"JetBrains Mono", monospace',
+              }}
+            >
+              {tag.count}
+            </span>
+          </button>
+          {expandedTag === tag.name && (
+            <div style={{ paddingLeft: 16, paddingTop: 4, paddingBottom: 4 }}>
+              {loading ? (
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Loading...</span>
+              ) : (
+                tagNotes.map((notePath) => (
+                  <button
+                    key={notePath}
+                    onClick={() => setActiveFile(notePath)}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '4px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                      textAlign: 'left',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      transition: 'color 150ms',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+                  >
+                    {notePath.replace(/\.md$/, '').split('/').pop()}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
   );
 }

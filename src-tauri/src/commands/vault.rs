@@ -5,6 +5,7 @@ use cortex_core::types::{NoteData, VaultFile};
 use cortex_core::vault::Vault;
 use cortex_core::watcher::FileWatcher;
 use cortex_graph::index::LinkIndex;
+use cortex_search::indexer::SearchIndex;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::State;
@@ -27,8 +28,18 @@ pub async fn open_vault(
     // Build link index from the vault.
     let link_index =
         LinkIndex::build_from_vault(&vault_path).map_err(|e| e.to_string())?;
+    log::info!("LinkIndex built: {} notes indexed", link_index.note_count());
 
-    // Store vault, watcher, and link index in state.
+    // Build search index for this vault.
+    let index_path = vault_path.join(".cortex").join("search-index");
+    std::fs::create_dir_all(&index_path).map_err(|e| e.to_string())?;
+    let search_idx = SearchIndex::new(&index_path).map_err(|e| e.to_string())?;
+    search_idx
+        .build_from_vault(&vault_path)
+        .map_err(|e| e.to_string())?;
+    log::info!("SearchIndex built for vault: {}", path);
+
+    // Store vault, watcher, link index, and search index in state.
     {
         let mut v = state.vault.lock().map_err(|e| e.to_string())?;
         *v = Some(vault);
@@ -40,6 +51,10 @@ pub async fn open_vault(
     {
         let mut idx = state.link_index.write().map_err(|e| e.to_string())?;
         *idx = Some(link_index);
+    }
+    {
+        let mut si = state.search_index.lock().map_err(|e| e.to_string())?;
+        *si = Some(search_idx);
     }
 
     Ok(files)

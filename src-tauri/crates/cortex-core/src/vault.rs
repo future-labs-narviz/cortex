@@ -54,9 +54,12 @@ impl Vault {
 
     /// Recursively list all `.md` files and directories in the vault.
     ///
+    /// Returns a proper tree structure where directories contain their children.
     /// Ignores the `.cortex/` metadata directory.
     pub fn list_files(&self) -> Result<Vec<VaultFile>> {
-        let mut files = Vec::new();
+        use std::collections::HashMap;
+
+        let mut flat = Vec::new();
 
         for entry in WalkDir::new(&self.root)
             .min_depth(1)
@@ -64,18 +67,13 @@ impl Vault {
             .filter_entry(|e| {
                 // Skip .cortex directory and hidden directories.
                 let name = e.file_name().to_string_lossy();
-                !name.starts_with(".cortex")
+                !name.starts_with('.')
             })
         {
             let entry = entry?;
             let path = entry.path();
 
-            // Skip hidden files/dirs (starting with .)
             let name = entry.file_name().to_string_lossy().to_string();
-            if name.starts_with('.') {
-                continue;
-            }
-
             let is_dir = path.is_dir();
 
             // Only include .md files and directories.
@@ -99,7 +97,7 @@ impl Vault {
                 })
                 .unwrap_or(0.0);
 
-            files.push(VaultFile {
+            flat.push(VaultFile {
                 path: relative,
                 name,
                 is_dir,
@@ -108,14 +106,39 @@ impl Vault {
             });
         }
 
-        // Sort: directories first, then alphabetical.
-        files.sort_by(|a, b| {
-            b.is_dir
-                .cmp(&a.is_dir)
-                .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
-        });
+        // Build tree from flat list.
+        flat.sort_by(|a, b| a.path.cmp(&b.path));
 
-        Ok(files)
+        let mut dir_map: HashMap<String, Vec<VaultFile>> = HashMap::new();
+
+        // Group files by their parent directory.
+        for file in flat {
+            let parent = if let Some(idx) = file.path.rfind('/') {
+                file.path[..idx].to_string()
+            } else {
+                String::new() // root level
+            };
+            dir_map.entry(parent).or_default().push(file);
+        }
+
+        // Recursively build tree.
+        fn build_tree(path: &str, dir_map: &mut HashMap<String, Vec<VaultFile>>) -> Vec<VaultFile> {
+            let mut files = dir_map.remove(path).unwrap_or_default();
+            for file in &mut files {
+                if file.is_dir {
+                    file.children = Some(build_tree(&file.path, dir_map));
+                }
+            }
+            // Sort: dirs first, then alphabetical.
+            files.sort_by(|a, b| {
+                b.is_dir
+                    .cmp(&a.is_dir)
+                    .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
+            });
+            files
+        }
+
+        Ok(build_tree("", &mut dir_map))
     }
 
     /// Read a note from the vault by its relative path.

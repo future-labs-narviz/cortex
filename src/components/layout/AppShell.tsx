@@ -38,6 +38,22 @@ export function AppShell() {
     useSettingsStore.getState().applyAllSettings();
   }, []);
 
+  // Auto-reopen last vault on mount
+  useEffect(() => {
+    const savedPath = localStorage.getItem("cortex-vault-path");
+    if (savedPath && !useVaultStore.getState().isVaultOpen) {
+      useVaultStore.setState({ vaultPath: savedPath, isVaultOpen: true });
+      invoke("open_vault", { path: savedPath })
+        .then(() => {
+          useVaultStore.getState().refreshFiles();
+        })
+        .catch(() => {
+          localStorage.removeItem("cortex-vault-path");
+          useVaultStore.setState({ vaultPath: null, isVaultOpen: false });
+        });
+    }
+  }, []);
+
   // Register commands on mount
   useEffect(() => {
     const openVault = useVaultStore.getState().openVault;

@@ -83,6 +83,7 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
       // Backend command may not exist yet; vault is still open locally
     }
 
+    localStorage.setItem("cortex-vault-path", path);
     await get().refreshFiles();
   },
 
@@ -100,9 +101,7 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
     if (!vaultPath) return;
 
     try {
-      const files = await callCommand<VaultFile[]>("list_files", {
-        path: vaultPath,
-      });
+      const files = await callCommand<VaultFile[]>("list_files");
       set({ files: sortFiles(files) });
     } catch {
       // Backend not available yet - leave files empty
@@ -127,17 +126,19 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
     const { vaultPath } = get();
     if (!vaultPath) throw new Error("No vault open");
 
-    const dir = folder ?? vaultPath;
-    const filePath = `${dir}/${title}.md`;
-
     try {
-      await callCommand("create_note", { path: filePath, content: "" });
+      // Rust expects { title, folder } and returns relative path
+      const path = await callCommand<string>("create_note", {
+        title,
+        folder: folder || null,
+      });
+      await get().refreshFiles();
+      return path;
     } catch {
       console.warn("[Cortex] create_note not available");
+      await get().refreshFiles();
+      return `${title}.md`;
     }
-
-    await get().refreshFiles();
-    return filePath;
   },
 
   renameNote: async (oldPath: string, newPath: string) => {

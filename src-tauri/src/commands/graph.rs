@@ -16,7 +16,9 @@ pub async fn get_backlinks(
     let index = index_guard
         .as_ref()
         .ok_or_else(|| "Link index not built yet (open a vault first)".to_string())?;
-    Ok(index.get_backlinks(&note_path))
+    let backlinks = index.get_backlinks(&note_path);
+    log::info!("get_backlinks('{}') → {} results", note_path, backlinks.len());
+    Ok(backlinks)
 }
 
 /// Get graph data for visualization.
@@ -45,7 +47,9 @@ pub async fn get_all_tags(state: State<'_, Arc<AppState>>) -> Result<Vec<TagInfo
     let index = index_guard
         .as_ref()
         .ok_or_else(|| "Link index not built yet (open a vault first)".to_string())?;
-    Ok(index.get_all_tags())
+    let tags = index.get_all_tags();
+    log::info!("get_all_tags() → {} tags", tags.len());
+    Ok(tags)
 }
 
 /// Get all note paths that have a specific tag.

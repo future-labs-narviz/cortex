@@ -79,6 +79,11 @@ impl LinkIndex {
         Ok(index)
     }
 
+    /// Return the number of indexed notes.
+    pub fn note_count(&self) -> usize {
+        self.known_paths.len()
+    }
+
     /// Update the index for a single note (called on file create/modify).
     pub fn update_note(&mut self, path: &str, title: &str, content: &str) {
         // Remove old data for this note first.
