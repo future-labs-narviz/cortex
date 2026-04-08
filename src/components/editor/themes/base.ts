@@ -110,37 +110,8 @@ const editorTheme = EditorView.theme(
         color: "var(--text-primary)",
       },
     },
-    // Markdown heading styles — gradual hierarchy
-    ".cm-header-1": {
-      fontSize: "1.6em",
-      fontWeight: "700",
-      lineHeight: "1.4",
-    },
-    ".cm-header-2": {
-      fontSize: "1.35em",
-      fontWeight: "600",
-      lineHeight: "1.4",
-    },
-    ".cm-header-3": {
-      fontSize: "1.15em",
-      fontWeight: "600",
-      lineHeight: "1.4",
-    },
-    ".cm-header-4": {
-      fontSize: "1.05em",
-      fontWeight: "600",
-      lineHeight: "1.4",
-    },
-    ".cm-header-5": {
-      fontSize: "1em",
-      fontWeight: "600",
-      lineHeight: "1.4",
-    },
-    ".cm-header-6": {
-      fontSize: "1em",
-      fontWeight: "600",
-      lineHeight: "1.4",
-    },
+    // NOTE: Heading sizes are in buildHighlightStyle() below.
+    // CM6 does NOT use .cm-header-N classes — it applies styles via HighlightStyle tags.
     // Frontmatter styling
     ".cm-frontmatter": {
       backgroundColor: "var(--accent-soft)",
@@ -222,12 +193,12 @@ const lightSyntax: SyntaxPalette = {
 
 function buildHighlightStyle(p: SyntaxPalette) {
   return HighlightStyle.define([
-    { tag: tags.heading1, color: p.heading, fontWeight: "bold" },
-    { tag: tags.heading2, color: p.heading, fontWeight: "bold" },
-    { tag: tags.heading3, color: p.heading, fontWeight: "bold" },
-    { tag: tags.heading4, color: p.heading, fontWeight: "bold" },
-    { tag: tags.heading5, color: p.heading, fontWeight: "bold" },
-    { tag: tags.heading6, color: p.heading, fontWeight: "bold" },
+    { tag: tags.heading1, color: p.heading, fontWeight: "700", fontSize: "1.6em", lineHeight: "1.4" },
+    { tag: tags.heading2, color: p.heading, fontWeight: "600", fontSize: "1.35em", lineHeight: "1.4" },
+    { tag: tags.heading3, color: p.heading, fontWeight: "600", fontSize: "1.15em", lineHeight: "1.4" },
+    { tag: tags.heading4, color: p.heading, fontWeight: "600", fontSize: "1.05em", lineHeight: "1.4" },
+    { tag: tags.heading5, color: p.heading, fontWeight: "600", fontSize: "1em", lineHeight: "1.4" },
+    { tag: tags.heading6, color: p.heading, fontWeight: "600", fontSize: "1em", lineHeight: "1.4" },
     { tag: tags.strong, color: p.strong, fontWeight: "bold" },
     { tag: tags.emphasis, color: p.emphasis, fontStyle: "italic" },
     { tag: tags.strikethrough, textDecoration: "line-through", color: p.strikethrough },
