@@ -18,7 +18,7 @@ import { FileExplorer } from "@/components/sidebar/FileExplorer";
 import { SearchPanel } from "@/components/sidebar/SearchPanel";
 import { BacklinksPanel } from "@/components/sidebar/BacklinksPanel";
 import { GraphView } from "@/components/graph/GraphView";
-import { DailyNoteButton } from "@/components/daily-notes/DailyNoteButton";
+// DailyNoteButton removed from icon rail — it's not a panel
 import { Calendar } from "@/components/daily-notes/Calendar";
 import { ContextTimeline } from "@/components/capture/ContextTimeline";
 import { VoiceNoteCreator } from "@/components/voice/VoiceNoteCreator";
@@ -91,9 +91,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-shrink-0" style={{ width: sidebarCollapsed ? 0 : width, overflow: 'hidden', transition: 'width 200ms ease' }}>
       {/* Icon rail */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 56, flexShrink: 0, padding: '16px 0', gap: 4, background: 'var(--bg-primary)', borderRight: '1px solid var(--border)' }}>
-        <DailyNoteButton />
-        <div style={{ height: 1, background: 'var(--border)', margin: '6px 8px', alignSelf: 'stretch' }} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 56, flexShrink: 0, padding: '12px 0', gap: 4, background: 'var(--bg-primary)', borderRight: '1px solid var(--border)' }}>
         {navItems.map(({ id, icon: Icon, label }) => {
           const isActive = activePanel === id;
           return (
