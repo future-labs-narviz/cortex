@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useEditorStore, type Pane } from "@/stores/editorStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { invoke } from "@tauri-apps/api/core";
-import { FileText, FolderOpen } from "lucide-react";
+import { FileText, FolderOpen, GripVertical, GripHorizontal } from "lucide-react";
 import { Editor } from "./Editor";
 import { EditorErrorBoundary } from "./EditorErrorBoundary";
 import { EditorToolbar } from "./EditorToolbar";
@@ -118,6 +118,19 @@ export function SplitView() {
               : `w-full top-1/2 -translate-y-1/2 left-0 ${isDragging ? "h-[3px]" : "h-[1px] group-hover:h-[3px]"}`
           }`}
         />
+        {/* Drag handle icon — visible on hover */}
+        <div
+          className="absolute opacity-0 group-hover:opacity-60 transition-opacity duration-150"
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'var(--text-muted)',
+            pointerEvents: 'none',
+          }}
+        >
+          {isHorizontal ? <GripVertical size={12} /> : <GripHorizontal size={12} />}
+        </div>
       </div>
 
       {/* Pane 2 */}

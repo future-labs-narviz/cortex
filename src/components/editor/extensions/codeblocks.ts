@@ -33,6 +33,9 @@ class CodeBlockHeaderWidget extends WidgetType {
       langLabel.className = "cm-code-lang-label";
       langLabel.textContent = this.lang;
       header.appendChild(langLabel);
+    } else {
+      // Spacer so copy button stays right
+      header.appendChild(document.createElement("span"));
     }
 
     const copyBtn = document.createElement("button");
@@ -44,7 +47,11 @@ class CodeBlockHeaderWidget extends WidgetType {
       e.stopPropagation();
       navigator.clipboard.writeText(code);
       copyBtn.textContent = "Copied!";
-      setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
+      copyBtn.style.color = "var(--green)";
+      setTimeout(() => {
+        copyBtn.textContent = "Copy";
+        copyBtn.style.color = "";
+      }, 2000);
     });
 
     header.appendChild(copyBtn);

@@ -32,11 +32,13 @@ const editorTheme = EditorView.theme(
     },
     ".cm-activeLine": {
       backgroundColor: "var(--muted)",
+      transition: "background-color 150ms",
     },
     ".cm-gutters": {
       backgroundColor: "var(--bg-secondary)",
       color: "var(--text-muted)",
       border: "none",
+      paddingLeft: "12px",
       paddingRight: "8px",
     },
     ".cm-activeLineGutter": {
@@ -51,11 +53,12 @@ const editorTheme = EditorView.theme(
       width: "12px",
     },
     ".cm-searchMatch": {
-      backgroundColor: "var(--accent-soft)",
+      backgroundColor: "var(--accent-glow)",
       borderRadius: "4px",
     },
     ".cm-searchMatch.cm-searchMatch-selected": {
-      backgroundColor: "var(--accent-soft)",
+      backgroundColor: "var(--accent-glow)",
+      outline: "1px solid var(--accent)",
     },
     ".cm-panels": {
       backgroundColor: "var(--bg-secondary)",
@@ -107,37 +110,42 @@ const editorTheme = EditorView.theme(
         color: "var(--text-primary)",
       },
     },
-    // Markdown heading styles — clear hierarchy
+    // Markdown heading styles — gradual hierarchy
     ".cm-header-1": {
-      fontSize: "1.8em",
+      fontSize: "1.6em",
       fontWeight: "700",
-      lineHeight: "1.3",
+      lineHeight: "1.4",
     },
     ".cm-header-2": {
-      fontSize: "1.4em",
+      fontSize: "1.35em",
       fontWeight: "600",
-      lineHeight: "1.35",
+      lineHeight: "1.4",
     },
     ".cm-header-3": {
-      fontSize: "1.2em",
+      fontSize: "1.15em",
       fontWeight: "600",
       lineHeight: "1.4",
     },
     ".cm-header-4": {
-      fontSize: "1.1em",
-      fontWeight: "600",
-    },
-    ".cm-header-5": {
       fontSize: "1.05em",
       fontWeight: "600",
+      lineHeight: "1.4",
+    },
+    ".cm-header-5": {
+      fontSize: "1em",
+      fontWeight: "600",
+      lineHeight: "1.4",
     },
     ".cm-header-6": {
       fontSize: "1em",
       fontWeight: "600",
+      lineHeight: "1.4",
     },
     // Frontmatter styling
     ".cm-frontmatter": {
       backgroundColor: "var(--accent-soft)",
+      borderTop: "1px dashed var(--border)",
+      borderBottom: "1px dashed var(--border)",
     },
   },
   { dark: true }
@@ -174,11 +182,11 @@ const darkSyntax: SyntaxPalette = {
   heading: "#7aa2f7",
   strong: "#ff9e64",
   emphasis: "#bb9af7",
-  strikethrough: "#565f89",
+  strikethrough: "#7a85a0",
   link: "#73daca",
   code: "#9ece6a",
-  codeBg: "rgba(158, 206, 106, 0.1)",
-  comment: "#565f89",
+  codeBg: "rgba(158, 206, 106, 0.12)",
+  comment: "#7a85a0",
   keyword: "#bb9af7",
   string: "#9ece6a",
   number: "#ff9e64",
@@ -229,8 +237,8 @@ function buildHighlightStyle(p: SyntaxPalette) {
       tag: tags.monospace,
       color: p.code,
       backgroundColor: p.codeBg,
-      borderRadius: "3px",
-      padding: "1px 4px",
+      borderRadius: "4px",
+      padding: "2px 8px",
     },
     { tag: tags.comment, color: p.comment },
     { tag: tags.meta, color: p.comment },

@@ -47,12 +47,15 @@ class MermaidWidget extends WidgetType {
         btn.className = "cm-code-copy-btn";
         btn.textContent = "Copy SVG";
         btn.style.cssText =
-          "position:absolute;top:8px;right:8px;font-size:12px;padding:2px 8px;border-radius:4px;background:var(--bg-tertiary);color:var(--text-muted);border:1px solid var(--border);";
+          "position:absolute;top:10px;right:10px;font-size:11px;padding:2px 8px;border-radius:4px;background:var(--bg-secondary);color:var(--text-muted);border:none;cursor:pointer;font-family:'JetBrains Mono','SF Mono',monospace;transition:opacity 150ms;opacity:0.7;";
+        btn.addEventListener("mouseenter", () => { btn.style.opacity = "1"; btn.style.color = "var(--text-primary)"; });
+        btn.addEventListener("mouseleave", () => { btn.style.opacity = "0.7"; btn.style.color = "var(--text-muted)"; });
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           navigator.clipboard.writeText(svg);
           btn.textContent = "Copied!";
-          setTimeout(() => (btn.textContent = "Copy SVG"), 1500);
+          btn.style.color = "var(--green)";
+          setTimeout(() => { btn.textContent = "Copy SVG"; btn.style.color = "var(--text-muted)"; }, 2000);
         });
         container.style.position = "relative";
         container.appendChild(btn);
