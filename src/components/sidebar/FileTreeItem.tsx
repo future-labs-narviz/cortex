@@ -40,7 +40,9 @@ export function FileTreeItem({
 
   return (
     <div
-      className={`flex items-center gap-1 py-[3px] pr-2 rounded-md text-xs cursor-pointer select-none transition-colors duration-100 ${
+      role="button"
+      tabIndex={0}
+      className={`flex items-center gap-1 py-[3px] pr-2 rounded-md text-xs cursor-pointer select-none transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
         isActive
           ? "bg-[var(--accent-soft)] text-[var(--accent)]"
           : isHovered
@@ -49,6 +51,12 @@ export function FileTreeItem({
       }`}
       style={{ paddingLeft }}
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
       onContextMenu={(e) => onContextMenu(e, file)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

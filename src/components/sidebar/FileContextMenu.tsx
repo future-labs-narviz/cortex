@@ -89,9 +89,9 @@ export function FileContextMenu({
             action();
             onClose();
           }}
-          className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors duration-100 cursor-pointer ${
+          className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
             danger
-              ? "text-red-400 hover:bg-red-500/10"
+              ? "text-[var(--red)] hover:bg-[var(--red)]/10"
               : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
           }`}
         >

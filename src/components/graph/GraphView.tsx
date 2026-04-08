@@ -4,7 +4,7 @@ import { useVaultStore } from "@/stores/vaultStore";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphControls } from "./GraphControls";
 import { GraphTooltip } from "./GraphTooltip";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle, Network } from "lucide-react";
 import type { GraphNode } from "@/lib/types";
 
 interface GraphViewProps {
@@ -118,27 +118,43 @@ export function GraphView({ compact = false }: GraphViewProps) {
     >
       {/* Loading state */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center z-20">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
           <Loader2
             size={24}
             className="animate-spin"
             style={{ color: "var(--text-muted)" }}
           />
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            Loading graph...
+          </p>
         </div>
       )}
 
       {/* Error state */}
       {error && !isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center z-20">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-3">
+          <AlertTriangle size={24} style={{ color: "var(--yellow)" }} />
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             {error}
           </p>
+          <button
+            onClick={() => fetchGraphData(activeFilePath ?? undefined)}
+            className="px-3 py-1.5 text-xs rounded-md transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+            style={{
+              background: "var(--bg-tertiary)",
+              color: "var(--text-secondary)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            Retry
+          </button>
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && !error && data && data.nodes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center z-20">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
+          <Network size={24} style={{ color: "var(--text-muted)" }} />
           <p className="text-xs" style={{ color: "var(--text-muted)" }}>
             No notes to display.
           </p>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCw, Calendar } from "lucide-react";
+import { RefreshCw, Calendar, AlertTriangle } from "lucide-react";
 import { useCaptureStore, initCaptureListeners } from "@/stores/captureStore";
 import { SessionCard } from "./SessionCard";
 import { InsightCard } from "./InsightCard";
@@ -101,7 +101,7 @@ export function ContextTimeline() {
         <button
           onClick={() => fetchSessions()}
           disabled={isLoading}
-          className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded"
           title="Refresh sessions"
         >
           <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
@@ -110,8 +110,15 @@ export function ContextTimeline() {
 
       {/* Error state */}
       {error && (
-        <div className="text-[11px] text-red-400 bg-red-500/10 rounded px-2 py-1.5 mb-2">
-          {error}
+        <div className="flex items-center gap-2 text-[11px] text-[var(--red)] bg-[var(--red)]/10 rounded px-2 py-2 mb-2">
+          <AlertTriangle size={14} className="flex-shrink-0" />
+          <span className="flex-1">{error}</span>
+          <button
+            onClick={() => fetchSessions()}
+            className="text-[10px] font-medium px-1.5 py-0.5 rounded hover:bg-[var(--red)]/20 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+          >
+            Retry
+          </button>
         </div>
       )}
 
@@ -180,7 +187,7 @@ export function ContextTimeline() {
           {hasMore && (
             <button
               onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-              className="w-full text-center text-[11px] text-[var(--accent)] hover:underline py-2 cursor-pointer"
+              className="w-full text-center text-[11px] text-[var(--accent)] hover:underline py-2 cursor-pointer rounded focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
             >
               Load more ({entries.length - visibleCount} remaining)
             </button>

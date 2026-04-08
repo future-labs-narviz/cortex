@@ -225,6 +225,61 @@ async createFromTemplate(templateName: string, title: string, folder: string | n
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Start recording audio via the voice pipeline.
+ */
+async voiceStartRecording() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("voice_start_recording") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Stop recording and return the path to the saved WAV file.
+ */
+async voiceStopRecording() : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("voice_stop_recording") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Cancel the current recording without saving.
+ */
+async voiceCancelRecording() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("voice_cancel_recording") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * List available audio input devices.
+ */
+async voiceGetDevices() : Promise<Result<AudioDeviceInfo[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("voice_get_devices") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Check if the voice pipeline is currently recording.
+ */
+async voiceIsRecording() : Promise<Result<boolean, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("voice_is_recording") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -238,6 +293,7 @@ async createFromTemplate(templateName: string, title: string, folder: string | n
 
 /** user-defined types **/
 
+export type AudioDeviceInfo = { name: string; is_default: boolean }
 /**
  * A backlink: another note that links to the current note.
  */

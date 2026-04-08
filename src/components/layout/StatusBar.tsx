@@ -16,14 +16,14 @@ export function StatusBar() {
       <div className="flex items-center gap-3">
         <span className="text-[var(--text-muted)]">Cortex v0.1.0</span>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-3 overflow-hidden">
+        <div className="flex items-center gap-1.5 overflow-hidden">
           <div
-            className={`w-1.5 h-1.5 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
               mcpConnected ? "bg-[var(--green)]" : "bg-[var(--red)]"
             }`}
           />
-          <span className="text-[var(--text-muted)]">
+          <span className="text-[var(--text-muted)] overflow-hidden text-ellipsis whitespace-nowrap">
             MCP: {mcpConnected ? "connected" : "disconnected"}
           </span>
         </div>

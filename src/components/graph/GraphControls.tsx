@@ -25,7 +25,7 @@ export function GraphControls({
     <div
       className="graph-controls absolute top-3 right-3 flex flex-col gap-2 p-2 rounded-lg border"
       style={{
-        background: "rgba(36, 40, 59, 0.85)",
+        background: "color-mix(in srgb, var(--bg-secondary) 85%, transparent)",
         borderColor: "var(--border)",
         zIndex: 10,
       }}
@@ -34,7 +34,7 @@ export function GraphControls({
       <div className="flex rounded-md overflow-hidden border border-[var(--border)]">
         <button
           onClick={() => setMode("local")}
-          className={`px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
+          className={`px-2.5 py-1 text-[10px] font-medium transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)] ${
             mode === "local"
               ? "bg-[var(--accent-soft)] text-[var(--accent)]"
               : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
@@ -44,7 +44,7 @@ export function GraphControls({
         </button>
         <button
           onClick={() => setMode("global")}
-          className={`px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer ${
+          className={`px-2.5 py-1 text-[10px] font-medium transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)] ${
             mode === "global"
               ? "bg-[var(--accent-soft)] text-[var(--accent)]"
               : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
@@ -76,21 +76,21 @@ export function GraphControls({
       <div className="flex gap-1">
         <button
           onClick={onCenterActive}
-          className="flex items-center justify-center w-6 h-6 rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+          className="flex items-center justify-center w-6 h-6 rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
           title="Center on active note"
         >
           <LocateFixed size={13} />
         </button>
         <button
           onClick={onFitView}
-          className="flex items-center justify-center w-6 h-6 rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+          className="flex items-center justify-center w-6 h-6 rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
           title="Fit view"
         >
           <Maximize size={13} />
         </button>
         <button
           onClick={toggleOrphans}
-          className="flex items-center justify-center w-6 h-6 rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+          className="flex items-center justify-center w-6 h-6 rounded text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
           title={showOrphans ? "Hide orphans" : "Show orphans"}
         >
           {showOrphans ? <Eye size={13} /> : <EyeOff size={13} />}

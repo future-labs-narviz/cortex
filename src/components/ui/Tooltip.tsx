@@ -35,7 +35,7 @@ export function Tooltip({ content, children, side = "right" }: TooltipProps) {
       {children}
       {visible && (
         <div
-          className={`absolute z-50 whitespace-nowrap rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-secondary)] shadow-lg pointer-events-none ${positionStyles[side]}`}
+          className={`absolute z-50 max-w-xs truncate rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] px-2 py-1 text-xs text-[var(--text-secondary)] shadow-lg pointer-events-none ${positionStyles[side]}`}
         >
           {content}
         </div>

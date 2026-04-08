@@ -31,7 +31,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="w-full max-w-md rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] shadow-2xl">
+      <div className="w-full max-w-md rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] shadow-2xl animate-[settingsIn_300ms_ease]">
         {title && (
           <div className="px-5 py-3 border-b border-[var(--border)]">
             <h2 className="text-sm font-semibold text-[var(--text-primary)]">

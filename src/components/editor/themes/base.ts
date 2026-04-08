@@ -30,7 +30,7 @@ const tokyoNightTheme = EditorView.theme(
       backgroundColor: "var(--accent-soft) !important",
     },
     ".cm-activeLine": {
-      backgroundColor: "rgba(255, 255, 255, 0.04)",
+      backgroundColor: "var(--bg-active-line, rgba(255, 255, 255, 0.04))",
     },
     ".cm-gutters": {
       backgroundColor: "var(--bg-primary)",
@@ -39,7 +39,7 @@ const tokyoNightTheme = EditorView.theme(
       paddingRight: "8px",
     },
     ".cm-activeLineGutter": {
-      backgroundColor: "rgba(255, 255, 255, 0.04)",
+      backgroundColor: "var(--bg-active-line, rgba(255, 255, 255, 0.04))",
       color: "var(--text-primary)",
     },
     ".cm-lineNumbers .cm-gutterElement": {
@@ -50,8 +50,8 @@ const tokyoNightTheme = EditorView.theme(
       width: "12px",
     },
     ".cm-searchMatch": {
-      backgroundColor: "rgba(224, 175, 104, 0.3)",
-      borderRadius: "2px",
+      backgroundColor: "var(--bg-search-match, rgba(224, 175, 104, 0.3))",
+      borderRadius: "4px",
     },
     ".cm-searchMatch.cm-searchMatch-selected": {
       backgroundColor: "var(--accent-soft)",
@@ -157,7 +157,7 @@ const tokyoNightHighlightStyle = HighlightStyle.define([
   {
     tag: tags.monospace,
     color: "#9ece6a",
-    backgroundColor: "rgba(158, 206, 106, 0.1)",
+    backgroundColor: "var(--bg-inline-code, rgba(158, 206, 106, 0.1))",
     borderRadius: "3px",
     padding: "1px 4px",
   },

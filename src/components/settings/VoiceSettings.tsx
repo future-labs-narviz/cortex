@@ -87,7 +87,7 @@ export function VoiceSettings() {
         <select
           value={selectedDevice ?? "default"}
           onChange={handleDeviceChange}
-          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer"
+          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
         >
           {devices.map((d) => (
             <option key={d.id} value={d.id}>
@@ -122,7 +122,7 @@ export function VoiceSettings() {
         <select
           value={selectedLanguage}
           onChange={handleLanguageChange}
-          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer"
+          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
         >
           {LANGUAGES.map((l) => (
             <option key={l.code} value={l.code}>
@@ -142,7 +142,7 @@ export function VoiceSettings() {
             type="checkbox"
             checked={autoTranscribe}
             onChange={(e) => setAutoTranscribe(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer"
+            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           />
         </label>
 
@@ -154,7 +154,7 @@ export function VoiceSettings() {
             type="checkbox"
             checked={createVoiceNote}
             onChange={(e) => setCreateVoiceNote(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer"
+            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           />
         </label>
       </div>

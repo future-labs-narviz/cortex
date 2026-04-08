@@ -58,17 +58,24 @@ export function TabBar({ paneIndex }: TabBarProps) {
   if (tabs.length === 0) return null;
 
   return (
-    <div className="flex items-center h-9 bg-[var(--bg-secondary)] border-b border-[var(--border)] overflow-x-auto shrink-0">
+    <div className="flex items-center h-9 bg-[var(--bg-secondary)] border-b border-[var(--border)] overflow-x-auto overflow-y-hidden shrink-0 scrollbar-none">
       {tabs.map((tab) => (
         <div
           key={tab.id}
-          className={`flex items-center gap-1.5 px-3 h-full text-xs border-r border-[var(--border)] cursor-pointer transition-colors duration-100 select-none ${
+          tabIndex={0}
+          className={`flex items-center gap-1.5 px-3 h-full text-xs border-r border-[var(--border)] cursor-pointer transition-colors duration-150 ease-out select-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--accent)] ${
             tab.id === activeTabId
               ? "bg-[var(--bg-primary)] text-[var(--text-primary)]"
               : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
           }`}
           onClick={() => handleClick(tab.id)}
           onMouseDown={(e) => handleMouseDown(e, tab.id)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleClick(tab.id);
+            }
+          }}
         >
           <FileText size={12} className="shrink-0" />
           <span className="truncate max-w-[120px]">{tab.title}</span>
@@ -80,7 +87,7 @@ export function TabBar({ paneIndex }: TabBarProps) {
               e.stopPropagation();
               handleClose(tab.id);
             }}
-            className="ml-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer shrink-0"
+            className="ml-1 rounded-[4px] w-5 h-5 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-out cursor-pointer shrink-0 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--bg-primary)]"
             aria-label={`Close ${tab.title}`}
           >
             &times;

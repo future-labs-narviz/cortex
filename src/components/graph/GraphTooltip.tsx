@@ -19,13 +19,12 @@ export function GraphTooltip({
 
   return (
     <div
-      className="graph-tooltip fixed z-50 px-3 py-2 rounded-lg border max-w-[240px]"
+      className="graph-tooltip fixed z-50 px-3 py-2 rounded-lg border max-w-[240px] shadow-xl"
       style={{
         left: x + 14,
         top: y + 14,
         background: "var(--bg-tertiary)",
         borderColor: "var(--border)",
-        boxShadow: "0 4px 24px rgba(0, 0, 0, 0.4)",
       }}
     >
       <div

@@ -49,29 +49,27 @@ export function AppearanceSettings() {
         <div className="flex gap-2">
           <button
             onClick={() => setTheme("dark")}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm border transition-colors cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm border transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
               theme === "dark"
                 ? "bg-[var(--accent-soft)] border-[var(--accent)] text-[var(--accent)]"
                 : "bg-[var(--bg-tertiary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]"
             }`}
           >
             <span
-              className="w-4 h-4 rounded-full border border-[var(--border)]"
-              style={{ background: "#1a1b26" }}
+              className="w-4 h-4 rounded-full border border-[var(--border)] bg-[var(--swatch-dark)]"
             />
             Dark
           </button>
           <button
             onClick={() => setTheme("light")}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm border transition-colors cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm border transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
               theme === "light"
                 ? "bg-[var(--accent-soft)] border-[var(--accent)] text-[var(--accent)]"
                 : "bg-[var(--bg-tertiary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]"
             }`}
           >
             <span
-              className="w-4 h-4 rounded-full border border-[var(--border)]"
-              style={{ background: "#f5f5f5" }}
+              className="w-4 h-4 rounded-full border border-[var(--border)] bg-[var(--swatch-light)]"
             />
             Light
           </button>
@@ -84,7 +82,7 @@ export function AppearanceSettings() {
         <select
           value={fontFamily}
           onChange={(e) => setFontFamily(e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer"
+          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
         >
           {FONT_OPTIONS.map((f) => (
             <option key={f.value} value={f.value}>
@@ -163,7 +161,7 @@ export function AppearanceSettings() {
           placeholder="/* Add custom CSS overrides here */"
           rows={5}
           spellCheck={false}
-          className="w-full px-3 py-2 text-xs rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] font-mono resize-y focus:outline-none focus:border-[var(--accent)]"
+          className="w-full px-3 py-2 text-xs rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] font-mono resize-y focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
         />
         <p className="text-[10px] text-[var(--text-muted)]">
           Custom styles saved to .cortex/custom.css
@@ -173,7 +171,7 @@ export function AppearanceSettings() {
       {/* Reset */}
       <button
         onClick={handleResetDefaults}
-        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--red)] hover:text-[var(--red)] transition-colors cursor-pointer"
+        className="flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--red)] hover:text-[var(--red)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
       >
         <RotateCcw size={14} />
         Reset to Defaults

@@ -104,7 +104,7 @@ export function FileExplorer() {
         </p>
         <button
           onClick={() => openVault()}
-          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity cursor-pointer"
+          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         >
           Open Vault
         </button>
@@ -118,7 +118,7 @@ export function FileExplorer() {
         <p className="text-xs text-[var(--text-muted)]">Vault is empty.</p>
         <button
           onClick={() => handleNewNote(vaultPath ?? "")}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity cursor-pointer"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         >
           <Plus size={12} />
           New Note
@@ -128,11 +128,11 @@ export function FileExplorer() {
   }
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-1">
       {/* New note button at top */}
       <button
         onClick={() => handleNewNote(vaultPath ?? "")}
-        className="flex items-center gap-1.5 px-2 py-1 mb-1 rounded-md text-[11px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-100 cursor-pointer self-start"
+        className="flex items-center gap-1.5 px-2 py-1 mb-1 rounded-md text-[11px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer self-start focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
       >
         <Plus size={12} />
         New Note

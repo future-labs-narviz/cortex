@@ -104,7 +104,7 @@ export function IntegrationSettings() {
     status.state === "connected"
       ? "var(--green)"
       : status.state === "disconnected"
-        ? "var(--red, #ef4444)"
+        ? "var(--red)"
         : "var(--text-muted)";
 
   return (
@@ -136,7 +136,7 @@ export function IntegrationSettings() {
         <button
           onClick={testConnection}
           disabled={status.state === "checking"}
-          className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-[var(--accent-soft)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-[var(--accent-soft)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-colors duration-150 ease-in-out cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         >
           <RefreshCw
             size={12}
@@ -157,7 +157,7 @@ export function IntegrationSettings() {
           </pre>
           <button
             onClick={() => copyToClipboard(MCP_CONFIG, "mcp")}
-            className="absolute top-1.5 right-1.5 p-1 rounded bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+            className="absolute top-1.5 right-1.5 p-1 rounded bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
             title="Copy MCP config"
           >
             {copied === "mcp" ? (
@@ -176,7 +176,7 @@ export function IntegrationSettings() {
       <div className="flex flex-col gap-1">
         <button
           onClick={() => setSetupExpanded(!setupExpanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+          className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm"
         >
           {setupExpanded ? (
             <ChevronDown size={14} />
@@ -209,7 +209,7 @@ export function IntegrationSettings() {
       <div className="flex flex-col gap-1">
         <button
           onClick={() => setHooksExpanded(!hooksExpanded)}
-          className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+          className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm"
         >
           {hooksExpanded ? (
             <ChevronDown size={14} />
@@ -230,7 +230,7 @@ export function IntegrationSettings() {
               </pre>
               <button
                 onClick={() => copyToClipboard(HOOK_CONFIG, "hook")}
-                className="absolute top-1.5 right-1.5 p-1 rounded bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+                className="absolute top-1.5 right-1.5 p-1 rounded bg-[var(--bg-primary)] border border-[var(--border)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
                 title="Copy hook config"
               >
                 {copied === "hook" ? (
@@ -283,7 +283,7 @@ export function IntegrationSettings() {
             });
           });
         }}
-        className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+        className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
       >
         <ExternalLink size={12} />
         Open Skill Directory

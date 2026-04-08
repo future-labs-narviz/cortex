@@ -35,20 +35,37 @@ interface GraphCanvasProps {
 // Constants
 // ---------------------------------------------------------------------------
 
-const COLOR_PALETTE = [
-  "#7aa2f7",
-  "#bb9af7",
-  "#9ece6a",
-  "#ff9e64",
-  "#73daca",
-  "#f7768e",
-  "#e0af68",
-];
+const getCssVar = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-const ACTIVE_COLOR = "#ff9e64";
-const EDGE_COLOR = "#3b4261";
-const BG_COLOR = "#1a1b26";
-const LABEL_COLOR = "#a9b1d6";
+function buildColorPalette(): string[] {
+  return [
+    getCssVar("--accent"),
+    getCssVar("--purple"),
+    getCssVar("--green"),
+    getCssVar("--orange"),
+    getCssVar("--cyan"),
+    getCssVar("--red"),
+    getCssVar("--yellow"),
+  ];
+}
+
+function getActiveColor(): string {
+  return getCssVar("--orange");
+}
+
+function getEdgeColor(): string {
+  return getCssVar("--border");
+}
+
+function getBgColor(): string {
+  return getCssVar("--bg-primary");
+}
+
+function getLabelColor(): string {
+  return getCssVar("--text-secondary");
+}
+
 const MAX_LABEL_LEN = 20;
 const LARGE_GRAPH_THRESHOLD = 200;
 
@@ -70,11 +87,11 @@ function folderFromId(id: string): string {
   return parts.length > 1 ? parts.slice(0, -1).join("/") : "";
 }
 
-function nodeColor(node: SimNode, activeId?: string): string {
-  if (activeId && node.id === activeId) return ACTIVE_COLOR;
+function nodeColor(node: SimNode, palette: string[], activeColor: string, activeId?: string): string {
+  if (activeId && node.id === activeId) return activeColor;
   const folder = folderFromId(node.id);
-  if (!folder) return COLOR_PALETTE[0];
-  return COLOR_PALETTE[hashString(folder) % COLOR_PALETTE.length];
+  if (!folder) return palette[0];
+  return palette[hashString(folder) % palette.length];
 }
 
 function getNodeRadius(node: SimNode, isActive: boolean): number {
@@ -191,6 +208,13 @@ export function GraphCanvas({
     const svg = svgRef.current;
     if (!svg || width === 0 || height === 0) return;
 
+    // --- Read CSS variables at render time for D3 ---
+    const palette = buildColorPalette();
+    const activeColor = getActiveColor();
+    const edgeColor = getEdgeColor();
+    const bgColor = getBgColor();
+    const labelColor = getLabelColor();
+
     // --- Prepare data ---
     const edgeSet = new Set<string>();
     for (const e of data.edges) {
@@ -252,7 +276,7 @@ export function GraphCanvas({
       .selectAll<SVGLineElement, SimLink>("line")
       .data(filteredEdges)
       .join("line")
-      .attr("stroke", EDGE_COLOR)
+      .attr("stroke", edgeColor)
       .attr("stroke-width", 1)
       .attr("stroke-opacity", 0.3);
 
@@ -270,8 +294,8 @@ export function GraphCanvas({
       .attr("r", (d) =>
         getNodeRadius(d, !!(activeNodeId && d.id === activeNodeId)),
       )
-      .attr("fill", (d) => nodeColor(d, activeNodeId))
-      .attr("stroke", BG_COLOR)
+      .attr("fill", (d) => nodeColor(d, palette, activeColor, activeNodeId))
+      .attr("stroke", bgColor)
       .attr("stroke-width", 2);
 
     // Mark the active node group for CSS pulse animation
@@ -288,7 +312,7 @@ export function GraphCanvas({
       .join("text")
       .text((d) => truncate(d.label, MAX_LABEL_LEN))
       .attr("font-size", 10)
-      .attr("fill", LABEL_COLOR)
+      .attr("fill", labelColor)
       .attr("text-anchor", "middle")
       .attr("dy", (d) =>
         getNodeRadius(d, !!(activeNodeId && d.id === activeNodeId)) + 14,

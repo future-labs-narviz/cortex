@@ -39,7 +39,7 @@ export function GeneralSettings() {
           </div>
           <button
             onClick={handleChangeVault}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors duration-150 ease-in-out cursor-pointer whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           >
             <FolderOpen size={14} />
             Change Vault
@@ -60,7 +60,7 @@ export function GeneralSettings() {
             type="checkbox"
             checked={autoSave}
             onChange={(e) => setAutoSave(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer"
+            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           />
         </label>
 
@@ -70,7 +70,7 @@ export function GeneralSettings() {
             type="checkbox"
             checked={spellCheck}
             onChange={(e) => setSpellCheck(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer"
+            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           />
         </label>
 
@@ -80,7 +80,7 @@ export function GeneralSettings() {
             type="checkbox"
             checked={editorLineNumbers}
             onChange={(e) => setEditorLineNumbers(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer"
+            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           />
         </label>
 
@@ -90,7 +90,7 @@ export function GeneralSettings() {
             type="checkbox"
             checked={editorWordWrap}
             onChange={(e) => setEditorWordWrap(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer"
+            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           />
         </label>
       </div>
@@ -102,7 +102,7 @@ export function GeneralSettings() {
         </label>
         <select
           defaultValue="blank"
-          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer"
+          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
         >
           <option value="blank">Blank Note</option>
           <option value="daily">Daily Note</option>

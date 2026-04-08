@@ -74,9 +74,9 @@ export function VoiceRecordButton({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
         disabled={isTranscribing}
-        className={`voice-record-btn fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`voice-record-btn fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed ${
           isRecording
-            ? "recording bg-[var(--red)] text-white"
+            ? "recording bg-[var(--red)] text-[var(--bg-primary)]"
             : "bg-[var(--accent)] text-[var(--bg-primary)] hover:brightness-110"
         }`}
         title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Start recording"}
@@ -103,7 +103,7 @@ export function VoiceRecordButton({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       disabled={isTranscribing}
-      className={`voice-record-btn flex items-center gap-1.5 h-7 rounded px-1.5 transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+      className={`voice-record-btn flex items-center gap-1.5 h-7 rounded-[6px] px-1.5 transition-colors duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed ${
         isRecording
           ? "recording bg-[var(--red)]/20 text-[var(--red)]"
           : isTranscribing

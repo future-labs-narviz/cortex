@@ -111,7 +111,7 @@ export function ModelSelector() {
       {/* Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full gap-2 px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors cursor-pointer"
+        className="flex items-center justify-between w-full gap-2 px-3 py-2 text-sm rounded-[8px] bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
       >
         <span>{currentModel?.name ?? "Select model"}</span>
         <ChevronDown size={14} className={`text-[var(--text-muted)] transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -119,7 +119,7 @@ export function ModelSelector() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full min-w-[300px] rounded-md bg-[var(--bg-secondary)] border border-[var(--border)] shadow-lg overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full min-w-[300px] rounded-[8px] bg-[var(--bg-secondary)] border border-[var(--border)] shadow-lg overflow-hidden">
           {AVAILABLE_MODELS.map((model) => {
             const status = downloadStatus[model.id];
             const isSelected = selectedModel === model.id;
@@ -129,8 +129,11 @@ export function ModelSelector() {
               <div
                 key={model.id}
                 onClick={() => handleSelect(model.id)}
-                className={`flex items-start gap-3 px-3 py-2.5 transition-colors ${
-                  isDownloaded ? "cursor-pointer hover:bg-[var(--bg-tertiary)]" : ""
+                tabIndex={isDownloaded ? 0 : undefined}
+                role="option"
+                aria-selected={isSelected}
+                className={`flex items-start gap-3 px-3 py-2.5 transition-colors duration-150 ease ${
+                  isDownloaded ? "cursor-pointer hover:bg-[var(--bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--accent)]" : ""
                 } ${isSelected ? "bg-[var(--accent-soft)]" : ""}`}
               >
                 {/* Selection indicator */}
@@ -185,7 +188,7 @@ export function ModelSelector() {
                   ) : (
                     <button
                       onClick={(e) => handleDownload(model.id, e)}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-[var(--accent-soft)] text-[var(--accent)] hover:bg-[var(--accent)]/25 transition-colors cursor-pointer"
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[10px] bg-[var(--accent-soft)] text-[var(--accent)] hover:bg-[var(--accent)]/25 transition-colors duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
                     >
                       <Download size={10} />
                       Download

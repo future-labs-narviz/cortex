@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { Search, FileText, Loader2 } from "lucide-react";
+import { Search, FileText, Loader2, FolderOpen } from "lucide-react";
 import { useSearchStore } from "@/stores/searchStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -7,6 +7,8 @@ import { invoke } from "@tauri-apps/api/core";
 import type { NoteData } from "@/lib/types";
 
 export function SearchPanel() {
+  const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
+  const openVault = useVaultStore((s) => s.openVault);
   const query = useSearchStore((s) => s.query);
   const results = useSearchStore((s) => s.results);
   const isSearching = useSearchStore((s) => s.isSearching);
@@ -53,6 +55,25 @@ export function SearchPanel() {
     };
   }, []);
 
+  if (!isVaultOpen) {
+    return (
+      <div className="flex flex-col items-center gap-3 pt-8 text-center">
+        <FolderOpen size={32} className="text-[var(--text-muted)]" />
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+          No vault open.
+          <br />
+          Open a vault to search notes.
+        </p>
+        <button
+          onClick={() => openVault()}
+          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        >
+          Open Vault
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-2 pt-1">
       {/* Search input */}
@@ -67,7 +88,7 @@ export function SearchPanel() {
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Search notes..."
-          className="w-full pl-7 pr-2.5 py-1.5 text-xs rounded-md bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] transition-colors duration-150"
+          className="w-full pl-7 pr-2.5 py-1.5 text-xs rounded-md bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:border-[var(--accent)] transition-colors duration-150"
         />
         {isSearching && (
           <Loader2
@@ -91,7 +112,7 @@ export function SearchPanel() {
           No results found.
         </p>
       ) : (
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-1">
           <p className="text-[10px] text-[var(--text-muted)] px-1 pb-1">
             {results.length} result{results.length !== 1 ? "s" : ""}
           </p>
@@ -133,7 +154,7 @@ function SearchResultItem({ result }: SearchResultItemProps) {
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col gap-0.5 px-2 py-1.5 rounded-md text-left cursor-pointer hover:bg-[var(--bg-tertiary)] transition-colors duration-100 group"
+      className="flex flex-col gap-0.5 px-2 py-1.5 rounded-md text-left cursor-pointer hover:bg-[var(--bg-tertiary)] transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 group"
     >
       {/* Title */}
       <div className="flex items-center gap-1.5 min-w-0">

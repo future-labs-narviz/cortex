@@ -226,11 +226,11 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/50 transition-opacity duration-300 ease-in-out" />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] shadow-2xl overflow-hidden"
+        className="relative w-full max-w-lg rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] shadow-2xl overflow-hidden transition-all duration-300 ease-in-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search input */}
@@ -267,9 +267,9 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     <div
                       key={result.command.id}
                       data-index={currentIdx}
-                      className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors duration-75 ${
+                      className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
                         currentIdx === selectedIndex
-                          ? "bg-[var(--accent-soft)]"
+                          ? "bg-[var(--accent-soft)] ring-2 ring-[var(--accent)] ring-offset-0"
                           : "hover:bg-[var(--bg-tertiary)]"
                       }`}
                       onClick={() => executeCommand(result.command)}

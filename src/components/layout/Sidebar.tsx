@@ -11,6 +11,7 @@ import {
   Plug,
 } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useVaultStore } from "@/stores/vaultStore";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { FileExplorer } from "@/components/sidebar/FileExplorer";
 import { SearchPanel } from "@/components/sidebar/SearchPanel";
@@ -68,7 +69,7 @@ export function Sidebar() {
             <Tooltip key={id} content={label} side="right">
               <button
                 onClick={() => setActivePanel(id)}
-                className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-150 cursor-pointer ${
+                className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
                   isActive
                     ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                     : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
@@ -117,6 +118,28 @@ export function Sidebar() {
 // SearchPanel is now imported from @/components/sidebar/SearchPanel
 
 function GraphPanel() {
+  const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
+  const openVault = useVaultStore((s) => s.openVault);
+
+  if (!isVaultOpen) {
+    return (
+      <div className="flex flex-col items-center gap-3 pt-8 text-center">
+        <GitFork size={32} className="text-[var(--text-muted)]" />
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+          No graph to display.
+          <br />
+          Open a vault to explore connections.
+        </p>
+        <button
+          onClick={() => openVault()}
+          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        >
+          Open a vault
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full -m-3" style={{ minHeight: 200 }}>
       <GraphView compact />
@@ -142,6 +165,9 @@ function VoicePanel() {
 }
 
 function TagsPanel() {
+  const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
+  const openVault = useVaultStore((s) => s.openVault);
+
   return (
     <div className="flex flex-col items-center gap-3 pt-8 text-center">
       <Tags size={32} className="text-[var(--text-muted)]" />
@@ -150,6 +176,14 @@ function TagsPanel() {
         <br />
         Open a vault to see tags.
       </p>
+      {!isVaultOpen && (
+        <button
+          onClick={() => openVault()}
+          className="px-3 py-1.5 text-xs rounded-md bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        >
+          Open a vault
+        </button>
+      )}
     </div>
   );
 }

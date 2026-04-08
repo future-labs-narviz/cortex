@@ -73,7 +73,7 @@ export function RecordingOverlay() {
       {/* Cancel button */}
       <button
         onClick={cancelRecording}
-        className="flex items-center justify-center w-6 h-6 rounded hover:bg-[var(--bg-tertiary)] text-[var(--text-muted)] hover:text-[var(--red)] transition-colors cursor-pointer"
+        className="flex items-center justify-center w-6 h-6 rounded-[6px] hover:bg-[var(--bg-tertiary)] text-[var(--text-muted)] hover:text-[var(--red)] transition-colors duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
         title="Cancel recording"
       >
         <X size={14} />

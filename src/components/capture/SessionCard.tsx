@@ -45,7 +45,7 @@ export function SessionCard({ session }: SessionCardProps) {
         <div
           className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
             isActive
-              ? "bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.5)]"
+              ? "bg-[var(--green)] shadow-[0_0_6px_var(--green)]"
               : "bg-[var(--accent)]"
           }`}
         />
@@ -57,7 +57,7 @@ export function SessionCard({ session }: SessionCardProps) {
         {/* Header */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-start gap-1.5 w-full text-left group cursor-pointer"
+          className="flex items-start gap-1.5 w-full text-left group cursor-pointer transition-transform duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded"
         >
           {expanded ? (
             <ChevronDown size={12} className="mt-0.5 text-[var(--text-muted)] flex-shrink-0" />
@@ -71,7 +71,7 @@ export function SessionCard({ session }: SessionCardProps) {
                 {session.ended_at ? ` - ${formatTime(session.ended_at)}` : ""}
               </span>
               {isActive && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 font-medium">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--green)]/10 text-[var(--green)] font-medium">
                   active
                 </span>
               )}
@@ -106,7 +106,7 @@ export function SessionCard({ session }: SessionCardProps) {
         {!expanded && session.key_decisions.length > 0 && (
           <div className="mt-1.5 ml-4">
             <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-              <Lightbulb size={10} className="text-amber-400" />
+              <Lightbulb size={10} className="text-[var(--yellow)]" />
               {session.key_decisions[0]}
             </span>
           </div>
@@ -123,7 +123,7 @@ export function SessionCard({ session }: SessionCardProps) {
                 <ul className="space-y-0.5">
                   {session.key_decisions.map((decision, i) => (
                     <li key={i} className="flex items-start gap-1.5 text-[11px] text-[var(--text-secondary)]">
-                      <Lightbulb size={10} className="mt-0.5 text-amber-400 flex-shrink-0" />
+                      <Lightbulb size={10} className="mt-0.5 text-[var(--yellow)] flex-shrink-0" />
                       {decision}
                     </li>
                   ))}
@@ -133,7 +133,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
             {session.what_worked && (
               <div>
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-green-400/70 mb-1">
+                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--green)]/70 mb-1">
                   What Worked
                 </h4>
                 <p className="text-[11px] text-[var(--text-secondary)]">{session.what_worked}</p>
@@ -142,7 +142,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
             {session.what_failed && (
               <div>
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-red-400/70 mb-1">
+                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--red)]/70 mb-1">
                   What Failed
                 </h4>
                 <p className="text-[11px] text-[var(--text-secondary)]">{session.what_failed}</p>

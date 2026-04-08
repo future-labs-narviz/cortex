@@ -58,7 +58,7 @@ export function TemplateSettings() {
         </h3>
         <button
           onClick={handleCreateTemplate}
-          className="flex items-center gap-1 text-[10px] text-[var(--accent)] hover:underline cursor-pointer"
+          className="flex items-center gap-1 text-[10px] text-[var(--accent)] hover:underline cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm"
         >
           <Plus size={12} />
           New
@@ -77,7 +77,7 @@ export function TemplateSettings() {
                   selectedTemplate === tmpl.name ? null : tmpl.name,
                 )
               }
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors text-xs cursor-pointer ${
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-150 ease-in-out text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
                 selectedTemplate === tmpl.name
                   ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                   : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"

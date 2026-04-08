@@ -18,7 +18,7 @@ export function InsightCard({ insight }: InsightCardProps) {
     <div className="flex gap-3 py-2">
       {/* Timeline dot */}
       <div className="flex flex-col items-center pt-1">
-        <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+        <div className="w-2 h-2 rounded-full bg-[var(--yellow)] flex-shrink-0" />
         <div className="w-px flex-1 bg-[var(--border)] mt-1" />
       </div>
 
@@ -28,7 +28,7 @@ export function InsightCard({ insight }: InsightCardProps) {
           <span className="text-[10px] text-[var(--text-muted)] font-mono">
             {formatTime(insight.created_at)}
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-medium">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--yellow)]/10 text-[var(--yellow)] font-medium">
             {insight.source}
           </span>
         </div>
