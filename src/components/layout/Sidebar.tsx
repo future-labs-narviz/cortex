@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   FileText,
   Search,
@@ -44,9 +44,36 @@ const navItems: SidebarNavItem[] = [
 
 export function Sidebar() {
   const [activePanel, setActivePanel] = useState<SidebarPanel>("files");
+  const [width, setWidth] = useState(280);
+  const [isDragging, setIsDragging] = useState(false);
+  const startX = useRef(0);
+  const startWidth = useRef(0);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    startX.current = e.clientX;
+    startWidth.current = width;
+    setIsDragging(true);
+  }, [width]);
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      const delta = e.clientX - startX.current;
+      const newWidth = Math.max(200, Math.min(500, startWidth.current + delta));
+      setWidth(newWidth);
+    };
+    const handleMouseUp = () => setIsDragging(false);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging]);
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full flex-shrink-0" style={{ width }}>
       {/* Icon rail */}
       <div className="flex flex-col items-center w-[52px] flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
         <DailyNoteButton />
@@ -93,6 +120,14 @@ export function Sidebar() {
           {activePanel === "integrations" && <IntegrationSettings />}
         </div>
       </div>
+
+      {/* Drag handle for resizing */}
+      <div
+        onMouseDown={handleMouseDown}
+        className={`w-[4px] flex-shrink-0 cursor-col-resize transition-colors duration-150 ${
+          isDragging ? "bg-[var(--accent)]" : "bg-transparent hover:bg-[var(--accent)]"
+        }`}
+      />
     </div>
   );
 }
