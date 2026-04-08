@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Default permissions for Cortex","local":true,"windows":["main"],"permissions":["core:default","store:default","fs:default","dialog:default","global-shortcut:allow-register","global-shortcut:allow-unregister","log:default"]}}

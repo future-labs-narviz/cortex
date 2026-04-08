@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.bun/
+
+# Build output
+dist/
+src-tauri/target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tauri
+src-tauri/target/
+src-tauri/WixTools/
+src-tauri/icons/*.ico
+src-tauri/icons/*.icns
+
+# Vault data (user content, not committed)
+vault/
+test-vault/
+
+# Cortex app data
+.cortex/
+
+# Environment
+.env
+.env.*
+
+# Logs
+*.log
+
+# Lock files are committed
+# bun.lock - committed
