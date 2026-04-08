@@ -25,7 +25,8 @@ export function GraphControls({
     <div
       className="graph-controls absolute top-3 right-3 flex flex-col gap-2 p-2 border border-[var(--border)] rounded-[var(--radius-xl)]"
       style={{
-        background: "rgba(37, 39, 56, 0.9)",
+        background: "var(--bg-elevated)",
+        opacity: 0.95,
         WebkitBackdropFilter: "blur(12px)",
         backdropFilter: "blur(12px)",
         boxShadow: "var(--shadow-md)",
