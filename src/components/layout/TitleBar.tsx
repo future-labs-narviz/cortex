@@ -14,7 +14,7 @@ export function TitleBar() {
 
       <button
         onClick={toggleSidebar}
-        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer"
+        className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-200 cursor-pointer"
         aria-label="Toggle sidebar"
       >
         <PanelLeft size={16} />

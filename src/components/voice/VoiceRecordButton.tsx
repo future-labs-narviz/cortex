@@ -74,10 +74,10 @@ export function VoiceRecordButton({
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
         disabled={isTranscribing}
-        className={`voice-record-btn fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`voice-record-btn fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-[var(--radius-xl)] shadow-[var(--shadow-md)] transition-all duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] ${
           isRecording
             ? "recording bg-[var(--red)] text-[var(--bg-primary)]"
-            : "bg-[var(--accent)] text-[var(--bg-primary)] hover:brightness-110"
+            : "bg-gradient-to-r from-blue-600 to-blue-500 text-[var(--bg-primary)]"
         }`}
         title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Start recording"}
       >
@@ -103,12 +103,12 @@ export function VoiceRecordButton({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       disabled={isTranscribing}
-      className={`voice-record-btn flex items-center gap-1.5 h-7 rounded-[6px] px-1.5 transition-colors duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed ${
+      className={`voice-record-btn flex items-center gap-1.5 h-7 rounded-[var(--radius-md)] px-1.5 transition-colors duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed ${
         isRecording
           ? "recording bg-[var(--red)]/20 text-[var(--red)]"
           : isTranscribing
             ? "text-[var(--text-muted)]"
-            : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+            : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--muted)]"
       }`}
       title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing..." : "Record voice (Cmd+Shift+R)"}
     >

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { Search, FileText, Loader2, FolderOpen } from "lucide-react";
+import { Search, Loader2, FolderOpen } from "lucide-react";
 import { useSearchStore } from "@/stores/searchStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -79,8 +79,7 @@ export function SearchPanel() {
       {/* Search input */}
       <div className="relative">
         <Search
-          size={13}
-          className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]"
         />
         <input
           ref={inputRef}
@@ -88,31 +87,31 @@ export function SearchPanel() {
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Search notes..."
-          className="w-full pl-7 pr-3 py-2.5 text-sm rounded-lg bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:border-[var(--accent)] transition-colors duration-150"
+          className="h-10 w-full pl-10 pr-3 text-sm rounded-[var(--radius-xl)] bg-[var(--muted)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--border-active)] focus:ring-1 focus:ring-[var(--accent-soft)] focus:bg-[var(--muted-hover)] transition-all duration-200"
         />
         {isSearching && (
           <Loader2
-            size={13}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] animate-spin"
+            size={14}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] animate-spin"
           />
         )}
       </div>
 
       {/* Results area */}
       {!query.trim() ? (
-        <p className="text-[11px] text-[var(--text-muted)] text-center pt-4">
+        <p className="text-xs text-[var(--text-muted)] text-center pt-4">
           Type to search across all notes.
         </p>
       ) : isSearching ? (
-        <p className="text-[11px] text-[var(--text-muted)] text-center pt-4">
+        <p className="text-xs text-[var(--text-muted)] text-center pt-4">
           Searching...
         </p>
       ) : results.length === 0 ? (
-        <p className="text-[11px] text-[var(--text-muted)] text-center pt-4">
+        <p className="text-xs text-[var(--text-muted)] text-center pt-4">
           No results found.
         </p>
       ) : (
-        <div className="flex flex-col gap-1">
+        <div className="space-y-1 mt-3">
           <p className="text-xs text-[var(--text-muted)] px-1 pb-1">
             {results.length} result{results.length !== 1 ? "s" : ""}
           </p>
@@ -154,27 +153,21 @@ function SearchResultItem({ result }: SearchResultItemProps) {
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col gap-1 px-3 py-2 rounded-md text-left cursor-pointer hover:bg-[var(--bg-tertiary)] transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 group"
+      className="flex flex-col gap-1 px-3 py-2 rounded-[var(--radius-md)] text-left cursor-pointer hover:bg-[var(--muted)] transition-colors duration-150 focus:outline-none"
     >
       {/* Title */}
-      <div className="flex items-center gap-1.5 min-w-0">
-        <FileText
-          size={12}
-          className="flex-shrink-0 text-[var(--text-muted)] group-hover:text-[var(--accent)]"
-        />
-        <span className="text-xs font-medium text-[var(--text-primary)] truncate">
-          {result.title || result.path}
-        </span>
-      </div>
+      <span className="text-sm font-medium text-[var(--text-primary)]">
+        {result.title || result.path}
+      </span>
 
       {/* Snippet */}
       <p
-        className="text-[11px] text-[var(--text-secondary)] line-clamp-2 leading-relaxed pl-[18px]"
+        className="text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed"
         dangerouslySetInnerHTML={{ __html: result.snippet }}
       />
 
       {/* Path */}
-      <span className="text-[11px] text-[var(--text-muted)] truncate pl-[18px]">
+      <span className="text-xs text-[var(--text-muted)] truncate">
         {result.path}
       </span>
     </button>

@@ -226,16 +226,22 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 transition-opacity duration-300 ease-in-out" />
+      <div
+        className="absolute inset-0 bg-black/60"
+        style={{ WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}
+      />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-lg rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] shadow-2xl overflow-hidden transition-all duration-300 ease-in-out"
+        className="relative w-full max-w-lg mx-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-lg)] overflow-hidden transition-all duration-300 ease-in-out"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Top accent */}
+        <div className="h-px bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
+
         {/* Search input */}
-        <div className="flex items-center px-3 border-b border-[var(--border)]">
-          <CommandIcon size={14} className="text-[var(--text-muted)] mr-2" />
+        <div className="flex items-center px-4 border-b border-[var(--border)]">
+          <CommandIcon size={16} className="text-[var(--text-muted)] mr-2" />
           <input
             ref={inputRef}
             type="text"
@@ -243,7 +249,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a command..."
-            className="flex-1 py-3 text-sm bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none"
+            className="flex-1 h-12 text-base bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none"
           />
         </div>
 
@@ -257,7 +263,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             groupedResults.map((group) => (
               <div key={group.category}>
                 {/* Category header */}
-                <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider px-4 py-2">
                   {group.category}
                 </div>
 
@@ -267,10 +273,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     <div
                       key={result.command.id}
                       data-index={currentIdx}
-                      className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+                      className={`flex items-center justify-between px-4 py-3 cursor-pointer rounded-[var(--radius-lg)] transition-colors duration-150 mx-2 ${
                         currentIdx === selectedIndex
-                          ? "bg-[var(--accent-soft)] ring-2 ring-[var(--accent)] ring-offset-0"
-                          : "hover:bg-[var(--bg-tertiary)]"
+                          ? "bg-[var(--accent-soft)] border border-[var(--accent)]/20"
+                          : "hover:bg-[var(--muted)]"
                       }`}
                       onClick={() => executeCommand(result.command)}
                       onMouseEnter={() => setSelectedIndex(currentIdx)}
@@ -279,7 +285,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                         {highlightMatches(result.command.label, result.indices)}
                       </span>
                       {result.command.shortcut && (
-                        <kbd className="ml-4 shrink-0 px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] text-[10px] font-mono text-[var(--text-muted)]">
+                        <kbd className="ml-4 shrink-0 text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
                           {result.command.shortcut}
                         </kbd>
                       )}
@@ -292,21 +298,21 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="flex items-center gap-3 px-3 py-2 border-t border-[var(--border)] text-[10px] text-[var(--text-muted)]">
+        <div className="flex items-center gap-3 px-4 py-2 border-t border-[var(--border)] text-[10px] text-[var(--text-muted)]">
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] font-mono">
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
               &uarr;&darr;
             </kbd>{" "}
             navigate
           </span>
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] font-mono">
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
               Enter
             </kbd>{" "}
             execute
           </span>
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] font-mono">
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
               Esc
             </kbd>{" "}
             close

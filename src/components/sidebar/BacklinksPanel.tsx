@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVaultStore } from "@/stores/vaultStore";
-import { FileText, Link2 } from "lucide-react";
+import { Link2 } from "lucide-react";
 
 /** A backlink entry returned from the Rust backend. */
 interface Backlink {
@@ -54,8 +54,8 @@ export function BacklinksPanel() {
 
   if (!activeFilePath) {
     return (
-      <div className="flex flex-col items-center gap-3 pt-8 text-center">
-        <Link2 size={32} className="text-[var(--text-muted)]" />
+      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+        <Link2 size={24} className="text-[var(--text-muted)]" />
         <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           Select a note to see
           <br />
@@ -67,7 +67,7 @@ export function BacklinksPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center pt-8">
+      <div className="flex flex-col items-center gap-4 pt-12 text-center">
         <p className="text-xs text-[var(--text-muted)]">Loading backlinks...</p>
       </div>
     );
@@ -75,8 +75,8 @@ export function BacklinksPanel() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center gap-3 pt-8 text-center">
-        <Link2 size={32} className="text-[var(--text-muted)]" />
+      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+        <Link2 size={24} className="text-[var(--text-muted)]" />
         <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           {error}
         </p>
@@ -86,8 +86,8 @@ export function BacklinksPanel() {
 
   if (backlinks.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 pt-8 text-center">
-        <Link2 size={32} className="text-[var(--text-muted)]" />
+      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+        <Link2 size={24} className="text-[var(--text-muted)]" />
         <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           No backlinks found
           <br />
@@ -98,21 +98,23 @@ export function BacklinksPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <p className="text-[11px] text-[var(--text-muted)] mb-2">
-        {backlinks.length} backlink{backlinks.length !== 1 ? "s" : ""}
+    <div className="space-y-1">
+      <p className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-2">
+        <span>Backlinks</span>
+        <span className="px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[10px] text-[var(--text-muted)] font-medium">
+          {backlinks.length}
+        </span>
       </p>
       {backlinks.map((bl, idx) => (
         <button
           key={`${bl.source_path}-${bl.line}-${idx}`}
           onClick={() => setActiveFile(bl.source_path)}
-          className="flex flex-col gap-1 w-full text-left px-3 py-2 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 group"
+          className="flex flex-col gap-1 w-full text-left px-3 py-2 rounded-[var(--radius-md)] hover:bg-[var(--muted)] transition-colors duration-150 cursor-pointer focus:outline-none"
         >
-          <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
-            <FileText size={12} className="flex-shrink-0" />
+          <span className="text-sm font-medium text-[var(--text-primary)]">
             {bl.source_title}
           </span>
-          <span className="text-[11px] text-[var(--text-muted)] line-clamp-2 leading-relaxed">
+          <span className="text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed">
             <HighlightedContext context={bl.context} />
           </span>
         </button>

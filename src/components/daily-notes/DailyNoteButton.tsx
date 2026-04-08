@@ -29,7 +29,7 @@ export function DailyNoteButton() {
     <Tooltip content={`Daily Note - ${formatToday()}`} side="right">
       <button
         onClick={handleClick}
-        className="flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-150 ease-in-out cursor-pointer text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        className="flex items-center justify-center h-12 w-12 p-0 m-1 rounded-[var(--radius-lg)] transition-all duration-200 cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         aria-label="Open daily note"
       >
         <CalendarDays size={18} strokeWidth={1.5} />

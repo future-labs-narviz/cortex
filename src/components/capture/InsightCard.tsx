@@ -15,20 +15,14 @@ function formatTime(iso: string): string {
 
 export function InsightCard({ insight }: InsightCardProps) {
   return (
-    <div className="flex gap-3 py-2">
-      {/* Timeline dot */}
-      <div className="flex flex-col items-center pt-1">
-        <div className="w-2 h-2 rounded-full bg-[var(--yellow)] flex-shrink-0" />
-        <div className="w-px flex-1 bg-[var(--border)] mt-1" />
-      </div>
-
+    <div className="bg-[var(--muted)] border border-[var(--border)] border-l-2 border-l-[var(--yellow)] rounded-[var(--radius-xl)] p-4 mb-2">
       {/* Content */}
-      <div className="flex-1 min-w-0 pb-2">
+      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] text-[var(--text-muted)] font-mono">
+          <span className="text-xs text-[var(--text-muted)] font-mono">
             {formatTime(insight.created_at)}
           </span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--yellow)]/10 text-[var(--yellow)] font-medium">
+          <span className="px-2 py-0.5 rounded-[var(--radius-sm)] bg-[var(--yellow)]/10 text-[var(--yellow)] text-xs font-medium">
             {insight.source}
           </span>
         </div>

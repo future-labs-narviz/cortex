@@ -76,18 +76,18 @@ export function VoiceNotePlayer({ src }: VoiceNotePlayerProps) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-[8px] bg-[var(--bg-tertiary)] border border-[var(--border)] my-2 max-w-sm">
+    <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-xl)] bg-[var(--muted)] border border-[var(--border)] my-2 max-w-sm p-4">
       {/* Play/Pause */}
       <button
         onClick={togglePlay}
-        className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--accent)] text-[var(--bg-primary)] hover:brightness-110 hover:scale-110 transition-all duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] shrink-0"
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] hover:scale-110 transition-all duration-150 ease cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] shrink-0"
       >
         {isPlaying ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
       </button>
 
       {/* Progress bar */}
       <div
-        className="flex-1 h-1.5 bg-[var(--border)] rounded-full cursor-pointer relative"
+        className="flex-1 h-1.5 bg-[var(--muted-strong)] rounded-full cursor-pointer relative"
         onClick={handleSeek}
       >
         <div
@@ -97,7 +97,7 @@ export function VoiceNotePlayer({ src }: VoiceNotePlayerProps) {
       </div>
 
       {/* Time display */}
-      <span className="text-[10px] font-mono text-[var(--text-muted)] tabular-nums whitespace-nowrap">
+      <span className="text-xs font-mono text-[var(--text-muted)] tabular-nums whitespace-nowrap">
         {formatTime(currentTime)} / {formatTime(duration)}
       </span>
     </div>

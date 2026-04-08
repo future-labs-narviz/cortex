@@ -97,22 +97,22 @@ export function Calendar() {
   }
 
   return (
-    <div className="select-none">
+    <div className="select-none rounded-[var(--radius-lg)]">
       {/* Month header */}
       <div className="flex items-center justify-between mb-2">
         <button
           onClick={handlePrev}
-          className="p-0.5 rounded hover:bg-[var(--bg-tertiary)] text-[var(--text-muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          className="p-0.5 rounded-[var(--radius-md)] hover:bg-[var(--muted)] text-[var(--text-muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           aria-label="Previous month"
         >
           <ChevronLeft size={14} />
         </button>
-        <span className="text-[11px] font-medium text-[var(--text-secondary)]">
+        <span className="text-sm font-semibold text-[var(--text-primary)]">
           {monthLabel}
         </span>
         <button
           onClick={handleNext}
-          className="p-0.5 rounded hover:bg-[var(--bg-tertiary)] text-[var(--text-muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          className="p-0.5 rounded-[var(--radius-md)] hover:bg-[var(--muted)] text-[var(--text-muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
           aria-label="Next month"
         >
           <ChevronRight size={14} />
@@ -124,7 +124,7 @@ export function Calendar() {
         {WEEKDAYS.map((wd) => (
           <div
             key={wd}
-            className="text-[9px] text-center font-medium text-[var(--text-muted)] py-0.5"
+            className="text-[10px] text-center font-medium text-[var(--text-muted)] uppercase py-0.5"
           >
             {wd}
           </div>
@@ -148,12 +148,12 @@ export function Calendar() {
               key={day}
               onClick={() => handleDayClick(day)}
               disabled={!isClickable}
-              className={`w-full aspect-square flex items-center justify-center text-[10px] rounded-sm transition-colors duration-150 ease-in-out p-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 ${
+              className={`w-8 h-8 flex items-center justify-center text-xs rounded-[var(--radius-md)] transition-colors duration-150 p-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 ${
                 isToday
-                  ? "bg-[var(--accent)] text-white font-bold hover:opacity-90"
+                  ? "bg-[var(--accent)] text-white font-bold rounded-[var(--radius-md)] hover:opacity-90"
                   : hasNote
                     ? "bg-[var(--accent-soft)] text-[var(--accent)] font-medium cursor-pointer hover:bg-[var(--accent)] hover:text-white"
-                    : "text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)]"
+                    : "text-[var(--text-muted)] hover:bg-[var(--muted)]"
               } ${isClickable ? "cursor-pointer" : "cursor-default"}`}
             >
               {day}

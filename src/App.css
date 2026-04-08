@@ -2,23 +2,58 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #1a1b26;
-  --bg-secondary: #24283b;
-  --bg-tertiary: #292e42;
-  --text-primary: #c0caf5;
-  --text-secondary: #a9b1d6;
-  --text-muted: #565f89;
-  --accent: #7aa2f7;
-  --accent-soft: rgba(122, 162, 247, 0.15);
-  --border: #3b4261;
-  --green: #9ece6a;
-  --red: #f7768e;
-  --yellow: #e0af68;
-  --purple: #bb9af7;
-  --orange: #ff9e64;
-  --cyan: #73daca;
-  --swatch-dark: #1a1b26;
-  --swatch-light: #f5f5f5;
+  /* Backgrounds — layered from darkest to lightest */
+  --background: #0a0a0f;
+  --bg-primary: #0f1117;
+  --bg-secondary: #161821;
+  --bg-tertiary: #1e2030;
+  --bg-elevated: #252738;
+
+  /* Foreground / text */
+  --foreground: #e2e8f0;
+  --text-primary: #e2e8f0;
+  --text-secondary: #a0aec0;
+  --text-muted: #5a6578;
+
+  /* Accent */
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-soft: rgba(59, 130, 246, 0.15);
+  --accent-glow: rgba(59, 130, 246, 0.4);
+
+  /* Borders — semi-transparent */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-active: rgba(59, 130, 246, 0.4);
+
+  /* Muted surfaces */
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-hover: rgba(255, 255, 255, 0.08);
+  --muted-strong: rgba(255, 255, 255, 0.12);
+
+  /* Semantic colors */
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --purple: #8b5cf6;
+  --orange: #f97316;
+  --cyan: #06b6d4;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* Layout (kept from original) */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   --font-size: 14px;
@@ -27,6 +62,62 @@
   --statusbar-height: 28px;
   --sidebar-icon-rail: 48px;
   --sidebar-panel-padding: 16px;
+}
+
+[data-theme="light"] {
+  --background: #ffffff;
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #f1f3f5;
+  --bg-tertiary: #e9ecef;
+  --bg-elevated: #ffffff;
+
+  --foreground: #1a1a2e;
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a5568;
+  --text-muted: #a0aec0;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: rgba(37, 99, 235, 0.1);
+  --accent-glow: rgba(37, 99, 235, 0.25);
+
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  --border-active: rgba(37, 99, 235, 0.4);
+
+  --muted: rgba(0, 0, 0, 0.03);
+  --muted-hover: rgba(0, 0, 0, 0.06);
+  --muted-strong: rgba(0, 0, 0, 0.09);
+
+  --green: #059669;
+  --red: #dc2626;
+  --yellow: #d97706;
+  --purple: #7c3aed;
+  --orange: #ea580c;
+  --cyan: #0891b2;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+}
+
+/* Glass utilities */
+.glass {
+  background: var(--muted);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.glass-strong {
+  background: var(--muted-strong);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+/* Glow animation */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.08); }
 }
 
 *,
@@ -55,9 +146,9 @@ body {
 }
 
 .section-card {
-  border-radius: 12px;
-  background: var(--bg-tertiary);
+  background: var(--muted);
   border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
   padding: 16px;
 }
 
@@ -119,10 +210,10 @@ body {
 }
 
 /* Hardcoded RGBA used here: CSS keyframe values cannot reference custom properties
-   in drop-shadow() reliably across engines. Color corresponds to --orange (#ff9e64). */
+   in drop-shadow() reliably across engines. Color corresponds to --orange (#f97316). */
 @keyframes pulse {
-  0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 158, 100, 0.4)); }
-  50% { filter: drop-shadow(0 0 12px rgba(255, 158, 100, 0.8)); }
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.4)); }
+  50% { filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.8)); }
 }
 
 .graph-tooltip {
@@ -136,8 +227,8 @@ body {
 }
 
 .graph-controls {
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 /* Voice UI */
@@ -160,10 +251,10 @@ body {
   animation: recordPulse 1.5s ease-in-out infinite;
 }
 /* Hardcoded RGBA used here: CSS keyframe values cannot reference custom properties
-   in box-shadow() reliably across engines. Color corresponds to --red (#f7768e). */
+   in box-shadow() reliably across engines. Color corresponds to --red (#ef4444). */
 @keyframes recordPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(247, 118, 142, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(247, 118, 142, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
 }
 .recording-overlay {
   animation: slideDown 200ms ease;
@@ -182,7 +273,7 @@ body {
 .cm-mermaid-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 16px;
   text-align: center;
   margin: 8px 0;
@@ -191,17 +282,17 @@ body {
 
 /* Callouts */
 .cm-callout { border-left: 3px solid; padding-left: 12px; margin: 4px 0; }
-.cm-callout-note { border-color: var(--accent); background: rgba(122, 162, 247, 0.06); }
-.cm-callout-warning { border-color: var(--yellow); background: rgba(224, 175, 104, 0.06); }
-.cm-callout-tip { border-color: var(--green); background: rgba(158, 206, 106, 0.06); }
-.cm-callout-important { border-color: var(--purple); background: rgba(187, 154, 247, 0.06); }
-.cm-callout-caution { border-color: var(--red); background: rgba(247, 118, 142, 0.06); }
+.cm-callout-note { border-color: var(--accent); background: rgba(59, 130, 246, 0.06); }
+.cm-callout-warning { border-color: var(--yellow); background: rgba(245, 158, 11, 0.06); }
+.cm-callout-tip { border-color: var(--green); background: rgba(16, 185, 129, 0.06); }
+.cm-callout-important { border-color: var(--purple); background: rgba(139, 92, 246, 0.06); }
+.cm-callout-caution { border-color: var(--red); background: rgba(239, 68, 68, 0.06); }
 .cm-callout-header { font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px; }
 
 /* Images */
-.cm-image-widget { max-width: 100%; border-radius: 8px; margin: 8px 0; }
-.cm-image-widget img { max-width: 100%; border-radius: 8px; cursor: pointer; }
-.cm-image-placeholder { background: var(--bg-tertiary); border-radius: 8px; padding: 32px; text-align: center; color: var(--text-muted); }
+.cm-image-widget { max-width: 100%; border-radius: var(--radius-md); margin: 8px 0; }
+.cm-image-widget img { max-width: 100%; border-radius: var(--radius-md); cursor: pointer; }
+.cm-image-placeholder { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 32px; text-align: center; color: var(--text-muted); }
 
 /* Code blocks */
 .cm-code-header {
@@ -215,5 +306,11 @@ body {
 /* Settings modal animation */
 @keyframes settingsIn {
   from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Generic modal animation */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }

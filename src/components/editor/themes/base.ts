@@ -5,42 +5,42 @@ import { tags } from "@lezer/highlight";
 const tokyoNightTheme = EditorView.theme(
   {
     "&": {
-      backgroundColor: "var(--bg-primary)",
-      color: "var(--text-primary)",
+      backgroundColor: "#0f1117",
+      color: "#e1e3eb",
       height: "100%",
     },
     "&.cm-focused": {
       outline: "none",
     },
     ".cm-content": {
-      caretColor: "var(--text-primary)",
+      caretColor: "#3b82f6",
       fontFamily: "var(--font-family)",
       fontSize: "var(--font-size)",
       lineHeight: "var(--line-height)",
       padding: "16px 0",
     },
     ".cm-cursor, .cm-dropCursor": {
-      borderLeftColor: "var(--text-primary)",
+      borderLeftColor: "#3b82f6",
       borderLeftWidth: "2px",
     },
     ".cm-selectionBackground": {
-      backgroundColor: "var(--accent-soft) !important",
+      backgroundColor: "rgba(59, 130, 246, 0.15) !important",
     },
     "&.cm-focused .cm-selectionBackground": {
-      backgroundColor: "var(--accent-soft) !important",
+      backgroundColor: "rgba(59, 130, 246, 0.15) !important",
     },
     ".cm-activeLine": {
-      backgroundColor: "var(--bg-active-line, rgba(255, 255, 255, 0.04))",
+      backgroundColor: "rgba(255, 255, 255, 0.05)",
     },
     ".cm-gutters": {
-      backgroundColor: "var(--bg-primary)",
-      color: "var(--text-muted)",
+      backgroundColor: "#161821",
+      color: "#5a5f7a",
       border: "none",
       paddingRight: "8px",
     },
     ".cm-activeLineGutter": {
-      backgroundColor: "var(--bg-active-line, rgba(255, 255, 255, 0.04))",
-      color: "var(--text-primary)",
+      backgroundColor: "rgba(255, 255, 255, 0.05)",
+      color: "#e1e3eb",
     },
     ".cm-lineNumbers .cm-gutterElement": {
       fontSize: "12px",
@@ -50,51 +50,51 @@ const tokyoNightTheme = EditorView.theme(
       width: "12px",
     },
     ".cm-searchMatch": {
-      backgroundColor: "var(--bg-search-match, rgba(224, 175, 104, 0.3))",
+      backgroundColor: "rgba(224, 175, 104, 0.3)",
       borderRadius: "4px",
     },
     ".cm-searchMatch.cm-searchMatch-selected": {
-      backgroundColor: "var(--accent-soft)",
+      backgroundColor: "rgba(59, 130, 246, 0.15)",
     },
     ".cm-panels": {
-      backgroundColor: "var(--bg-secondary)",
-      color: "var(--text-primary)",
+      backgroundColor: "#161821",
+      color: "#e1e3eb",
     },
     ".cm-panels.cm-panels-top": {
-      borderBottom: "1px solid var(--border)",
+      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
     },
     ".cm-panel.cm-search": {
       padding: "8px",
     },
     ".cm-panel.cm-search input": {
-      backgroundColor: "var(--bg-primary)",
-      color: "var(--text-primary)",
-      border: "1px solid var(--border)",
+      backgroundColor: "#0f1117",
+      color: "#e1e3eb",
+      border: "1px solid rgba(255, 255, 255, 0.08)",
       borderRadius: "4px",
       padding: "4px 8px",
       outline: "none",
     },
     ".cm-panel.cm-search input:focus": {
-      borderColor: "var(--accent)",
+      borderColor: "#3b82f6",
     },
     ".cm-panel.cm-search button": {
-      backgroundColor: "var(--bg-tertiary)",
-      color: "var(--text-primary)",
-      border: "1px solid var(--border)",
+      backgroundColor: "#1e2030",
+      color: "#e1e3eb",
+      border: "1px solid rgba(255, 255, 255, 0.08)",
       borderRadius: "4px",
       padding: "4px 8px",
       cursor: "pointer",
     },
     ".cm-panel.cm-search button:hover": {
-      backgroundColor: "var(--border)",
+      backgroundColor: "rgba(255, 255, 255, 0.08)",
     },
     ".cm-panel.cm-search label": {
-      color: "var(--text-secondary)",
+      color: "#a0aec0",
       fontSize: "12px",
     },
     ".cm-tooltip": {
-      backgroundColor: "var(--bg-secondary)",
-      border: "1px solid var(--border)",
+      backgroundColor: "#161821",
+      border: "1px solid rgba(255, 255, 255, 0.08)",
       borderRadius: "6px",
     },
     ".cm-tooltip-autocomplete": {
@@ -102,8 +102,8 @@ const tokyoNightTheme = EditorView.theme(
         padding: "4px 8px",
       },
       "& > ul > li[aria-selected]": {
-        backgroundColor: "var(--accent-soft)",
-        color: "var(--text-primary)",
+        backgroundColor: "rgba(59, 130, 246, 0.15)",
+        color: "#e1e3eb",
       },
     },
     // Markdown heading styles
@@ -136,7 +136,7 @@ const tokyoNightTheme = EditorView.theme(
     },
     // Frontmatter styling
     ".cm-frontmatter": {
-      backgroundColor: "var(--accent-soft)",
+      backgroundColor: "rgba(59, 130, 246, 0.15)",
     },
   },
   { dark: true }
@@ -157,7 +157,7 @@ const tokyoNightHighlightStyle = HighlightStyle.define([
   {
     tag: tags.monospace,
     color: "#9ece6a",
-    backgroundColor: "var(--bg-inline-code, rgba(158, 206, 106, 0.1))",
+    backgroundColor: "rgba(158, 206, 106, 0.1)",
     borderRadius: "3px",
     padding: "1px 4px",
   },

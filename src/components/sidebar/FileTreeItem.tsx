@@ -42,12 +42,14 @@ export function FileTreeItem({
     <div
       role="button"
       tabIndex={0}
-      className={`flex items-center gap-1 py-1.5 pr-3 rounded-md text-xs cursor-pointer select-none transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+      className={`flex items-center gap-2 px-2 py-1.5 rounded-[var(--radius-md)] text-sm cursor-pointer select-none transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
         isActive
           ? "bg-[var(--accent-soft)] text-[var(--accent)]"
           : isHovered
-            ? "bg-[var(--bg-tertiary)] text-[var(--text-secondary)]"
-            : "text-[var(--text-secondary)]"
+            ? "bg-[var(--muted)] text-[var(--text-primary)]"
+            : file.is_dir
+              ? "text-[var(--text-secondary)]"
+              : "text-[var(--text-primary)]"
       }`}
       style={{ paddingLeft }}
       onClick={handleClick}

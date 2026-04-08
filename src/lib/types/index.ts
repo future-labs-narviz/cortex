@@ -59,8 +59,8 @@ export interface TemplateInfo {
   preview: string;
 }
 
-export type ButtonVariant = "primary" | "secondary" | "ghost";
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "glass" | "destructive";
+export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 // Context Capture types
 

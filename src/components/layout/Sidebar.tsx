@@ -42,6 +42,19 @@ const navItems: SidebarNavItem[] = [
   { id: "integrations", icon: Plug, label: "Integrations" },
 ];
 
+/** Panel display names */
+const panelLabels: Record<SidebarPanel, string> = {
+  files: "Files",
+  search: "Search",
+  backlinks: "Backlinks",
+  graph: "Graph",
+  tags: "Tags",
+  calendar: "Calendar",
+  timeline: "Timeline",
+  voice: "Voice",
+  integrations: "Integrations",
+};
+
 export function Sidebar() {
   const [activePanel, setActivePanel] = useState<SidebarPanel>("files");
   const [width, setWidth] = useState(280);
@@ -75,23 +88,26 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-shrink-0" style={{ width }}>
       {/* Icon rail */}
-      <div className="flex flex-col items-center w-[52px] flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
+      <div className="flex flex-col items-center w-14 flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
         <DailyNoteButton />
-        <div className="w-6 border-b border-[var(--border)] my-2" />
+        <div className="h-px bg-[var(--border)] mx-2 my-1.5" />
         {navItems.map(({ id, icon: Icon, label }) => {
           const isActive = activePanel === id;
           return (
             <Tooltip key={id} content={label} side="right">
               <button
                 onClick={() => setActivePanel(id)}
-                className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+                className={`relative flex items-center justify-center h-12 w-12 p-0 m-1 rounded-[var(--radius-lg)] transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
                   isActive
-                    ? "bg-[var(--accent-soft)] text-[var(--accent)] shadow-sm"
-                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                    ? "bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-[var(--accent)] shadow-sm border border-[var(--accent)]/20"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] border border-transparent"
                 }`}
                 aria-label={label}
               >
-                <Icon size={20} strokeWidth={isActive ? 2 : 1.5} />
+                <Icon className="h-5 w-5" strokeWidth={isActive ? 2 : 1.5} />
+                {isActive && (
+                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[var(--accent)]" />
+                )}
               </button>
             </Tooltip>
           );
@@ -101,14 +117,14 @@ export function Sidebar() {
       {/* Panel content */}
       <div className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)]">
         {/* Panel header */}
-        <div className="flex items-center h-12 px-4 border-b border-[var(--border)]">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-muted)]">
-            {activePanel}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)]">
+          <span className="text-sm font-semibold text-[var(--text-primary)]">
+            {panelLabels[activePanel]}
           </span>
         </div>
 
         {/* Panel body */}
-        <div className="px-4 py-4 overflow-y-auto h-[calc(100%-3rem)]">
+        <div className="p-3 overflow-y-auto h-[calc(100%-2.625rem)]">
           {activePanel === "files" && <FileExplorer />}
           {activePanel === "search" && <SearchPanel />}
           {activePanel === "backlinks" && <BacklinksPanel />}
@@ -124,45 +140,60 @@ export function Sidebar() {
       {/* Drag handle for resizing */}
       <div
         onMouseDown={handleMouseDown}
-        className={`w-[4px] flex-shrink-0 cursor-col-resize transition-colors duration-150 ${
-          isDragging ? "bg-[var(--accent)]" : "bg-transparent hover:bg-[var(--accent)]"
+        className={`w-1 flex-shrink-0 cursor-col-resize transition-colors duration-200 ${
+          isDragging ? "bg-[var(--accent)]/70" : "bg-[var(--border)]/40 hover:bg-[var(--accent)]/70"
         }`}
       />
     </div>
   );
 }
 
-/** Reusable empty state for sidebar panels */
+/** Reusable empty state for sidebar panels — FutureLabs-inspired with glow ring */
 function SidebarEmptyState({
   icon: Icon,
   title,
   description,
-  showVaultButton = true,
+  gradient,
+  accentColor,
+  onAction,
+  actionLabel,
 }: {
-  icon: typeof FileText;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
-  showVaultButton?: boolean;
+  gradient: string;
+  accentColor: string;
+  onAction?: () => void;
+  actionLabel?: string;
 }) {
-  const openVault = useVaultStore((s) => s.openVault);
-
   return (
-    <div className="flex flex-col items-center text-center pt-16 px-2">
-      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--bg-tertiary)] border border-[var(--border)] mb-5 shadow-sm">
-        <Icon size={28} className="text-[var(--text-muted)]" />
-      </div>
-      <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">
-        {title}
-      </h3>
-      <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-6 max-w-[200px]">
-        {description}
-      </p>
-      {showVaultButton && (
-        <button
-          onClick={() => openVault()}
-          className="px-6 py-3 text-sm font-medium rounded-xl bg-[var(--accent)] text-white shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+    <div className="flex flex-col items-center justify-center px-6 py-16">
+      {/* Icon with glow ring */}
+      <div className="relative w-20 h-20 mb-6">
+        <div
+          className={`absolute inset-0 rounded-[var(--radius-2xl)] bg-gradient-to-br ${gradient} blur-xl opacity-40`}
+          style={{ animation: "glow-pulse 3s ease-in-out infinite" }}
+        />
+        <div
+          className={`relative w-full h-full rounded-[var(--radius-2xl)] bg-gradient-to-br ${gradient} border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-md)]`}
         >
-          Open a Vault
+          <Icon className={`w-8 h-8 ${accentColor}`} />
+        </div>
+      </div>
+      <div className="text-center space-y-2 max-w-[200px]">
+        <h3 className="text-base font-semibold text-[var(--text-primary)]">
+          {title}
+        </h3>
+        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+          {description}
+        </p>
+      </div>
+      {onAction && actionLabel && (
+        <button
+          onClick={onAction}
+          className="mt-6 inline-flex items-center justify-center h-10 px-5 text-sm font-medium rounded-[var(--radius-lg)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        >
+          {actionLabel}
         </button>
       )}
     </div>
@@ -171,6 +202,7 @@ function SidebarEmptyState({
 
 function GraphPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
+  const openVault = useVaultStore((s) => s.openVault);
 
   if (!isVaultOpen) {
     return (
@@ -178,12 +210,16 @@ function GraphPanel() {
         icon={GitFork}
         title="Knowledge Graph"
         description="Open a vault to explore connections between your notes."
+        gradient="from-cyan-500/10 to-cyan-600/5"
+        accentColor="text-[var(--cyan)]"
+        onAction={() => openVault()}
+        actionLabel="Open a Vault"
       />
     );
   }
 
   return (
-    <div className="w-full h-full -m-5" style={{ minHeight: 200 }}>
+    <div className="w-full h-full -m-3" style={{ minHeight: 200 }}>
       <GraphView compact />
     </div>
   );
@@ -198,7 +234,8 @@ function VoicePanel() {
         icon={Mic}
         title="Voice Notes"
         description="Record voice notes or dictate text directly into your editor."
-        showVaultButton={false}
+        gradient="from-amber-500/10 to-amber-600/5"
+        accentColor="text-[var(--yellow)]"
       />
     </div>
   );
@@ -206,6 +243,7 @@ function VoicePanel() {
 
 function TagsPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
+  const openVault = useVaultStore((s) => s.openVault);
 
   return (
     <SidebarEmptyState
@@ -216,7 +254,10 @@ function TagsPanel() {
           ? "No tags found in your vault yet."
           : "Open a vault to browse tags."
       }
-      showVaultButton={!isVaultOpen}
+      gradient="from-green-500/10 to-green-600/5"
+      accentColor="text-[var(--green)]"
+      onAction={isVaultOpen ? undefined : () => openVault()}
+      actionLabel={isVaultOpen ? undefined : "Open a Vault"}
     />
   );
 }

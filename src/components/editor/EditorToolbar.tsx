@@ -168,7 +168,7 @@ export function EditorToolbar() {
   ];
 
   return (
-    <div className="flex items-center gap-0.5 px-2 h-9 bg-[var(--bg-secondary)] border-b border-[var(--border)] shrink-0">
+    <div className="h-10 px-3 flex items-center gap-1 border-b border-[var(--border)] bg-[var(--bg-secondary)] shrink-0">
       {actions.map((action, i) => {
         if ((action as unknown as { type: string }).type === "separator") {
           return (
@@ -187,7 +187,7 @@ export function EditorToolbar() {
                 ? `${action.label} (${action.shortcut})`
                 : action.label
             }
-            className="flex items-center justify-center w-7 h-7 rounded-[4px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+            className="h-7 w-7 flex items-center justify-center rounded-[var(--radius-md)] hover:bg-[var(--muted)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
           >
             {action.icon}
           </button>

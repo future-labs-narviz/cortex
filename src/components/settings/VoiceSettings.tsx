@@ -82,12 +82,12 @@ export function VoiceSettings() {
       </div>
 
       {/* Microphone selector */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-[var(--text-muted)]">Microphone</label>
+      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
+        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">Microphone</label>
         <select
           value={selectedDevice ?? "default"}
           onChange={handleDeviceChange}
-          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
+          className="w-full h-9 px-3 text-sm rounded-[var(--radius-lg)] bg-[var(--muted)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
         >
           {devices.map((d) => (
             <option key={d.id} value={d.id}>
@@ -97,11 +97,11 @@ export function VoiceSettings() {
         </select>
 
         {/* Mic level indicator */}
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-3">
           <Volume2 size={12} className="text-[var(--text-muted)]" />
-          <div className="flex-1 h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-[var(--border)] rounded-[var(--radius-full)] overflow-hidden">
             <div
-              className="h-full bg-[var(--green)] rounded-full transition-[width] duration-100"
+              className="h-full bg-[var(--green)] rounded-[var(--radius-full)] transition-[width] duration-100"
               style={{ width: `${micLevel * 100}%` }}
             />
           </div>
@@ -109,20 +109,20 @@ export function VoiceSettings() {
       </div>
 
       {/* Model selector */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-[var(--text-muted)]">
+      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
+        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">
           Transcription Model
         </label>
         <ModelSelector />
       </div>
 
       {/* Language */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-[var(--text-muted)]">Language</label>
+      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
+        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">Language</label>
         <select
           value={selectedLanguage}
           onChange={handleLanguageChange}
-          className="w-full px-3 py-2 text-sm rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
+          className="w-full h-9 px-3 text-sm rounded-[var(--radius-lg)] bg-[var(--muted)] border border-[var(--border)] text-[var(--text-primary)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 transition-colors duration-150 ease-in-out"
         >
           {LANGUAGES.map((l) => (
             <option key={l.code} value={l.code}>
@@ -133,30 +133,33 @@ export function VoiceSettings() {
       </div>
 
       {/* Toggles */}
-      <div className="flex flex-col gap-3">
-        <label className="flex items-center justify-between cursor-pointer">
-          <span className="text-sm text-[var(--text-secondary)]">
-            Auto-transcribe after recording
-          </span>
-          <input
-            type="checkbox"
-            checked={autoTranscribe}
-            onChange={(e) => setAutoTranscribe(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-          />
-        </label>
+      <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4">
+        <label className="text-sm font-semibold text-[var(--text-primary)] mb-3 block">Behavior</label>
+        <div className="flex flex-col gap-3">
+          <label className="flex items-center justify-between cursor-pointer">
+            <span className="text-sm text-[var(--text-secondary)]">
+              Auto-transcribe after recording
+            </span>
+            <input
+              type="checkbox"
+              checked={autoTranscribe}
+              onChange={(e) => setAutoTranscribe(e.target.checked)}
+              className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+            />
+          </label>
 
-        <label className="flex items-center justify-between cursor-pointer">
-          <span className="text-sm text-[var(--text-secondary)]">
-            Create voice note (vs. insert at cursor)
-          </span>
-          <input
-            type="checkbox"
-            checked={createVoiceNote}
-            onChange={(e) => setCreateVoiceNote(e.target.checked)}
-            className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-          />
-        </label>
+          <label className="flex items-center justify-between cursor-pointer">
+            <span className="text-sm text-[var(--text-secondary)]">
+              Create voice note (vs. insert at cursor)
+            </span>
+            <input
+              type="checkbox"
+              checked={createVoiceNote}
+              onChange={(e) => setCreateVoiceNote(e.target.checked)}
+              className="w-4 h-4 accent-[var(--accent)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+            />
+          </label>
+        </div>
       </div>
     </div>
   );

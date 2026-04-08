@@ -98,13 +98,13 @@ export function FileExplorer() {
   if (!isVaultOpen) {
     return (
       <div className="flex flex-col items-center gap-4 pt-12 text-center">
-        <FolderOpen size={40} className="text-[var(--text-muted)]" />
-        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+        <FolderOpen size={32} className="text-[var(--text-muted)]" />
+        <p className="text-sm text-[var(--text-muted)]">
           No vault open.
         </p>
         <button
           onClick={() => openVault()}
-          className="px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          className="h-10 px-5 text-sm font-medium rounded-[var(--radius-lg)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
         >
           Open Vault
         </button>
@@ -115,10 +115,11 @@ export function FileExplorer() {
   if (files.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 pt-12 text-center">
+        <FolderOpen size={32} className="text-[var(--text-muted)]" />
         <p className="text-sm text-[var(--text-muted)]">Vault is empty.</p>
         <button
           onClick={() => handleNewNote(vaultPath ?? "")}
-          className="flex items-center gap-1.5 px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+          className="flex items-center gap-1.5 h-10 px-5 text-sm font-medium rounded-[var(--radius-lg)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
         >
           <Plus size={12} />
           New Note
@@ -132,7 +133,7 @@ export function FileExplorer() {
       {/* New note button at top */}
       <button
         onClick={() => handleNewNote(vaultPath ?? "")}
-        className="flex items-center gap-1.5 px-4 py-2 mb-1 rounded-lg text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer self-start focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        className="flex items-center gap-1.5 h-8 px-3 text-xs rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-200 cursor-pointer self-start"
       >
         <Plus size={12} />
         New Note

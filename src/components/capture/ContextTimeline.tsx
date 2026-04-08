@@ -94,14 +94,14 @@ export function ContextTimeline() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)]">
         <h3 className="text-xs font-semibold text-[var(--text-primary)]">
           Development Timeline
         </h3>
         <button
           onClick={() => fetchSessions()}
           disabled={isLoading}
-          className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded"
+          className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] hover:bg-[var(--muted)] p-1.5 rounded-[var(--radius-sm)] transition-colors cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
           title="Refresh sessions"
         >
           <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
@@ -110,12 +110,12 @@ export function ContextTimeline() {
 
       {/* Error state */}
       {error && (
-        <div className="flex items-center gap-2 text-[11px] text-[var(--red)] bg-[var(--red)]/10 rounded px-2 py-2 mb-2">
+        <div className="flex items-center gap-2 text-[11px] text-[var(--red)] bg-[var(--red)]/10 rounded-[var(--radius-lg)] px-3 py-2.5 mb-2">
           <AlertTriangle size={14} className="flex-shrink-0" />
           <span className="flex-1">{error}</span>
           <button
             onClick={() => fetchSessions()}
-            className="text-[10px] font-medium px-1.5 py-0.5 rounded hover:bg-[var(--red)]/20 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+            className="text-[10px] font-medium px-2 py-1 rounded-[var(--radius-sm)] hover:bg-[var(--red)]/20 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
           >
             Retry
           </button>

@@ -193,16 +193,22 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 transition-opacity duration-300 ease-in-out" />
+      <div
+        className="absolute inset-0 bg-black/60"
+        style={{ WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}
+      />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-md rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] shadow-2xl overflow-hidden transition-all duration-300 ease-in-out"
+        className="relative w-full max-w-lg mx-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-[var(--radius-2xl)] shadow-[var(--shadow-lg)] overflow-hidden transition-all duration-300 ease-in-out"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Top accent */}
+        <div className="h-px bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
+
         {/* Search input */}
-        <div className="flex items-center px-3 border-b border-[var(--border)]">
-          <FileText size={14} className="text-[var(--text-muted)] mr-2" />
+        <div className="flex items-center px-4 border-b border-[var(--border)]">
+          <FileText size={16} className="text-[var(--text-muted)] mr-2" />
           <input
             ref={inputRef}
             type="text"
@@ -210,7 +216,7 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search notes..."
-            className="flex-1 py-3 text-sm bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none"
+            className="flex-1 h-12 text-base bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none"
           />
         </div>
 
@@ -233,10 +239,10 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
               return (
                 <div
                   key={result.file.path}
-                  className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+                  className={`flex items-center gap-2 px-4 py-3 cursor-pointer rounded-[var(--radius-lg)] transition-colors duration-150 mx-2 ${
                     index === selectedIndex
-                      ? "bg-[var(--accent-soft)] ring-2 ring-[var(--accent)] ring-offset-0"
-                      : "hover:bg-[var(--bg-tertiary)]"
+                      ? "bg-[var(--accent-soft)] border border-[var(--accent)]/20"
+                      : "hover:bg-[var(--muted)]"
                   }`}
                   onClick={() => openFile(result.file)}
                   onMouseEnter={() => setSelectedIndex(index)}
@@ -262,21 +268,21 @@ export function QuickSwitcher({ isOpen, onClose }: QuickSwitcherProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="flex items-center gap-3 px-3 py-2 border-t border-[var(--border)] text-[10px] text-[var(--text-muted)]">
+        <div className="flex items-center gap-3 px-4 py-2 border-t border-[var(--border)] text-[10px] text-[var(--text-muted)]">
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] font-mono">
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
               &uarr;&darr;
             </kbd>{" "}
             navigate
           </span>
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] font-mono">
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
               Enter
             </kbd>{" "}
             open
           </span>
           <span>
-            <kbd className="px-1 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] font-mono">
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--muted)] text-[var(--text-muted)] font-mono">
               Esc
             </kbd>{" "}
             close

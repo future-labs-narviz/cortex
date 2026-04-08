@@ -58,7 +58,7 @@ export function TemplateSettings() {
         </h3>
         <button
           onClick={handleCreateTemplate}
-          className="flex items-center gap-1 text-[10px] text-[var(--accent)] hover:underline cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded-sm"
+          className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--muted)] rounded-[var(--radius-md)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
         >
           <Plus size={12} />
           New
@@ -77,10 +77,10 @@ export function TemplateSettings() {
                   selectedTemplate === tmpl.name ? null : tmpl.name,
                 )
               }
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors duration-150 ease-in-out text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-left transition-colors duration-150 ease-in-out text-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
                 selectedTemplate === tmpl.name
                   ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--muted)]"
               }`}
             >
               <FileText size={14} />
@@ -91,8 +91,8 @@ export function TemplateSettings() {
       )}
 
       {selected && (
-        <div className="mt-2 p-2 rounded-md bg-[var(--bg-tertiary)] border border-[var(--border)]">
-          <p className="text-[10px] font-medium text-[var(--text-muted)] mb-1">
+        <div className="mt-2 p-3 rounded-[var(--radius-lg)] bg-[var(--muted)] border border-[var(--border)]">
+          <p className="text-xs font-medium text-[var(--text-muted)] mb-1">
             Preview
           </p>
           <pre className="text-[10px] text-[var(--text-secondary)] whitespace-pre-wrap break-words font-mono leading-relaxed">

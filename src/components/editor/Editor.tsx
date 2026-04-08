@@ -185,7 +185,7 @@ export function Editor({ content, onChange, onSave, filePath }: EditorProps) {
   return (
     <div
       ref={containerRef}
-      className="flex-1 min-h-0 overflow-hidden"
+      className="flex-1 min-h-0 overflow-hidden bg-[var(--bg-primary)]"
       data-testid="editor-container"
     />
   );

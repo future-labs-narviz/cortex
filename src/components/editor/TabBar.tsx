@@ -63,10 +63,10 @@ export function TabBar({ paneIndex }: TabBarProps) {
         <div
           key={tab.id}
           tabIndex={0}
-          className={`flex items-center gap-1.5 px-3 h-full text-xs border-r border-[var(--border)] cursor-pointer transition-colors duration-150 ease-out select-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--accent)] ${
+          className={`flex items-center gap-2 px-4 h-full text-xs border-r border-[var(--border)] cursor-pointer transition-colors duration-150 select-none focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--accent)] ${
             tab.id === activeTabId
               ? "bg-[var(--bg-primary)] text-[var(--text-primary)]"
-              : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+              : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)]"
           }`}
           onClick={() => handleClick(tab.id)}
           onMouseDown={(e) => handleMouseDown(e, tab.id)}
@@ -80,14 +80,14 @@ export function TabBar({ paneIndex }: TabBarProps) {
           <FileText size={12} className="shrink-0" />
           <span className="truncate max-w-[120px]">{tab.title}</span>
           {tab.isDirty && (
-            <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shrink-0" />
+            <div className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0" />
           )}
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleClose(tab.id);
             }}
-            className="ml-1 rounded-[4px] w-5 h-5 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 ease-out cursor-pointer shrink-0 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--bg-primary)]"
+            className="ml-1 rounded-sm w-4 h-4 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--muted-strong)] transition-colors duration-150 cursor-pointer shrink-0 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 focus:ring-offset-[var(--bg-primary)]"
             aria-label={`Close ${tab.title}`}
           >
             &times;

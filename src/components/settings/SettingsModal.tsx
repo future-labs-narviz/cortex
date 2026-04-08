@@ -50,12 +50,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
       {/* Modal */}
       <div
-        className="relative w-[700px] max-w-[90vw] h-[520px] max-h-[80vh] rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] shadow-2xl flex overflow-hidden animate-[settingsIn_150ms_ease-out]"
+        className="relative w-[700px] max-w-[90vw] h-[520px] max-h-[80vh] rounded-[var(--radius-xl)] bg-[var(--bg-secondary)] border border-[var(--border)] shadow-2xl flex overflow-hidden animate-[settingsIn_150ms_ease-out]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sidebar */}
         <div className="w-[180px] flex-shrink-0 bg-[var(--bg-primary)] border-r border-[var(--border)] p-3 flex flex-col gap-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] px-2 py-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] px-3 py-2">
             Settings
           </h2>
           {SECTIONS.map((section) => {
@@ -64,10 +64,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-sm transition-colors duration-150 cursor-pointer ${
                   activeSection === section.id
                     ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                    : "text-[var(--text-secondary)] hover:bg-[var(--muted)]"
                 }`}
               >
                 <Icon size={16} />
@@ -90,7 +90,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   Integrations
                 </h3>
               </div>
-              <p className="text-sm text-[var(--text-muted)]">
+              <p className="text-xs text-[var(--text-muted)]">
                 No integrations configured yet. Plugin support coming soon.
               </p>
             </div>
@@ -100,7 +100,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+          className="absolute top-3 right-3 p-1.5 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--muted)] transition-colors duration-150 cursor-pointer"
         >
           <X size={16} />
         </button>

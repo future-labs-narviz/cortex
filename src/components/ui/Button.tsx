@@ -9,17 +9,22 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-[var(--accent)] text-[var(--bg-primary)] shadow-sm hover:brightness-110 hover:shadow-md active:brightness-90 active:scale-[0.98]",
+    "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98]",
   secondary:
-    "bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--border)] hover:border-[var(--text-muted)]",
+    "bg-[var(--muted)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--border-hover)] hover:bg-[var(--muted-hover)]",
   ghost:
-    "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] hover:shadow-sm",
+    "bg-transparent text-[var(--text-secondary)] hover:bg-[var(--muted)] hover:text-[var(--text-primary)]",
+  glass:
+    "bg-[var(--muted)] [-webkit-backdrop-filter:blur(24px)] backdrop-blur-xl border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--muted-hover)]",
+  destructive:
+    "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-[0_4px_12px_rgba(239,68,68,0.3)]",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3.5 py-2 text-xs gap-1.5 min-h-[32px]",
-  md: "px-5 py-2.5 text-sm gap-2 min-h-[40px]",
-  lg: "px-6 py-3 text-base gap-2 min-h-[44px]",
+  sm: "h-8 px-3 text-xs gap-1.5 rounded-[var(--radius-md)]",
+  md: "h-10 px-5 text-sm gap-2 rounded-[var(--radius-lg)]",
+  lg: "h-12 px-8 text-base gap-2 rounded-[var(--radius-xl)]",
+  icon: "size-10 rounded-[var(--radius-lg)]",
 };
 
 export function Button({
@@ -31,7 +36,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] disabled:opacity-50 disabled:cursor-not-allowed ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:pointer-events-none ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {children}

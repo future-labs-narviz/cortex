@@ -121,10 +121,9 @@ export function GraphView({ compact = false }: GraphViewProps) {
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
           <Loader2
             size={24}
-            className="animate-spin"
-            style={{ color: "var(--text-muted)" }}
+            className="animate-spin text-[var(--text-muted)]"
           />
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          <p className="text-sm text-[var(--text-muted)]">
             Loading graph...
           </p>
         </div>
@@ -133,17 +132,15 @@ export function GraphView({ compact = false }: GraphViewProps) {
       {/* Error state */}
       {error && !isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-3">
-          <AlertTriangle size={24} style={{ color: "var(--yellow)" }} />
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          <AlertTriangle size={24} className="text-[var(--yellow)]" />
+          <p className="text-sm text-[var(--text-muted)]">
             {error}
           </p>
           <button
             onClick={() => fetchGraphData(activeFilePath ?? undefined)}
-            className="px-3 py-1.5 text-xs rounded-md transition-all duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+            className="px-4 py-1.5 text-xs font-medium rounded-[var(--radius-md)] text-white transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
             style={{
-              background: "var(--bg-tertiary)",
-              color: "var(--text-secondary)",
-              border: "1px solid var(--border)",
+              background: "linear-gradient(135deg, var(--accent), var(--purple))",
             }}
           >
             Retry
@@ -154,8 +151,8 @@ export function GraphView({ compact = false }: GraphViewProps) {
       {/* Empty state */}
       {!isLoading && !error && data && data.nodes.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 gap-2">
-          <Network size={24} style={{ color: "var(--text-muted)" }} />
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          <Network size={24} className="text-[var(--text-muted)]" />
+          <p className="text-sm text-[var(--text-muted)]">
             No notes to display.
           </p>
         </div>

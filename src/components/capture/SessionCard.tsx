@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Clock, FileText, Terminal, Lightbulb } from "lucide-react";
+import { ChevronRight, Clock, FileText, Terminal, Lightbulb } from "lucide-react";
 import type { CapturedSession } from "@/lib/types";
 
 interface SessionCardProps {
@@ -39,31 +39,31 @@ export function SessionCard({ session }: SessionCardProps) {
   const title = session.summary || session.goal || "Development session";
 
   return (
-    <div className="flex gap-3 py-2">
-      {/* Timeline dot */}
-      <div className="flex flex-col items-center pt-1">
-        <div
-          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-            isActive
-              ? "bg-[var(--green)] shadow-[0_0_6px_var(--green)]"
-              : "bg-[var(--accent)]"
-          }`}
-        />
-        <div className="w-px flex-1 bg-[var(--border)] mt-1" />
-      </div>
+    <div className="bg-[var(--muted)] border border-[var(--border)] rounded-[var(--radius-xl)] p-4 mb-2">
+      <div className="flex gap-3">
+        {/* Timeline dot */}
+        <div className="flex flex-col items-center pt-1">
+          <div
+            className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+              isActive
+                ? "bg-[var(--green)]"
+                : "bg-[var(--accent)]"
+            }`}
+            style={isActive ? { boxShadow: '0 0 0 3px rgba(16,185,129,0.3)' } : undefined}
+          />
+          <div className="w-px flex-1 bg-[var(--border)] mt-1" />
+        </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0 pb-3">
-        {/* Header */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex items-start gap-1.5 w-full text-left group cursor-pointer transition-transform duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded"
-        >
-          {expanded ? (
-            <ChevronDown size={12} className="mt-0.5 text-[var(--text-muted)] flex-shrink-0" />
-          ) : (
+        {/* Content */}
+        <div className="flex-1 min-w-0 pb-1">
+          {/* Header */}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-start gap-1.5 w-full text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)] rounded"
+          >
+          <span className="transition-transform duration-200" style={{ display: 'inline-flex', transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
             <ChevronRight size={12} className="mt-0.5 text-[var(--text-muted)] flex-shrink-0" />
-          )}
+          </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="text-[10px] text-[var(--text-muted)] font-mono">
@@ -117,7 +117,7 @@ export function SessionCard({ session }: SessionCardProps) {
           <div className="mt-2 ml-4 space-y-2">
             {session.key_decisions.length > 0 && (
               <div>
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
                   Key Decisions
                 </h4>
                 <ul className="space-y-0.5">
@@ -133,7 +133,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
             {session.what_worked && (
               <div>
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--green)]/70 mb-1">
+                <h4 className="text-sm font-semibold text-[var(--green)] mb-1">
                   What Worked
                 </h4>
                 <p className="text-[11px] text-[var(--text-secondary)]">{session.what_worked}</p>
@@ -142,7 +142,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
             {session.what_failed && (
               <div>
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--red)]/70 mb-1">
+                <h4 className="text-sm font-semibold text-[var(--red)] mb-1">
                   What Failed
                 </h4>
                 <p className="text-[11px] text-[var(--text-secondary)]">{session.what_failed}</p>
@@ -151,7 +151,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
             {session.files_modified.length > 0 && (
               <div>
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
                   Files Modified
                 </h4>
                 <ul className="space-y-0.5">
@@ -166,7 +166,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
             {session.tools_used.length > 0 && (
               <div>
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
                   Tools Used
                 </h4>
                 <div className="flex flex-wrap gap-1">
@@ -183,6 +183,7 @@ export function SessionCard({ session }: SessionCardProps) {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

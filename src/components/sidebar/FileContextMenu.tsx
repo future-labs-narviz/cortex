@@ -79,7 +79,7 @@ export function FileContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[160px] py-1 rounded-md bg-[var(--bg-primary)] border border-[var(--border)] shadow-lg"
+      className="fixed z-50 min-w-[180px] py-1 rounded-[var(--radius-xl)] bg-[var(--bg-elevated)] border border-[var(--border)] shadow-[var(--shadow-lg)]"
       style={{ left: x, top: y }}
     >
       {items.map(({ label, icon: Icon, action, danger }) => (
@@ -89,11 +89,12 @@ export function FileContextMenu({
             action();
             onClose();
           }}
-          className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+          className={`flex items-center gap-2 w-full px-3 py-2 text-sm text-left rounded-[var(--radius-md)] mx-1 transition-colors duration-150 cursor-pointer focus:outline-none ${
             danger
               ? "text-[var(--red)] hover:bg-[var(--red)]/10"
-              : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+              : "text-[var(--text-secondary)] hover:bg-[var(--muted)] hover:text-[var(--text-primary)]"
           }`}
+          style={{ width: "calc(100% - 8px)" }}
         >
           <Icon size={14} />
           {label}
