@@ -59,6 +59,7 @@ const panelLabels: Record<SidebarPanel, string> = {
 export function Sidebar() {
   const [activePanel, setActivePanel] = useState<SidebarPanel>("files");
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
+  const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
   const [width, setWidth] = useState(280);
   const [isDragging, setIsDragging] = useState(false);
   const startX = useRef(0);
@@ -88,7 +89,7 @@ export function Sidebar() {
   }, [isDragging]);
 
   return (
-    <div className="flex h-full flex-shrink-0" style={{ width }}>
+    <div className="flex h-full flex-shrink-0" style={{ width: sidebarCollapsed ? 0 : width, overflow: 'hidden', transition: 'width 200ms ease' }}>
       {/* Icon rail */}
       <div className="flex flex-col items-center justify-center w-14 flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
         <DailyNoteButton />
