@@ -55,25 +55,6 @@ export function SearchPanel() {
     };
   }, []);
 
-  if (!isVaultOpen) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
-        <FolderOpen size={32} className="text-[var(--text-muted)]" />
-        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-          No vault open.
-          <br />
-          Open a vault to search notes.
-        </p>
-        <button
-          onClick={() => openVault()}
-          className="px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-        >
-          Open Vault
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-2 pt-1">
       {/* Search input */}

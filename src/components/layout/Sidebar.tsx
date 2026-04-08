@@ -9,6 +9,7 @@ import {
   Clock,
   Mic,
   Plug,
+  FolderOpen,
 } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useVaultStore } from "@/stores/vaultStore";
@@ -57,6 +58,7 @@ const panelLabels: Record<SidebarPanel, string> = {
 
 export function Sidebar() {
   const [activePanel, setActivePanel] = useState<SidebarPanel>("files");
+  const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
   const [width, setWidth] = useState(280);
   const [isDragging, setIsDragging] = useState(false);
   const startX = useRef(0);
@@ -125,15 +127,21 @@ export function Sidebar() {
 
         {/* Panel body */}
         <div className="p-4 overflow-y-auto h-[calc(100%-2.75rem)]">
-          {activePanel === "files" && <FileExplorer />}
-          {activePanel === "search" && <SearchPanel />}
-          {activePanel === "backlinks" && <BacklinksPanel />}
-          {activePanel === "graph" && <GraphPanel />}
-          {activePanel === "tags" && <TagsPanel />}
-          {activePanel === "calendar" && <Calendar />}
-          {activePanel === "timeline" && <ContextTimeline />}
-          {activePanel === "voice" && <VoicePanel />}
-          {activePanel === "integrations" && <IntegrationSettings />}
+          {!isVaultOpen && activePanel !== "integrations" && activePanel !== "voice" && activePanel !== "calendar" ? (
+            <NoVaultState />
+          ) : (
+            <>
+              {activePanel === "files" && <FileExplorer />}
+              {activePanel === "search" && <SearchPanel />}
+              {activePanel === "backlinks" && <BacklinksPanel />}
+              {activePanel === "graph" && <GraphPanel />}
+              {activePanel === "tags" && <TagsPanel />}
+              {activePanel === "calendar" && <Calendar />}
+              {activePanel === "timeline" && <ContextTimeline />}
+              {activePanel === "voice" && <VoicePanel />}
+              {activePanel === "integrations" && <IntegrationSettings />}
+            </>
+          )}
         </div>
       </div>
 
@@ -148,7 +156,26 @@ export function Sidebar() {
   );
 }
 
-/** Reusable empty state for sidebar panels — FutureLabs-inspired with glow ring */
+/** Unified empty state shown when no vault is open — single "Open Vault" button */
+function NoVaultState() {
+  const openVault = useVaultStore((s) => s.openVault);
+  return (
+    <div className="flex flex-col items-center justify-center h-full px-5 text-center">
+      <FolderOpen className="w-6 h-6 text-[var(--text-muted)] mb-4" />
+      <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-6">
+        No vault open
+      </p>
+      <button
+        onClick={() => openVault()}
+        className="h-9 px-5 text-[13px] font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+      >
+        Open Vault
+      </button>
+    </div>
+  );
+}
+
+/** Reusable empty state for sidebar panels — with glow ring */
 function SidebarEmptyState({
   icon: Icon,
   title,
@@ -169,22 +196,22 @@ function SidebarEmptyState({
   return (
     <div className="flex flex-col items-center justify-center h-full px-6">
       {/* Icon with glow ring */}
-      <div className="relative w-20 h-20 mb-8">
+      <div className="relative w-12 h-12 mb-5">
         <div
-          className={`absolute inset-0 rounded-[var(--radius-2xl)] ${gradient} blur-xl opacity-40`}
+          className={`absolute inset-0 rounded-[var(--radius-xl)] ${gradient} blur-lg opacity-30`}
           style={{ animation: "glow-pulse 3s ease-in-out infinite" }}
         />
         <div
-          className={`relative w-full h-full rounded-[var(--radius-2xl)] ${gradient} border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-md)]`}
+          className={`relative w-full h-full rounded-[var(--radius-xl)] ${gradient} border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-sm)]`}
         >
-          <Icon className={`w-8 h-8 ${accentColor}`} />
+          <Icon className={`w-5 h-5 ${accentColor}`} />
         </div>
       </div>
-      <div className="text-center space-y-3 max-w-[220px]">
-        <h3 className="text-base font-semibold text-[var(--text-primary)]">
+      <div className="text-center space-y-2 max-w-[200px]">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)]">
           {title}
         </h3>
-        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           {description}
         </p>
       </div>
@@ -202,20 +229,9 @@ function SidebarEmptyState({
 
 function GraphPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
-  const openVault = useVaultStore((s) => s.openVault);
 
   if (!isVaultOpen) {
-    return (
-      <SidebarEmptyState
-        icon={GitFork}
-        title="Knowledge Graph"
-        description="Open a vault to explore connections between your notes."
-        gradient="glow-cyan"
-        accentColor="text-[var(--cyan)]"
-        onAction={() => openVault()}
-        actionLabel="Open a Vault"
-      />
-    );
+    return null; // Unified NoVaultState handles this
   }
 
   return (
@@ -243,21 +259,18 @@ function VoicePanel() {
 
 function TagsPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
-  const openVault = useVaultStore((s) => s.openVault);
+
+  if (!isVaultOpen) {
+    return null; // Unified NoVaultState handles this
+  }
 
   return (
     <SidebarEmptyState
       icon={Tags}
-      title="Tags"
-      description={
-        isVaultOpen
-          ? "No tags found in your vault yet."
-          : "Open a vault to browse tags."
-      }
+      title="No Tags"
+      description="No tags found in your vault yet."
       gradient="glow-green"
       accentColor="text-[var(--green)]"
-      onAction={isVaultOpen ? undefined : () => openVault()}
-      actionLabel={isVaultOpen ? undefined : "Open a Vault"}
     />
   );
 }

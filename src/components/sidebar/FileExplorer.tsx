@@ -95,22 +95,8 @@ export function FileExplorer() {
     navigator.clipboard.writeText(path).catch(console.error);
   }, []);
 
-  if (!isVaultOpen) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
-        <FolderOpen size={32} className="text-[var(--text-muted)]" />
-        <p className="text-sm text-[var(--text-muted)]">
-          No vault open.
-        </p>
-        <button
-          onClick={() => openVault()}
-          className="h-10 px-6 text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-        >
-          Open Vault
-        </button>
-      </div>
-    );
-  }
+  // No vault open state is handled by the Sidebar's unified NoVaultState
+  if (!isVaultOpen) return null;
 
   if (files.length === 0) {
     return (
