@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from "react";
 import type { ButtonVariant, ButtonSize } from "@/lib/types";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,11 +20,19 @@ const variantStyles: Record<ButtonVariant, string> = {
     "btn-destructive text-white shadow-[0_4px_12px_rgba(239,68,68,0.3)]",
 };
 
-const sizeStyles: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-xs gap-1.5 rounded-[var(--radius-md)]",
-  md: "h-10 px-5 text-sm gap-2 rounded-[var(--radius-lg)]",
-  lg: "h-12 px-8 text-base gap-2 rounded-[var(--radius-xl)]",
-  icon: "size-10 rounded-[var(--radius-lg)]",
+const sizeClasses: Record<ButtonSize, string> = {
+  sm: "text-xs gap-1.5 rounded-[var(--radius-md)]",
+  md: "text-sm gap-2 rounded-[var(--radius-lg)]",
+  lg: "text-base gap-2 rounded-[var(--radius-xl)]",
+  icon: "rounded-[var(--radius-lg)]",
+};
+
+// Use inline styles for sizing to guarantee Safari 15 renders padding correctly
+const sizeInline: Record<ButtonSize, CSSProperties> = {
+  sm: { height: 32, paddingLeft: 14, paddingRight: 14 },
+  md: { height: 40, paddingLeft: 20, paddingRight: 20 },
+  lg: { height: 48, paddingLeft: 32, paddingRight: 32 },
+  icon: { width: 40, height: 40 },
 };
 
 export function Button({
@@ -32,11 +40,13 @@ export function Button({
   size = "md",
   children,
   className = "",
+  style,
   ...props
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:pointer-events-none ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:pointer-events-none ${variantStyles[variant]} ${sizeClasses[size]} ${className}`}
+      style={{ ...sizeInline[size], ...style }}
       {...props}
     >
       {children}

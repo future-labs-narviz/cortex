@@ -161,7 +161,8 @@ function NoVaultState() {
       </p>
       <button
         onClick={() => openVault()}
-        className="h-9 px-5 text-[13px] font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        className="text-[13px] font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        style={{ height: 36, paddingLeft: 24, paddingRight: 24 }}
       >
         Open Vault
       </button>
@@ -245,16 +246,15 @@ function GraphPanel() {
 
 function VoicePanel() {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <VoiceNoteCreator />
-      <div className="w-full border-b border-[var(--border)]" />
-      <SidebarEmptyState
-        icon={Mic}
-        title="Voice Notes"
-        description="Record voice notes or dictate text directly into your editor."
-        gradient="glow-amber"
-        accentColor="text-[var(--yellow)]"
-      />
+      <div className="border-b border-[var(--border)]" />
+      <div className="flex flex-col items-center text-center pt-4">
+        <Mic className="w-5 h-5 text-[var(--text-muted)] mb-3" />
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed max-w-[180px]">
+          Record voice notes or dictate text directly into your editor.
+        </p>
+      </div>
     </div>
   );
 }

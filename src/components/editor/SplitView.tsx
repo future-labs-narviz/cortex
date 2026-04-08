@@ -261,7 +261,8 @@ function EmptyState() {
       </p>
       <button
         onClick={() => openVault()}
-        className="h-10 px-6 text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        className="text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        style={{ height: 40, paddingLeft: 28, paddingRight: 28 }}
       >
         Open Vault
       </button>

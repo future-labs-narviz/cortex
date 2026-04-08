@@ -137,7 +137,8 @@ export function IntegrationSettings() {
           <button
             onClick={testConnection}
             disabled={status.state === "checking"}
-            className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm rounded-[var(--radius-lg)] font-medium bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors duration-150 ease-in-out cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+            className="flex items-center justify-center gap-2 text-sm rounded-[var(--radius-lg)] font-medium btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-50"
+            style={{ height: 36, paddingLeft: 16, paddingRight: 16 }}
           >
             <RefreshCw
               size={14}
@@ -287,7 +288,8 @@ export function IntegrationSettings() {
             });
           });
         }}
-        className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm rounded-[var(--radius-lg)] font-medium border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-150 ease-in-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        className="flex items-center justify-center gap-2 text-sm rounded-[var(--radius-lg)] font-medium border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--muted)] hover:border-[var(--border-hover)] transition-all duration-200 cursor-pointer"
+        style={{ height: 36, paddingLeft: 16, paddingRight: 16 }}
       >
         <ExternalLink size={12} />
         Open Skill Directory
