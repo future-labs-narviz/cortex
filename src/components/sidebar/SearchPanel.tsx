@@ -88,7 +88,7 @@ export function SearchPanel() {
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder="Search notes..."
-          className="w-full pl-7 pr-2.5 py-1.5 text-xs rounded-md bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:border-[var(--accent)] transition-colors duration-150"
+          className="w-full pl-7 pr-3 py-2 text-xs rounded-md bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:border-[var(--accent)] transition-colors duration-150"
         />
         {isSearching && (
           <Loader2
@@ -154,7 +154,7 @@ function SearchResultItem({ result }: SearchResultItemProps) {
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col gap-0.5 px-2 py-1.5 rounded-md text-left cursor-pointer hover:bg-[var(--bg-tertiary)] transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 group"
+      className="flex flex-col gap-1 px-3 py-2 rounded-md text-left cursor-pointer hover:bg-[var(--bg-tertiary)] transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 group"
     >
       {/* Title */}
       <div className="flex items-center gap-1.5 min-w-0">
@@ -174,7 +174,7 @@ function SearchResultItem({ result }: SearchResultItemProps) {
       />
 
       {/* Path */}
-      <span className="text-[10px] text-[var(--text-muted)] truncate pl-[18px]">
+      <span className="text-[11px] text-[var(--text-muted)] truncate pl-[18px]">
         {result.path}
       </span>
     </button>

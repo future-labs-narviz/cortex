@@ -132,7 +132,7 @@ export function FileExplorer() {
       {/* New note button at top */}
       <button
         onClick={() => handleNewNote(vaultPath ?? "")}
-        className="flex items-center gap-1.5 px-2 py-1 mb-1 rounded-md text-[11px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer self-start focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        className="flex items-center gap-1.5 px-3 py-1.5 mb-1 rounded-md text-[11px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer self-start focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
       >
         <Plus size={12} />
         New Note

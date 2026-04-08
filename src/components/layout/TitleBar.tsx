@@ -6,7 +6,7 @@ export function TitleBar() {
 
   return (
     <div
-      className="flex items-center h-10 px-3 bg-[var(--bg-secondary)] border-b border-[var(--border)] select-none"
+      className="flex items-center h-12 px-4 bg-[var(--bg-secondary)] border-b border-[var(--border)] select-none"
       data-tauri-drag-region
     >
       {/* macOS traffic light spacing */}
@@ -14,14 +14,14 @@ export function TitleBar() {
 
       <button
         onClick={toggleSidebar}
-        className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
+        className="p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
         aria-label="Toggle sidebar"
       >
-        <PanelLeft size={16} />
+        <PanelLeft size={18} />
       </button>
 
       <div
-        className="flex-1 text-center text-xs font-medium text-[var(--text-muted)] tracking-wide"
+        className="flex-1 text-center text-sm font-medium text-[var(--text-muted)] tracking-wide"
         data-tauri-drag-region
       >
         Cortex

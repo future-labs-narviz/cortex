@@ -23,6 +23,10 @@
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   --font-size: 14px;
   --line-height: 1.6;
+  --header-height: 48px;
+  --statusbar-height: 28px;
+  --sidebar-icon-rail: 48px;
+  --sidebar-panel-padding: 16px;
 }
 
 *,

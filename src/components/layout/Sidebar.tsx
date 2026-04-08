@@ -54,7 +54,7 @@ export function Sidebar() {
     >
       {/* Icon rail */}
       <div
-        className="flex flex-col items-center w-[44px] flex-shrink-0 py-2 gap-0.5 bg-[var(--bg-primary)] border-r border-[var(--border)]"
+        className="flex flex-col items-center w-[48px] flex-shrink-0 py-3 gap-1.5 bg-[var(--bg-primary)] border-r border-[var(--border)]"
         style={{
           opacity: sidebarCollapsed ? 0 : 1,
           pointerEvents: sidebarCollapsed ? "none" : "auto",
@@ -69,7 +69,7 @@ export function Sidebar() {
             <Tooltip key={id} content={label} side="right">
               <button
                 onClick={() => setActivePanel(id)}
-                className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+                className={`flex items-center justify-center w-9 h-9 rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
                   isActive
                     ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                     : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
@@ -92,14 +92,14 @@ export function Sidebar() {
         }}
       >
         {/* Panel header */}
-        <div className="flex items-center h-8 px-3 border-b border-[var(--border)]">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="flex items-center h-10 px-4 border-b border-[var(--border)]">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
             {activePanel}
           </span>
         </div>
 
         {/* Panel body */}
-        <div className="p-3 overflow-y-auto h-[calc(100%-2rem)]">
+        <div className="p-4 overflow-y-auto h-[calc(100%-2.5rem)]">
           {activePanel === "files" && <FileExplorer />}
           {activePanel === "search" && <SearchPanel />}
           {activePanel === "backlinks" && <BacklinksPanel />}

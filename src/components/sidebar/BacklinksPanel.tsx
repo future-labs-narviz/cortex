@@ -106,7 +106,7 @@ export function BacklinksPanel() {
         <button
           key={`${bl.source_path}-${bl.line}-${idx}`}
           onClick={() => setActiveFile(bl.source_path)}
-          className="flex flex-col gap-0.5 w-full text-left px-2 py-1.5 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 group"
+          className="flex flex-col gap-1 w-full text-left px-3 py-2 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 group"
         >
           <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
             <FileText size={12} className="flex-shrink-0" />

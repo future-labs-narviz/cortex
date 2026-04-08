@@ -89,11 +89,17 @@ function buildMathDecorations(view: EditorView): DecorationSet {
   }
 
   // Inline math: $...$ (not $$)
-  const inlineRe = /(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/g;
+  // Uses non-capturing groups instead of lookbehind for Safari 15 compatibility.
+  // Matches $ not preceded by $ and not followed by $, capturing content between.
+  const inlineRe = /(?:^|[^\$])\$(?!\$)(.+?)\$(?!\$)/g;
 
   while ((m = inlineRe.exec(text)) !== null) {
-    const from = m.index;
-    const to = from + m[0].length;
+    // The non-capturing prefix (?:^|[^\$]) may capture an extra char before $.
+    // Adjust `from` to point at the actual $ sign.
+    const matchStr = m[0];
+    const dollarOffset = matchStr.indexOf("$");
+    const from = m.index + dollarOffset;
+    const to = from + matchStr.length - dollarOffset;
 
     // Skip if overlapping with a block math region
     if (cursorInsideRange(view, from, to)) continue;

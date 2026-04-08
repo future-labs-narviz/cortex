@@ -25,7 +25,7 @@ export function GraphControls({
     <div
       className="graph-controls absolute top-3 right-3 flex flex-col gap-2 p-2 rounded-lg border"
       style={{
-        background: "color-mix(in srgb, var(--bg-secondary) 85%, transparent)",
+        background: "rgba(36, 40, 59, 0.85)",
         borderColor: "var(--border)",
         zIndex: 10,
       }}

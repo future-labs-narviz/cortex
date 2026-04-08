@@ -42,7 +42,7 @@ export function FileTreeItem({
     <div
       role="button"
       tabIndex={0}
-      className={`flex items-center gap-1 py-[3px] pr-2 rounded-md text-xs cursor-pointer select-none transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+      className={`flex items-center gap-1 py-1.5 pr-3 rounded-md text-xs cursor-pointer select-none transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
         isActive
           ? "bg-[var(--accent-soft)] text-[var(--accent)]"
           : isHovered
@@ -64,7 +64,7 @@ export function FileTreeItem({
       {/* Expand/collapse arrow for folders */}
       {file.is_dir ? (
         <ChevronRight
-          size={14}
+          size={16}
           className={`flex-shrink-0 text-[var(--text-muted)] transition-transform duration-150 ${
             isExpanded ? "rotate-90" : ""
           }`}
@@ -77,24 +77,24 @@ export function FileTreeItem({
       {file.is_dir ? (
         isExpanded ? (
           <FolderOpen
-            size={14}
+            size={16}
             className="flex-shrink-0 text-[var(--accent)]"
           />
         ) : (
           <FolderClosed
-            size={14}
+            size={16}
             className="flex-shrink-0 text-[var(--text-muted)]"
           />
         )
       ) : (
         <FileText
-          size={14}
+          size={16}
           className="flex-shrink-0 text-[var(--text-muted)]"
         />
       )}
 
       {/* Name */}
-      <span className="truncate">{file.name}</span>
+      <span className="truncate leading-relaxed">{file.name}</span>
     </div>
   );
 }

@@ -238,12 +238,12 @@ function EditorPane({ paneIndex, pane }: EditorPaneProps) {
 function EmptyState() {
   const openVault = useVaultStore((s) => s.openVault);
   return (
-    <div className="flex flex-col items-center gap-4 text-center px-8">
-      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-        <FolderOpen size={28} className="text-[var(--text-muted)]" />
+    <div className="flex flex-col items-center gap-5 text-center px-8">
+      <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+        <FolderOpen size={32} className="text-[var(--text-muted)]" />
       </div>
-      <div className="flex flex-col gap-1">
-        <h2 className="text-base font-semibold text-[var(--text-primary)]">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
           Open a vault to begin
         </h2>
         <p className="text-sm text-[var(--text-muted)]">
@@ -256,7 +256,7 @@ function EmptyState() {
       </div>
       <button
         onClick={() => openVault()}
-        className="mt-2 px-4 py-2 text-xs rounded-[6px] bg-[var(--accent)] text-white hover:opacity-90 transition-all duration-150 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+        className="mt-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-all duration-150 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
       >
         Open Vault
       </button>
@@ -268,13 +268,13 @@ function EmptyEditor() {
   return (
     <div className="flex flex-col items-center gap-4 text-center px-8">
       <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-        <FileText size={24} className="text-[var(--text-muted)]" />
+        <FileText size={28} className="text-[var(--text-muted)]" />
       </div>
       <div className="flex flex-col gap-1">
         <h3 className="text-sm font-medium text-[var(--text-secondary)]">
           No file open
         </h3>
-        <p className="text-xs text-[var(--text-muted)]">
+        <p className="text-xs leading-relaxed text-[var(--text-muted)]">
           Select a file from the sidebar to start editing.
         </p>
       </div>
