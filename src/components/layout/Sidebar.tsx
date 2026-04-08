@@ -88,7 +88,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-shrink-0" style={{ width }}>
       {/* Icon rail */}
-      <div className="flex flex-col items-center w-14 flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
+      <div className="flex flex-col items-center justify-center w-14 flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]">
         <DailyNoteButton />
         <div className="h-px bg-[var(--border)] mx-2 my-1.5" />
         {navItems.map(({ id, icon: Icon, label }) => {
@@ -117,14 +117,14 @@ export function Sidebar() {
       {/* Panel content */}
       <div className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)]">
         {/* Panel header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)]">
-          <span className="text-sm font-semibold text-[var(--text-primary)]">
+        <div className="flex items-center justify-between h-11 px-5 border-b border-[var(--border)]">
+          <span className="text-[13px] font-semibold text-[var(--text-primary)] tracking-wide">
             {panelLabels[activePanel]}
           </span>
         </div>
 
         {/* Panel body */}
-        <div className="p-3 overflow-y-auto h-[calc(100%-2.625rem)]">
+        <div className="p-4 overflow-y-auto h-[calc(100%-2.75rem)]">
           {activePanel === "files" && <FileExplorer />}
           {activePanel === "search" && <SearchPanel />}
           {activePanel === "backlinks" && <BacklinksPanel />}
@@ -167,9 +167,9 @@ function SidebarEmptyState({
   actionLabel?: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-16">
+    <div className="flex flex-col items-center justify-center h-full px-6">
       {/* Icon with glow ring */}
-      <div className="relative w-20 h-20 mb-6">
+      <div className="relative w-20 h-20 mb-8">
         <div
           className={`absolute inset-0 rounded-[var(--radius-2xl)] bg-gradient-to-br ${gradient} blur-xl opacity-40`}
           style={{ animation: "glow-pulse 3s ease-in-out infinite" }}
@@ -180,7 +180,7 @@ function SidebarEmptyState({
           <Icon className={`w-8 h-8 ${accentColor}`} />
         </div>
       </div>
-      <div className="text-center space-y-2 max-w-[200px]">
+      <div className="text-center space-y-3 max-w-[220px]">
         <h3 className="text-base font-semibold text-[var(--text-primary)]">
           {title}
         </h3>

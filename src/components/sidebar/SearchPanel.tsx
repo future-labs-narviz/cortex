@@ -57,8 +57,8 @@ export function SearchPanel() {
 
   if (!isVaultOpen) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
-        <FolderOpen size={40} className="text-[var(--text-muted)]" />
+      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
+        <FolderOpen size={32} className="text-[var(--text-muted)]" />
         <p className="text-sm text-[var(--text-muted)] leading-relaxed">
           No vault open.
           <br />

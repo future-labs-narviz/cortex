@@ -240,7 +240,7 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center text-center px-8 max-w-md">
       {/* Icon with glow ring */}
-      <div className="relative w-24 h-24 mb-8">
+      <div className="relative w-24 h-24 mb-10">
         <div
           className="absolute inset-0 rounded-[var(--radius-2xl)] bg-gradient-to-br from-blue-500/15 to-blue-600/5 blur-xl opacity-50"
           style={{ animation: 'glow-pulse 3s ease-in-out infinite' }}
@@ -249,10 +249,10 @@ function EmptyState() {
           <FolderOpen className="w-10 h-10 text-[var(--accent)]" />
         </div>
       </div>
-      <h2 className="text-xl font-bold text-[var(--text-primary)] mb-3">
+      <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
         Open a vault to begin
       </h2>
-      <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-8">
+      <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-10">
         Press{" "}
         <kbd className="px-2 py-1 rounded-[var(--radius-md)] bg-[var(--muted)] border border-[var(--border)] text-xs font-mono text-[var(--text-secondary)]">
           Cmd+O
@@ -261,7 +261,7 @@ function EmptyState() {
       </p>
       <button
         onClick={() => openVault()}
-        className="h-12 px-8 text-base font-medium rounded-[var(--radius-xl)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        className="h-12 px-10 text-[15px] font-semibold rounded-[var(--radius-xl)] bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[var(--shadow-md)] border border-[rgba(255,255,255,0.15)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.03] hover:brightness-110 active:scale-[0.97] transition-all duration-200 cursor-pointer"
       >
         Open Vault
       </button>

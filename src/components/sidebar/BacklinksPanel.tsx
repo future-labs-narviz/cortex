@@ -54,7 +54,7 @@ export function BacklinksPanel() {
 
   if (!activeFilePath) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
         <Link2 size={24} className="text-[var(--text-muted)]" />
         <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           Select a note to see
@@ -67,7 +67,7 @@ export function BacklinksPanel() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
         <p className="text-xs text-[var(--text-muted)]">Loading backlinks...</p>
       </div>
     );
@@ -75,7 +75,7 @@ export function BacklinksPanel() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
         <Link2 size={24} className="text-[var(--text-muted)]" />
         <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           {error}
@@ -86,7 +86,7 @@ export function BacklinksPanel() {
 
   if (backlinks.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
         <Link2 size={24} className="text-[var(--text-muted)]" />
         <p className="text-xs text-[var(--text-muted)] leading-relaxed">
           No backlinks found

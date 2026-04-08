@@ -97,7 +97,7 @@ export function FileExplorer() {
 
   if (!isVaultOpen) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
         <FolderOpen size={32} className="text-[var(--text-muted)]" />
         <p className="text-sm text-[var(--text-muted)]">
           No vault open.
@@ -114,7 +114,7 @@ export function FileExplorer() {
 
   if (files.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 h-full text-center">
         <FolderOpen size={32} className="text-[var(--text-muted)]" />
         <p className="text-sm text-[var(--text-muted)]">Vault is empty.</p>
         <button
