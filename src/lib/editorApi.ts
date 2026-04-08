@@ -1,4 +1,5 @@
 import type { EditorView } from "@codemirror/view";
+import type { SheetId } from "@/lib/types/layout";
 
 export interface EditorAPI {
   insertAtCursor(text: string): void;
@@ -8,11 +9,21 @@ export interface EditorAPI {
   focus(): void;
 }
 
-let currentView: EditorView | null = null;
+/** Map of sheet ID → EditorView for multi-sheet support */
+const viewMap = new Map<SheetId, EditorView>();
+let activeSheetId: SheetId | null = null;
 let currentNoteId: string | null = null;
 
-export function setEditorView(view: EditorView | null) {
-  currentView = view;
+export function registerEditorView(sheetId: SheetId, view: EditorView) {
+  viewMap.set(sheetId, view);
+}
+
+export function unregisterEditorView(sheetId: SheetId) {
+  viewMap.delete(sheetId);
+}
+
+export function setActiveEditorSheet(sheetId: SheetId | null) {
+  activeSheetId = sheetId;
 }
 
 export function setCurrentNoteId(id: string | null) {
@@ -20,27 +31,45 @@ export function setCurrentNoteId(id: string | null) {
 }
 
 export function getEditorView(): EditorView | null {
-  return currentView;
+  if (activeSheetId) {
+    return viewMap.get(activeSheetId) ?? null;
+  }
+  // Fallback: return the first (and possibly only) view
+  const first = viewMap.values().next();
+  return first.done ? null : first.value;
+}
+
+/** @deprecated Use registerEditorView/unregisterEditorView instead */
+export function setEditorView(view: EditorView | null) {
+  // Backward compat: register/unregister with a legacy key
+  if (view) {
+    viewMap.set("__legacy__", view);
+  } else {
+    viewMap.delete("__legacy__");
+  }
 }
 
 export const editorApi: EditorAPI = {
   insertAtCursor(text: string) {
-    if (!currentView) return;
-    const { from } = currentView.state.selection.main;
-    currentView.dispatch({
+    const view = getEditorView();
+    if (!view) return;
+    const { from } = view.state.selection.main;
+    view.dispatch({
       changes: { from, insert: text },
       selection: { anchor: from + text.length },
     });
   },
 
   replaceSelection(text: string) {
-    if (!currentView) return;
-    currentView.dispatch(currentView.state.replaceSelection(text));
+    const view = getEditorView();
+    if (!view) return;
+    view.dispatch(view.state.replaceSelection(text));
   },
 
   getContent(): string {
-    if (!currentView) return "";
-    return currentView.state.doc.toString();
+    const view = getEditorView();
+    if (!view) return "";
+    return view.state.doc.toString();
   },
 
   getCurrentNoteId(): string | null {
@@ -48,6 +77,6 @@ export const editorApi: EditorAPI = {
   },
 
   focus() {
-    currentView?.focus();
+    getEditorView()?.focus();
   },
 };

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useVaultStore } from "@/stores/vaultStore";
-import { useEditorStore } from "@/stores/editorStore";
+import { useLayoutStore } from "@/stores/layoutStore";
 import { useVoiceStore } from "@/stores/voiceStore";
 import { invoke } from "@tauri-apps/api/core";
 import { editorApi } from "@/lib/editorApi";
@@ -9,7 +9,6 @@ import { editorApi } from "@/lib/editorApi";
 interface KeyboardShortcutOptions {
   onOpenQuickSwitcher?: () => void;
   onOpenCommandPalette?: () => void;
-  onToggleGraph?: () => void;
   onOpenSettings?: () => void;
 }
 
@@ -19,9 +18,9 @@ export function useKeyboardShortcuts(options: KeyboardShortcutOptions = {}) {
   const createNote = useVaultStore((s) => s.createNote);
   const vaultPath = useVaultStore((s) => s.vaultPath);
   const setActiveFile = useVaultStore((s) => s.setActiveFile);
-  const openTab = useEditorStore((s) => s.openTab);
-  const getActiveTab = useEditorStore((s) => s.getActiveTab);
-  const markSaved = useEditorStore((s) => s.markSaved);
+  const openTab = useLayoutStore((s) => s.openTab);
+  const getActiveTab = useLayoutStore((s) => s.getActiveTab);
+  const markSaved = useLayoutStore((s) => s.markSaved);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -47,15 +46,15 @@ export function useKeyboardShortcuts(options: KeyboardShortcutOptions = {}) {
         return;
       }
 
-      // Cmd+N: Create new note
+      // Cmd+N: Create new note (instant — generates name from timestamp)
       if (mod && e.key === "n") {
         e.preventDefault();
         if (!vaultPath) {
           console.log("[Cortex] No vault open, cannot create note");
           return;
         }
-        const title = window.prompt("Note name:");
-        if (!title) return;
+        const now = new Date();
+        const title = `Untitled ${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
         createNote(title).then((path) => {
           setActiveFile(path);
           openTab(path, "");
@@ -86,32 +85,57 @@ export function useKeyboardShortcuts(options: KeyboardShortcutOptions = {}) {
       }
 
       // Cmd+W: Close active tab
-      if (mod && e.key === "w") {
+      if (mod && !e.shiftKey && e.key === "w") {
         e.preventDefault();
-        const state = useEditorStore.getState();
-        const pane = state.panes[state.activePaneIndex];
-        if (pane?.activeTabId) {
-          state.closeTab(pane.activeTabId);
+        const layout = useLayoutStore.getState();
+        const sheet = layout.sheets[layout.activeSheetId];
+        if (sheet?.activeTabId) {
+          layout.closeTab(layout.activeSheetId, sheet.activeTabId);
         }
         return;
       }
 
-      // Cmd+\: Toggle horizontal split
-      if (mod && e.key === "\\") {
+      // Cmd+Shift+W: Close active sheet
+      if (mod && e.shiftKey && e.key === "W") {
         e.preventDefault();
-        const state = useEditorStore.getState();
-        state.setSplit(
-          state.splitDirection === "horizontal" ? "none" : "horizontal",
-        );
+        const layout = useLayoutStore.getState();
+        layout.closeSheet(layout.activeSheetId);
         return;
       }
 
-      // Cmd+G: Toggle graph view (fullscreen)
+      // Cmd+\: Split active sheet horizontally
+      if (mod && !e.shiftKey && e.key === "\\") {
+        e.preventDefault();
+        const layout = useLayoutStore.getState();
+        layout.splitSheet(layout.activeSheetId, "horizontal");
+        return;
+      }
+
+      // Cmd+Shift+\: Split active sheet vertically
+      if (mod && e.shiftKey && e.key === "|") {
+        e.preventDefault();
+        const layout = useLayoutStore.getState();
+        layout.splitSheet(layout.activeSheetId, "vertical");
+        return;
+      }
+
+      // Cmd+E: Cycle view mode (Edit -> Split -> Preview)
+      if (mod && e.key === "e") {
+        e.preventDefault();
+        const layout = useLayoutStore.getState();
+        const sheet = layout.sheets[layout.activeSheetId];
+        if (sheet?.content.kind === "file") {
+          const cycle = { edit: "split", split: "preview", preview: "edit" } as const;
+          layout.setViewMode(layout.activeSheetId, cycle[sheet.content.viewMode]);
+        }
+        return;
+      }
+
+      // Cmd+G: Open graph in active sheet
       if (mod && e.key === "g") {
         e.preventDefault();
-        if (options.onToggleGraph) {
-          options.onToggleGraph();
-        }
+        const layout = useLayoutStore.getState();
+        layout.setSheetContent(layout.activeSheetId, { kind: "graph" });
         return;
       }
 
@@ -152,6 +176,18 @@ export function useKeyboardShortcuts(options: KeyboardShortcutOptions = {}) {
           .catch((err) => {
             console.warn("[Cortex] create_daily_note failed:", err);
           });
+        return;
+      }
+
+      // Cmd+1/2/3: Focus sheet by position
+      if (mod && ["1", "2", "3"].includes(e.key)) {
+        e.preventDefault();
+        const layout = useLayoutStore.getState();
+        const sheetIds = layout.getSheetIds();
+        const idx = parseInt(e.key) - 1;
+        if (idx < sheetIds.length) {
+          layout.setActiveSheet(sheetIds[idx]);
+        }
         return;
       }
     }

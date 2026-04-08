@@ -30,7 +30,7 @@ import { calloutExtension } from "./extensions/callouts";
 import { imageExtension } from "./extensions/images";
 import { codeBlockExtension } from "./extensions/codeblocks";
 import { editorBaseTheme, darkHighlightStyle, lightHighlightStyle } from "./themes/base";
-import { setEditorView, setCurrentNoteId } from "@/lib/editorApi";
+import { registerEditorView, unregisterEditorView, setActiveEditorSheet, setCurrentNoteId, setEditorView } from "@/lib/editorApi";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { findNoteByName } from "@/lib/utils/noteResolver";
@@ -40,6 +40,7 @@ interface EditorProps {
   onChange: (content: string) => void;
   onSave?: () => void;
   filePath?: string;
+  sheetId?: string;
 }
 
 const highlightCompartment = new Compartment();
@@ -49,7 +50,7 @@ function getHighlightExtension(theme: string) {
   return syntaxHighlighting(style);
 }
 
-export function Editor({ content, onChange, onSave, filePath }: EditorProps) {
+export function Editor({ content, onChange, onSave, filePath, sheetId }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
@@ -168,19 +169,28 @@ export function Editor({ content, onChange, onSave, filePath }: EditorProps) {
     });
 
     viewRef.current = view;
-    setEditorView(view);
+    if (sheetId) {
+      registerEditorView(sheetId, view);
+      setActiveEditorSheet(sheetId);
+    } else {
+      setEditorView(view);
+    }
     setCurrentNoteId(filePath ?? null);
 
     return () => {
       view.destroy();
       viewRef.current = null;
-      setEditorView(null);
+      if (sheetId) {
+        unregisterEditorView(sheetId);
+      } else {
+        setEditorView(null);
+      }
       setCurrentNoteId(null);
     };
     // Only run on mount/unmount and when filePath changes (tab switch).
     // content is intentionally excluded -- we sync it separately below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filePath]);
+  }, [filePath, sheetId]);
 
   // Swap syntax highlighting when theme changes
   useEffect(() => {

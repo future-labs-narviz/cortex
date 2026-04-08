@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
-import type { GraphData, GraphNode } from "@/lib/types";
+import type { GraphData, GraphNode, KgGraphData, EntityType } from "@/lib/types";
 import { useSettingsStore } from "@/stores/settingsStore";
 
 // ---------------------------------------------------------------------------
@@ -16,6 +16,7 @@ interface SimNode extends d3.SimulationNodeDatum {
 interface SimLink extends d3.SimulationLinkDatum<SimNode> {
   source: SimNode | string;
   target: SimNode | string;
+  predicate?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -24,12 +25,14 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 
 interface GraphCanvasProps {
   data: GraphData;
+  typedData?: KgGraphData | null;
   width: number;
   height: number;
   activeNodeId?: string;
   showOrphans: boolean;
   onNodeClick: (nodeId: string) => void;
   onNodeHover?: (node: GraphNode | null, x: number, y: number) => void;
+  onEntityClick?: (entityName: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -105,17 +108,90 @@ function truncate(s: string, max: number): string {
 }
 
 // ---------------------------------------------------------------------------
+// Typed graph helpers
+// ---------------------------------------------------------------------------
+
+const PREDICATE_COLORS: Record<string, string> = {
+  decided: "var(--purple)",
+  built_with: "var(--accent)",
+  depends_on: "var(--orange)",
+  supersedes: "var(--red)",
+  caused: "var(--yellow)",
+  led_to: "var(--green)",
+  extracted_from: "var(--cyan)",
+};
+const DEFAULT_EDGE_COLOR = "var(--text-muted)";
+
+const ENTITY_TYPE_COLORS: Record<EntityType, string> = {
+  Person: "var(--accent)",
+  Project: "var(--purple)",
+  Technology: "var(--cyan)",
+  Decision: "var(--orange)",
+  Pattern: "var(--green)",
+  Organization: "var(--yellow)",
+  Concept: "var(--text-muted)",
+};
+
+function getEntityShape(entityType: EntityType, radius: number): string {
+  const r = radius;
+  switch (entityType) {
+    case "Person":
+      return `M 0,${-r} A ${r},${r} 0 1,1 0,${r} A ${r},${r} 0 1,1 0,${-r}`;
+    case "Project": {
+      // hexagon
+      const pts: string[] = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i - Math.PI / 2;
+        pts.push(`${r * Math.cos(angle)},${r * Math.sin(angle)}`);
+      }
+      return `M ${pts[0]} L ${pts[1]} L ${pts[2]} L ${pts[3]} L ${pts[4]} L ${pts[5]} Z`;
+    }
+    case "Technology":
+      return `M ${-r},${-r} L ${r},${-r} L ${r},${r} L ${-r},${r} Z`;
+    case "Decision":
+      return `M 0,${-r} L ${r},0 L 0,${r} L ${-r},0 Z`;
+    case "Pattern":
+      return `M 0,${-r} L ${r},${r} L ${-r},${r} Z`;
+    case "Organization": {
+      // pentagon
+      const pts: string[] = [];
+      for (let i = 0; i < 5; i++) {
+        const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+        pts.push(`${r * Math.cos(angle)},${r * Math.sin(angle)}`);
+      }
+      return `M ${pts[0]} L ${pts[1]} L ${pts[2]} L ${pts[3]} L ${pts[4]} Z`;
+    }
+    case "Concept":
+      return `M ${-r + 2},${-r} L ${r - 2},${-r} Q ${r},${-r} ${r},${-r + 2} L ${r},${r - 2} Q ${r},${r} ${r - 2},${r} L ${-r + 2},${r} Q ${-r},${r} ${-r},${r - 2} L ${-r},${-r + 2} Q ${-r},${-r} ${-r + 2},${-r} Z`;
+    default:
+      return `M 0,${-r} A ${r},${r} 0 1,1 0,${r} A ${r},${r} 0 1,1 0,${-r}`;
+  }
+}
+
+const ENTITY_TYPE_LABELS: { type: EntityType; label: string }[] = [
+  { type: "Person", label: "Person" },
+  { type: "Project", label: "Project" },
+  { type: "Technology", label: "Technology" },
+  { type: "Decision", label: "Decision" },
+  { type: "Pattern", label: "Pattern" },
+  { type: "Organization", label: "Organization" },
+  { type: "Concept", label: "Concept" },
+];
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function GraphCanvas({
   data,
+  typedData,
   width,
   height,
   activeNodeId,
   showOrphans,
   onNodeClick,
   onNodeHover,
+  onEntityClick,
 }: GraphCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
@@ -203,6 +279,21 @@ export function GraphCanvas({
   }, [fitView, centerOnNode]);
 
   // -----------------------------------------------------------------------
+  // Determine if we should use the typed view
+  // -----------------------------------------------------------------------
+
+  const useTyped = !!(typedData && typedData.entities.length > 0);
+
+  // Build a map from entity name → entity type for typed view
+  const entityTypeMap = useRef(new Map<string, EntityType>());
+  if (useTyped && typedData) {
+    entityTypeMap.current.clear();
+    for (const e of typedData.entities) {
+      entityTypeMap.current.set(e.name, e.entity_type);
+    }
+  }
+
+  // -----------------------------------------------------------------------
   // Main D3 effect
   // -----------------------------------------------------------------------
 
@@ -217,33 +308,57 @@ export function GraphCanvas({
     const bgColor = getBgColor();
     const labelColor = getLabelColor();
 
-    // --- Prepare data ---
-    const edgeSet = new Set<string>();
-    for (const e of data.edges) {
-      edgeSet.add(e.source);
-      edgeSet.add(e.target);
+    // --- Prepare data (typed or regular) ---
+    let filteredNodes: SimNode[];
+    let filteredEdges: SimLink[];
+
+    if (useTyped && typedData) {
+      // Typed knowledge graph mode
+      filteredNodes = typedData.entities.map((e) => ({
+        id: e.name,
+        label: e.name,
+        weight: e.source_notes.length,
+      }));
+
+      const nodeIds = new Set(filteredNodes.map((n) => n.id));
+      filteredEdges = typedData.relations
+        .filter((r) => nodeIds.has(r.source) && nodeIds.has(r.target))
+        .map((r) => ({
+          source: r.source,
+          target: r.target,
+          predicate: r.predicate,
+        }));
+    } else {
+      // Regular graph mode
+      const edgeSet = new Set<string>();
+      for (const e of data.edges) {
+        edgeSet.add(e.source);
+        edgeSet.add(e.target);
+      }
+
+      filteredNodes = (
+        showOrphans
+          ? data.nodes
+          : data.nodes.filter((n) => edgeSet.has(n.id) || n.id === activeNodeId)
+      ).map((n) => ({ ...n }));
+
+      const nodeIds = new Set(filteredNodes.map((n) => n.id));
+      filteredEdges = data.edges
+        .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+        .map((e) => ({ source: e.source, target: e.target }));
     }
-
-    const filteredNodes: SimNode[] = (
-      showOrphans
-        ? data.nodes
-        : data.nodes.filter((n) => edgeSet.has(n.id) || n.id === activeNodeId)
-    ).map((n) => ({ ...n }));
-
-    const nodeIds = new Set(filteredNodes.map((n) => n.id));
-    const filteredEdges: SimLink[] = data.edges
-      .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
-      .map((e) => ({ source: e.source, target: e.target }));
 
     const isLarge = filteredNodes.length > LARGE_GRAPH_THRESHOLD;
 
     // --- Build adjacency for hover highlighting ---
     const adjacency = new Map<string, Set<string>>();
-    for (const e of data.edges) {
-      if (!adjacency.has(e.source)) adjacency.set(e.source, new Set());
-      if (!adjacency.has(e.target)) adjacency.set(e.target, new Set());
-      adjacency.get(e.source)!.add(e.target);
-      adjacency.get(e.target)!.add(e.source);
+    for (const e of filteredEdges) {
+      const src = typeof e.source === "string" ? e.source : (e.source as SimNode).id;
+      const tgt = typeof e.target === "string" ? e.target : (e.target as SimNode).id;
+      if (!adjacency.has(src)) adjacency.set(src, new Set());
+      if (!adjacency.has(tgt)) adjacency.set(tgt, new Set());
+      adjacency.get(src)!.add(tgt);
+      adjacency.get(tgt)!.add(src);
     }
 
     // --- Clear previous ---
@@ -278,9 +393,17 @@ export function GraphCanvas({
       .selectAll<SVGLineElement, SimLink>("line")
       .data(filteredEdges)
       .join("line")
-      .attr("stroke", edgeColor)
+      .attr("stroke", (d) => {
+        if (useTyped && d.predicate) {
+          return PREDICATE_COLORS[d.predicate] ?? DEFAULT_EDGE_COLOR;
+        }
+        return edgeColor;
+      })
       .attr("stroke-width", 1)
       .attr("stroke-opacity", 0.4);
+
+    // --- Edge label group for hover (typed mode) ---
+    const edgeLabelGroup = g.append("g").attr("class", "edge-labels");
 
     // --- Nodes ---
     const nodeGroup = g
@@ -291,14 +414,33 @@ export function GraphCanvas({
       .join("g")
       .attr("cursor", "pointer");
 
-    nodeGroup
-      .append("circle")
-      .attr("r", (d) =>
-        getNodeRadius(d, !!(activeNodeId && d.id === activeNodeId)),
-      )
-      .attr("fill", (d) => nodeColor(d, palette, activeColor, activeNodeId))
-      .attr("stroke", bgColor)
-      .attr("stroke-width", 2);
+    if (useTyped) {
+      // Typed mode: use SVG paths for different entity shapes
+      nodeGroup
+        .append("path")
+        .attr("d", (d) => {
+          const eType = entityTypeMap.current.get(d.id) ?? "Concept";
+          const r = getNodeRadius(d, !!(activeNodeId && d.id === activeNodeId));
+          return getEntityShape(eType, r);
+        })
+        .attr("fill", (d) => {
+          const eType = entityTypeMap.current.get(d.id) ?? "Concept";
+          return ENTITY_TYPE_COLORS[eType];
+        })
+        .attr("stroke", bgColor)
+        .attr("stroke-width", 2)
+        .attr("opacity", 0.85);
+    } else {
+      // Regular mode: circles
+      nodeGroup
+        .append("circle")
+        .attr("r", (d) =>
+          getNodeRadius(d, !!(activeNodeId && d.id === activeNodeId)),
+        )
+        .attr("fill", (d) => nodeColor(d, palette, activeColor, activeNodeId))
+        .attr("stroke", bgColor)
+        .attr("stroke-width", 2);
+    }
 
     // Mark the active node group for CSS pulse animation
     nodeGroup
@@ -324,7 +466,14 @@ export function GraphCanvas({
         isLarge && d.weight <= 1 && d.id !== activeNodeId ? 0 : 0.8,
       );
 
+    // Legend removed — folder colors shown in React overlay instead
+
     // --- Simulation ---
+    // Stronger repulsion + wider collision to prevent overlap on small screens
+    const chargeStrength = isLarge ? -180 : -300;
+    const linkDist = isLarge ? 100 : 120;
+    const collisionPad = isLarge ? 8 : 12;
+
     const simulation = d3
       .forceSimulation<SimNode>(filteredNodes)
       .force(
@@ -332,13 +481,13 @@ export function GraphCanvas({
         d3
           .forceLink<SimNode, SimLink>(filteredEdges)
           .id((d) => d.id)
-          .distance(80),
+          .distance(linkDist),
       )
-      .force("charge", d3.forceManyBody().strength(isLarge ? -120 : -200))
+      .force("charge", d3.forceManyBody().strength(chargeStrength))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force(
         "collision",
-        d3.forceCollide<SimNode>().radius((d) => getNodeRadius(d, false) + 5),
+        d3.forceCollide<SimNode>().radius((d) => getNodeRadius(d, false) + collisionPad),
       )
       .alphaMin(0.001)
       .alphaDecay(0.0228);
@@ -389,7 +538,11 @@ export function GraphCanvas({
 
     // --- Click ---
     nodeGroup.on("click", (_event: MouseEvent, d: SimNode) => {
-      onNodeClick(d.id);
+      if (useTyped && onEntityClick) {
+        onEntityClick(d.id);
+      } else {
+        onNodeClick(d.id);
+      }
     });
 
     // --- Double-click: center on node ---
@@ -418,7 +571,33 @@ export function GraphCanvas({
             return src === d.id || tgt === d.id ? 2 : 1;
           });
 
-        nodeGroup.select("circle").attr("opacity", (n: SimNode) =>
+        // Show edge labels on hover (typed mode)
+        if (useTyped) {
+          edgeLabelGroup.selectAll("*").remove();
+          filteredEdges.forEach((l) => {
+            const src = l.source as SimNode;
+            const tgt = l.target as SimNode;
+            if (src.id === d.id || tgt.id === d.id) {
+              if (l.predicate) {
+                const mx = ((src.x ?? 0) + (tgt.x ?? 0)) / 2;
+                const my = ((src.y ?? 0) + (tgt.y ?? 0)) / 2;
+                edgeLabelGroup.append("text")
+                  .attr("x", mx)
+                  .attr("y", my)
+                  .attr("font-size", 9)
+                  .attr("fill", PREDICATE_COLORS[l.predicate] ?? labelColor)
+                  .attr("text-anchor", "middle")
+                  .attr("dy", -4)
+                  .attr("pointer-events", "none")
+                  .text(l.predicate);
+              }
+            }
+          });
+        }
+
+        const shapeSelector = useTyped ? "path" : "circle";
+
+        nodeGroup.select(shapeSelector).attr("opacity", (n: SimNode) =>
           n.id === d.id || connected.has(n.id) ? 1 : 0.15,
         );
 
@@ -429,7 +608,7 @@ export function GraphCanvas({
         // Glow effect on hovered node
         nodeGroup
           .filter((n) => n.id === d.id)
-          .select("circle")
+          .select(shapeSelector)
           .attr("filter", "url(#glow)");
 
         // Show label for hovered node even if hidden
@@ -456,9 +635,16 @@ export function GraphCanvas({
           hoverTimeout = null;
         }
 
+        const shapeSelector = useTyped ? "path" : "circle";
+
+        // Clear edge labels
+        if (useTyped) {
+          edgeLabelGroup.selectAll("*").remove();
+        }
+
         // Reset
         linkGroup.attr("stroke-opacity", 0.4).attr("stroke-width", 1);
-        nodeGroup.select("circle").attr("opacity", 1).attr("filter", null);
+        nodeGroup.select(shapeSelector).attr("opacity", useTyped ? 0.85 : 1).attr("filter", null);
         labelGroup.style("opacity", (d: SimNode) =>
           isLarge && d.weight <= 1 && d.id !== activeNodeId ? 0 : 0.8,
         );
@@ -473,12 +659,15 @@ export function GraphCanvas({
     };
   }, [
     data,
+    typedData,
+    useTyped,
     width,
     height,
     activeNodeId,
     showOrphans,
     onNodeClick,
     onNodeHover,
+    onEntityClick,
     centerOnNode,
     currentTheme,
   ]);

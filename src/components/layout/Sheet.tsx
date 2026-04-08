@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { FolderOpen } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { useVaultStore } from "@/stores/vaultStore";
@@ -65,9 +65,18 @@ function SheetContent({ sheetId }: { sheetId: SheetId }) {
   const openFile = useLayoutStore((s) => s.openFile);
 
   // When sidebar file click happens and this is the active sheet in "empty" mode,
-  // transition to file mode and load the note
+  // transition to file mode and load the note.
+  // Only react to activeFilePath *changes* — not to content.kind changes.
+  // This prevents the flicker when closing the last tab (which sets kind to "empty"
+  // while activeFilePath still points to the closed file).
+  const prevFilePathRef = useRef(activeFilePath);
   useEffect(() => {
-    if (!activeFilePath || sheetId !== activeSheetId) return;
+    const prevPath = prevFilePathRef.current;
+    prevFilePathRef.current = activeFilePath;
+
+    // Only act when activeFilePath actually changed (sidebar click)
+    if (!activeFilePath || activeFilePath === prevPath) return;
+    if (sheetId !== activeSheetId) return;
     if (sheet?.content.kind !== "empty") return;
 
     invoke<NoteData>("read_note", { path: activeFilePath })

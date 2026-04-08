@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
-// react-resizable-panels removed — sidebar uses its own drag-to-resize
 import { TitleBar } from "./TitleBar";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
+import { LayoutRoot } from "./LayoutRoot";
 import { useVaultStore } from "@/stores/vaultStore";
-import { useEditorStore } from "@/stores/editorStore";
+import { useLayoutStore } from "@/stores/layoutStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useFileWatcher } from "@/hooks/useFileWatcher";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { QuickSwitcher } from "@/components/command-palette/QuickSwitcher";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
-import { GraphView } from "@/components/graph/GraphView";
-import { SplitView } from "@/components/editor/SplitView";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 import { commandRegistry } from "@/lib/commandRegistry";
 import { invoke } from "@tauri-apps/api/core";
@@ -21,7 +19,6 @@ import { RecordingOverlay } from "@/components/voice/RecordingOverlay";
 export function AppShell() {
   const [quickSwitcherOpen, setQuickSwitcherOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [graphFullscreen, setGraphFullscreen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useFileWatcher();
@@ -29,7 +26,6 @@ export function AppShell() {
   useKeyboardShortcuts({
     onOpenQuickSwitcher: () => setQuickSwitcherOpen(true),
     onOpenCommandPalette: () => setCommandPaletteOpen(true),
-    onToggleGraph: () => setGraphFullscreen((v) => !v),
     onOpenSettings: () => setSettingsOpen(true),
   });
 
@@ -76,11 +72,11 @@ export function AppShell() {
       action: () => {
         const vaultPath = useVaultStore.getState().vaultPath;
         if (!vaultPath) return;
-        const title = window.prompt("Note name:");
-        if (!title) return;
+        const now = new Date();
+        const title = `Untitled ${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
         createNote(title).then((path) => {
           setActiveFile(path);
-          useEditorStore.getState().openTab(path, "");
+          useLayoutStore.getState().openTab(path, "");
         });
       },
     });
@@ -91,11 +87,11 @@ export function AppShell() {
       category: "File",
       shortcut: "Cmd+S",
       action: () => {
-        const tab = useEditorStore.getState().getActiveTab();
+        const tab = useLayoutStore.getState().getActiveTab();
         if (!tab) return;
         invoke("save_note", { path: tab.filePath, content: tab.content })
           .then(() => {
-            useEditorStore.getState().markSaved(tab.id, tab.content);
+            useLayoutStore.getState().markSaved(tab.id, tab.content);
           })
           .catch((err) => {
             console.warn("[Cortex] save_note failed:", err);
@@ -109,10 +105,10 @@ export function AppShell() {
       category: "File",
       shortcut: "Cmd+W",
       action: () => {
-        const state = useEditorStore.getState();
-        const pane = state.panes[state.activePaneIndex];
-        if (pane?.activeTabId) {
-          state.closeTab(pane.activeTabId);
+        const layout = useLayoutStore.getState();
+        const sheet = layout.sheets[layout.activeSheetId];
+        if (sheet?.activeTabId) {
+          layout.closeTab(layout.activeSheetId, sheet.activeTabId);
         }
       },
     });
@@ -135,34 +131,35 @@ export function AppShell() {
 
     commandRegistry.register({
       id: "split-horizontal",
-      label: "Split Editor Horizontally",
+      label: "Split Sheet Horizontally",
       category: "View",
       shortcut: "Cmd+\\",
       action: () => {
-        const current = useEditorStore.getState().splitDirection;
-        useEditorStore
-          .getState()
-          .setSplit(current === "horizontal" ? "none" : "horizontal");
+        const layout = useLayoutStore.getState();
+        layout.splitSheet(layout.activeSheetId, "horizontal");
       },
     });
 
     commandRegistry.register({
       id: "split-vertical",
-      label: "Split Editor Vertically",
+      label: "Split Sheet Vertically",
       category: "View",
+      shortcut: "Cmd+Shift+\\",
       action: () => {
-        const current = useEditorStore.getState().splitDirection;
-        useEditorStore
-          .getState()
-          .setSplit(current === "vertical" ? "none" : "vertical");
+        const layout = useLayoutStore.getState();
+        layout.splitSheet(layout.activeSheetId, "vertical");
       },
     });
 
     commandRegistry.register({
-      id: "close-split",
-      label: "Close Split",
+      id: "close-sheet",
+      label: "Close Sheet",
       category: "View",
-      action: () => useEditorStore.getState().setSplit("none"),
+      shortcut: "Cmd+Shift+W",
+      action: () => {
+        const layout = useLayoutStore.getState();
+        layout.closeSheet(layout.activeSheetId);
+      },
     });
 
     commandRegistry.register({
@@ -170,7 +167,10 @@ export function AppShell() {
       label: "Open Knowledge Graph",
       category: "View",
       shortcut: "Cmd+G",
-      action: () => setGraphFullscreen((v) => !v),
+      action: () => {
+        const layout = useLayoutStore.getState();
+        layout.setSheetContent(layout.activeSheetId, { kind: "graph" });
+      },
     });
 
     commandRegistry.register({
@@ -232,7 +232,7 @@ export function AppShell() {
         "toggle-sidebar",
         "split-horizontal",
         "split-vertical",
-        "close-split",
+        "close-sheet",
         "open-graph",
         "daily-note",
         "toggle-theme",
@@ -249,18 +249,12 @@ export function AppShell() {
       <TitleBar />
       <div className="flex flex-1 min-h-0">
         <Sidebar />
-        {graphFullscreen ? (
-          <div className="flex-1 min-w-0 relative">
-            <GraphView />
-          </div>
-        ) : (
-          <div className="flex flex-col flex-1 min-w-0">
-            {(voice.isRecording || voice.isTranscribing) && (
-              <RecordingOverlay />
-            )}
-            <SplitView />
-          </div>
-        )}
+        <div className="flex flex-col flex-1 min-w-0" style={{ padding: "var(--sheet-gap, 8px)", paddingLeft: 0 }}>
+          {(voice.isRecording || voice.isTranscribing) && (
+            <RecordingOverlay />
+          )}
+          <LayoutRoot />
+        </div>
       </div>
       <StatusBar />
       <QuickSwitcher

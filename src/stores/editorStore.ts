@@ -1,5 +1,12 @@
+/**
+ * @deprecated — Use `useLayoutStore` from "@/stores/layoutStore" instead.
+ *
+ * This is a backward-compatibility facade that delegates to the layout store.
+ * It will be removed once all consumers are migrated.
+ */
 import { create } from "zustand";
 import type { EditorTab } from "@/lib/types";
+import { useLayoutStore } from "./layoutStore";
 
 export type SplitDirection = "none" | "horizontal" | "vertical";
 
@@ -9,7 +16,7 @@ export interface Pane {
 }
 
 interface EditorStore {
-  // Split view state
+  // Split view state (legacy)
   splitDirection: SplitDirection;
   splitRatio: number;
   panes: Pane[];
@@ -20,7 +27,7 @@ interface EditorStore {
   setSplitRatio: (ratio: number) => void;
   setActivePane: (index: number) => void;
 
-  // Tab actions (operate on the active pane)
+  // Tab actions (operate on the active sheet)
   tabs: EditorTab[];
   activeTabId: string | null;
   openTab: (path: string, content: string) => void;
@@ -31,201 +38,125 @@ interface EditorStore {
   getActiveTab: () => EditorTab | null;
 }
 
-function fileNameFromPath(path: string): string {
-  const parts = path.split(/[/\\]/);
-  return parts[parts.length - 1] || path;
-}
+/**
+ * Facade store that derives state from layoutStore.
+ *
+ * - panes[0] is always the active sheet's tabs.
+ * - splitDirection / splitRatio are derived from the layout tree.
+ * - All mutations delegate to layoutStore.
+ */
+export const useEditorStore = create<EditorStore>((set, get) => {
+  // Subscribe to layout store changes and sync derived state
+  const syncFromLayout = () => {
+    const layout = useLayoutStore.getState();
+    const sheet = layout.sheets[layout.activeSheetId];
+    const tabs = sheet?.tabs ?? [];
+    const activeTabId = sheet?.activeTabId ?? null;
 
-function titleFromFileName(fileName: string): string {
-  const lastDot = fileName.lastIndexOf(".");
-  return lastDot > 0 ? fileName.substring(0, lastDot) : fileName;
-}
+    // Derive split info from root node
+    let splitDirection: SplitDirection = "none";
+    let splitRatio = 0.5;
+    if (layout.root.type === "split") {
+      splitDirection = layout.root.direction;
+      splitRatio = layout.root.ratio;
+    }
 
-function createTab(path: string, content: string): EditorTab {
-  const fileName = fileNameFromPath(path);
-  return {
-    id: path,
-    filePath: path,
-    fileName,
-    title: titleFromFileName(fileName),
-    content,
-    savedContent: content,
-    isDirty: false,
+    // Build panes array from all sheets in order
+    const sheetIds = layout.getSheetIds();
+    const panes: Pane[] = sheetIds.map((id) => {
+      const s = layout.sheets[id];
+      return {
+        tabs: s?.tabs ?? [],
+        activeTabId: s?.activeTabId ?? null,
+      };
+    });
+    const activePaneIndex = Math.max(
+      0,
+      sheetIds.indexOf(layout.activeSheetId),
+    );
+
+    set({
+      splitDirection,
+      splitRatio,
+      panes,
+      activePaneIndex,
+      tabs,
+      activeTabId,
+    });
   };
-}
 
-function getActivePane(state: { panes: Pane[]; activePaneIndex: number }): Pane {
-  return state.panes[state.activePaneIndex] ?? state.panes[0];
-}
+  // Subscribe to layout store
+  useLayoutStore.subscribe(syncFromLayout);
 
-/** Derive legacy tabs/activeTabId from active pane for backward compat */
-function withLegacy(
-  update: Partial<{ panes: Pane[]; activePaneIndex: number }>,
-  state: { panes: Pane[]; activePaneIndex: number },
-): Partial<EditorStore> {
-  const panes = update.panes ?? state.panes;
-  const idx = update.activePaneIndex ?? state.activePaneIndex;
-  const pane = panes[idx] ?? panes[0];
+  // Compute initial state
+  const layout = useLayoutStore.getState();
+  const sheet = layout.sheets[layout.activeSheetId];
+  const sheetIds = layout.getSheetIds();
+
   return {
-    ...update,
-    tabs: pane?.tabs ?? [],
-    activeTabId: pane?.activeTabId ?? null,
-  };
-}
+    splitDirection: layout.root.type === "split" ? layout.root.direction : "none",
+    splitRatio: layout.root.type === "split" ? layout.root.ratio : 0.5,
+    panes: sheetIds.map((id) => {
+      const s = layout.sheets[id];
+      return { tabs: s?.tabs ?? [], activeTabId: s?.activeTabId ?? null };
+    }),
+    activePaneIndex: Math.max(0, sheetIds.indexOf(layout.activeSheetId)),
+    tabs: sheet?.tabs ?? [],
+    activeTabId: sheet?.activeTabId ?? null,
 
-export const useEditorStore = create<EditorStore>((set, get) => ({
-  // Split view
-  splitDirection: "none",
-  splitRatio: 0.5,
-  panes: [{ tabs: [], activeTabId: null }],
-  activePaneIndex: 0,
-
-  // Legacy compatibility: these are computed from the active pane.
-  // Components should prefer reading from panes[activePaneIndex] directly.
-  tabs: [],
-  activeTabId: null,
-
-  setSplit: (direction: SplitDirection) =>
-    set((state) => {
+    setSplit: (direction) => {
+      const layout = useLayoutStore.getState();
       if (direction === "none") {
-        // Merge all tabs into pane 0
-        const allTabs: EditorTab[] = [];
-        const seen = new Set<string>();
-        for (const pane of state.panes) {
-          for (const tab of pane.tabs) {
-            if (!seen.has(tab.id)) {
-              allTabs.push(tab);
-              seen.add(tab.id);
-            }
+        // Close all sheets except active, merge tabs concept doesn't apply directly
+        // For compat: just close extra sheets
+        const ids = layout.getSheetIds();
+        for (const id of ids) {
+          if (id !== layout.activeSheetId) {
+            layout.closeSheet(id);
           }
         }
-        const activeId =
-          state.panes[state.activePaneIndex]?.activeTabId ??
-          allTabs[0]?.id ??
-          null;
-        const update = {
-          splitDirection: "none" as const,
-          splitRatio: 0.5,
-          panes: [{ tabs: allTabs, activeTabId: activeId }],
-          activePaneIndex: 0,
-        };
-        return withLegacy(update, { ...state, ...update });
+      } else {
+        layout.splitSheet(layout.activeSheetId, direction);
       }
+    },
 
-      // Split: if currently one pane, create empty second pane
-      if (state.panes.length < 2) {
-        const update = {
-          splitDirection: direction,
-          panes: [...state.panes, { tabs: [], activeTabId: null }],
-        };
-        return withLegacy(update, { ...state, ...update });
+    setSplitRatio: (ratio) => {
+      const layout = useLayoutStore.getState();
+      layout.setSplitRatio(layout.activeSheetId, ratio);
+    },
+
+    setActivePane: (index) => {
+      const layout = useLayoutStore.getState();
+      const ids = layout.getSheetIds();
+      if (index >= 0 && index < ids.length) {
+        layout.setActiveSheet(ids[index]);
       }
+    },
 
-      // Already split, just change direction
-      return { splitDirection: direction };
-    }),
+    openTab: (path, content) => {
+      useLayoutStore.getState().openTab(path, content);
+    },
 
-  setSplitRatio: (ratio: number) =>
-    set({ splitRatio: Math.max(0.15, Math.min(0.85, ratio)) }),
+    closeTab: (id) => {
+      const layout = useLayoutStore.getState();
+      layout.closeTab(layout.activeSheetId, id);
+    },
 
-  setActivePane: (index: number) =>
-    set((state) => {
-      if (index < 0 || index >= state.panes.length) return {};
-      const update = { activePaneIndex: index };
-      return withLegacy(update, { ...state, ...update });
-    }),
+    setActiveTab: (id) => {
+      const layout = useLayoutStore.getState();
+      layout.setActiveTab(layout.activeSheetId, id);
+    },
 
-  openTab: (path: string, content: string) =>
-    set((state) => {
-      const paneIdx = state.activePaneIndex;
-      const pane = state.panes[paneIdx];
-      if (!pane) return {};
+    updateContent: (id, content) => {
+      useLayoutStore.getState().updateContent(id, content);
+    },
 
-      const existing = pane.tabs.find((t) => t.id === path);
-      if (existing) {
-        const newPanes = [...state.panes];
-        newPanes[paneIdx] = { ...pane, activeTabId: path };
-        const update = { panes: newPanes };
-        return withLegacy(update, { ...state, ...update });
-      }
+    markSaved: (id, content) => {
+      useLayoutStore.getState().markSaved(id, content);
+    },
 
-      const newTab = createTab(path, content);
-      const newPanes = [...state.panes];
-      newPanes[paneIdx] = {
-        tabs: [...pane.tabs, newTab],
-        activeTabId: path,
-      };
-      const update = { panes: newPanes };
-      return withLegacy(update, { ...state, ...update });
-    }),
-
-  closeTab: (id: string) =>
-    set((state) => {
-      const paneIdx = state.activePaneIndex;
-      const pane = state.panes[paneIdx];
-      if (!pane) return {};
-
-      const idx = pane.tabs.findIndex((t) => t.id === id);
-      const newTabs = pane.tabs.filter((t) => t.id !== id);
-      let newActiveId = pane.activeTabId;
-
-      if (pane.activeTabId === id) {
-        if (newTabs.length === 0) {
-          newActiveId = null;
-        } else if (idx < newTabs.length) {
-          newActiveId = newTabs[idx].id;
-        } else {
-          newActiveId = newTabs[newTabs.length - 1].id;
-        }
-      }
-
-      const newPanes = [...state.panes];
-      newPanes[paneIdx] = { tabs: newTabs, activeTabId: newActiveId };
-      const update = { panes: newPanes };
-      return withLegacy(update, { ...state, ...update });
-    }),
-
-  setActiveTab: (id: string) =>
-    set((state) => {
-      const paneIdx = state.activePaneIndex;
-      const pane = state.panes[paneIdx];
-      if (!pane) return {};
-
-      const newPanes = [...state.panes];
-      newPanes[paneIdx] = { ...pane, activeTabId: id };
-      const update = { panes: newPanes };
-      return withLegacy(update, { ...state, ...update });
-    }),
-
-  updateContent: (id: string, content: string) =>
-    set((state) => {
-      const newPanes = state.panes.map((pane) => ({
-        ...pane,
-        tabs: pane.tabs.map((t) =>
-          t.id === id
-            ? { ...t, content, isDirty: content !== t.savedContent }
-            : t,
-        ),
-      }));
-      const update = { panes: newPanes };
-      return withLegacy(update, { ...state, ...update });
-    }),
-
-  markSaved: (id: string, content: string) =>
-    set((state) => {
-      const newPanes = state.panes.map((pane) => ({
-        ...pane,
-        tabs: pane.tabs.map((t) =>
-          t.id === id ? { ...t, savedContent: content, isDirty: false } : t,
-        ),
-      }));
-      const update = { panes: newPanes };
-      return withLegacy(update, { ...state, ...update });
-    }),
-
-  getActiveTab: () => {
-    const state = get();
-    const pane = getActivePane(state);
-    return pane.tabs.find((t) => t.id === pane.activeTabId) ?? null;
-  },
-}));
+    getActiveTab: () => {
+      return useLayoutStore.getState().getActiveTab();
+    },
+  };
+});

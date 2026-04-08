@@ -1,8 +1,20 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { FileText, X, Plus, Columns2, Rows2 } from "lucide-react";
+import { FileText, X, Plus, Columns2, Rows2, Home } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
 import { ViewModeControl } from "./ViewModeControl";
 import type { SheetId } from "@/lib/types/layout";
+
+/** Label for non-file sheet content types */
+const CONTENT_LABELS: Record<string, string> = {
+  graph: "Knowledge Graph",
+  search: "Search",
+  backlinks: "Backlinks",
+  tags: "Tags",
+  calendar: "Calendar",
+  timeline: "Timeline",
+  voice: "Voice",
+  integrations: "Integrations",
+};
 
 interface SheetHeaderProps {
   sheetId: SheetId;
@@ -16,6 +28,7 @@ export function SheetHeader({ sheetId }: SheetHeaderProps) {
   const closeTab = useLayoutStore((s) => s.closeTab);
   const splitSheet = useLayoutStore((s) => s.splitSheet);
   const closeSheet = useLayoutStore((s) => s.closeSheet);
+  const setSheetContent = useLayoutStore((s) => s.setSheetContent);
   const root = useLayoutStore((s) => s.root);
   const sheetCount = countLeaves(root);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +38,14 @@ export function SheetHeader({ sheetId }: SheetHeaderProps) {
   const isFileSheet = sheet?.content.kind === "file";
   const canSplit = sheetCount < 3;
   const hasMultipleSheets = sheetCount > 1;
+
+  // Content label for non-file, non-empty sheets (graph, panel)
+  const contentLabel = (() => {
+    if (!sheet || sheet.content.kind === "file" || sheet.content.kind === "empty") return null;
+    if (sheet.content.kind === "graph") return CONTENT_LABELS.graph;
+    if (sheet.content.kind === "panel") return CONTENT_LABELS[sheet.content.panel] ?? sheet.content.panel;
+    return null;
+  })();
 
   // Auto-scroll active tab into view
   useEffect(() => {
@@ -76,7 +97,7 @@ export function SheetHeader({ sheetId }: SheetHeaderProps) {
         borderRadius: "12px 12px 0 0",
       }}
     >
-      {/* Tabs area (scrollable) */}
+      {/* Tabs area (scrollable) — or content label for non-file sheets */}
       <div
         ref={tabsContainerRef}
         style={{
@@ -91,6 +112,36 @@ export function SheetHeader({ sheetId }: SheetHeaderProps) {
         }}
         className="scrollbar-none"
       >
+        {/* For graph/panel sheets: show a label + back-to-home button */}
+        {contentLabel && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              height: "100%",
+              paddingLeft: 8,
+            }}
+          >
+            <HeaderIconButton
+              icon={<Home size={14} />}
+              label="Back to home"
+              onClick={() => setSheetContent(sheetId, { kind: "empty" })}
+            />
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: "var(--text-secondary)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {contentLabel}
+            </span>
+          </div>
+        )}
+
+        {/* File tabs */}
         {tabs.map((tab) => (
           <Tab
             key={tab.id}

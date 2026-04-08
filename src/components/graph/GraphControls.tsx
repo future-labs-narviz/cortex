@@ -9,41 +9,6 @@ interface GraphControlsProps {
   onCenterActive: () => void;
 }
 
-function IconButton({
-  onClick,
-  title,
-  children,
-}: {
-  onClick: () => void;
-  title: string;
-  children: React.ReactNode;
-}) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 24,
-        height: 24,
-        borderRadius: 'var(--radius-md)',
-        color: hovered ? 'var(--text-secondary)' : 'var(--text-muted)',
-        background: hovered ? 'var(--muted)' : 'transparent',
-        transition: 'all 150ms',
-        cursor: 'pointer',
-        border: 'none',
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
 export function GraphControls({
   nodeCount,
   edgeCount,
@@ -57,82 +22,79 @@ export function GraphControls({
   const setDepth = useGraphStore((s) => s.setDepth);
   const toggleOrphans = useGraphStore((s) => s.toggleOrphans);
 
-  const [localHover, setLocalHover] = useState(false);
-  const [globalHover, setGlobalHover] = useState(false);
-
-  const modeButtonStyle = (active: boolean, hovered: boolean): React.CSSProperties => ({
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 4,
-    paddingBottom: 4,
-    fontSize: 10,
-    fontWeight: 500,
-    transition: 'all 150ms',
-    cursor: 'pointer',
-    border: 'none',
-    background: active ? 'var(--accent-soft)' : 'transparent',
-    color: active ? 'var(--accent)' : hovered ? 'var(--text-secondary)' : 'var(--text-muted)',
-  });
-
   return (
     <div
       style={{
-        position: 'absolute',
+        position: "absolute",
         top: 12,
         right: 12,
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
         gap: 8,
-        padding: 8,
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-xl)',
-        background: 'var(--bg-elevated)',
+        padding: 10,
+        border: "1px solid var(--border)",
+        borderRadius: 12,
+        background: "var(--bg-elevated)",
         opacity: 0.95,
-        WebkitBackdropFilter: 'blur(12px)',
-        backdropFilter: 'blur(12px)',
-        boxShadow: 'var(--shadow-md)',
+        WebkitBackdropFilter: "blur(12px)",
+        backdropFilter: "blur(12px)",
+        boxShadow: "var(--shadow-md)",
         zIndex: 10,
+        minWidth: 120,
       }}
     >
-      {/* Mode toggle */}
+      {/* Mode toggle — segmented pill */}
       <div
         style={{
-          display: 'flex',
-          borderRadius: 'var(--radius-md)',
-          overflow: 'hidden',
-          border: '1px solid var(--border)',
+          display: "flex",
+          borderRadius: 8,
+          overflow: "hidden",
+          border: "1px solid var(--border)",
+          background: "var(--muted)",
         }}
       >
-        <button
+        <ModeButton
+          label="Local"
+          active={mode === "local"}
           onClick={() => setMode("local")}
-          onMouseEnter={() => setLocalHover(true)}
-          onMouseLeave={() => setLocalHover(false)}
-          style={modeButtonStyle(mode === "local", localHover)}
-        >
-          Local
-        </button>
-        <button
+        />
+        <ModeButton
+          label="Global"
+          active={mode === "global"}
           onClick={() => setMode("global")}
-          onMouseEnter={() => setGlobalHover(true)}
-          onMouseLeave={() => setGlobalHover(false)}
-          style={modeButtonStyle(mode === "global", globalHover)}
-        >
-          Global
-        </button>
+        />
       </div>
 
-      {/* Depth slider - local mode only */}
+      {/* Depth slider — local mode only */}
       {mode === "local" && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div
             style={{
-              fontSize: 10,
-              color: 'var(--text-muted)',
-              fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            Depth: {depth}
-          </label>
+            <span
+              style={{
+                fontSize: 10,
+                color: "var(--text-muted)",
+                fontFamily: '"JetBrains Mono", monospace',
+              }}
+            >
+              Depth
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                color: "var(--accent)",
+                fontWeight: 600,
+                fontFamily: '"JetBrains Mono", monospace',
+              }}
+            >
+              {depth}
+            </span>
+          </div>
           <input
             type="range"
             min={1}
@@ -140,25 +102,31 @@ export function GraphControls({
             value={depth}
             onChange={(e) => setDepth(Number(e.target.value))}
             style={{
-              width: '100%',
+              width: "100%",
               height: 4,
               borderRadius: 9999,
-              cursor: 'pointer',
-              accentColor: 'var(--accent)',
+              cursor: "pointer",
+              accentColor: "var(--accent)",
             }}
           />
         </div>
       )}
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 4 }}>
-        <IconButton onClick={onCenterActive} title="Center on active note">
+      <div style={{ display: "flex", gap: 2, justifyContent: "center" }}>
+        <IconButton
+          onClick={onCenterActive}
+          title="Center on active note"
+        >
           <LocateFixed size={13} />
         </IconButton>
         <IconButton onClick={onFitView} title="Fit view">
           <Maximize size={13} />
         </IconButton>
-        <IconButton onClick={toggleOrphans} title={showOrphans ? "Hide orphans" : "Show orphans"}>
+        <IconButton
+          onClick={toggleOrphans}
+          title={showOrphans ? "Hide orphans" : "Show orphans"}
+        >
           {showOrphans ? <Eye size={13} /> : <EyeOff size={13} />}
         </IconButton>
       </div>
@@ -166,14 +134,104 @@ export function GraphControls({
       {/* Stats */}
       <div
         style={{
-          fontSize: 11,
-          color: 'var(--text-muted)',
-          textAlign: 'center',
-          fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+          fontSize: 10,
+          color: "var(--text-muted)",
+          fontFamily: '"JetBrains Mono", monospace',
         }}
       >
-        {nodeCount} notes, {edgeCount} links
+        <span>
+          <strong style={{ color: "var(--text-secondary)" }}>
+            {nodeCount}
+          </strong>{" "}
+          notes
+        </span>
+        <span style={{ color: "var(--border)" }}>|</span>
+        <span>
+          <strong style={{ color: "var(--text-secondary)" }}>
+            {edgeCount}
+          </strong>{" "}
+          links
+        </span>
       </div>
     </div>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────
+
+function ModeButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        flex: 1,
+        paddingTop: 5,
+        paddingBottom: 5,
+        fontSize: 10,
+        fontWeight: 500,
+        transition: "all 150ms",
+        cursor: "pointer",
+        border: "none",
+        background: active ? "var(--accent-soft)" : "transparent",
+        color: active
+          ? "var(--accent)"
+          : hovered
+            ? "var(--text-secondary)"
+            : "var(--text-muted)",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function IconButton({
+  onClick,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 26,
+        height: 26,
+        borderRadius: 6,
+        color: hovered ? "var(--text-secondary)" : "var(--text-muted)",
+        background: hovered ? "var(--muted)" : "transparent",
+        transition: "all 150ms",
+        cursor: "pointer",
+        border: "none",
+      }}
+    >
+      {children}
+    </button>
   );
 }
