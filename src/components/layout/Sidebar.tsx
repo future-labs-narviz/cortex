@@ -119,8 +119,8 @@ export function Sidebar() {
       {/* Panel content */}
       <div className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)]">
         {/* Panel header */}
-        <div className="flex items-center justify-between h-11 px-5 border-b border-[var(--border)]">
-          <span className="text-[13px] font-semibold text-[var(--text-primary)] tracking-wide">
+        <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ height: 44, paddingLeft: 20, paddingRight: 16 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.02em', color: 'var(--text-primary)' }}>
             {panelLabels[activePanel]}
           </span>
         </div>
@@ -154,15 +154,15 @@ export function Sidebar() {
 function NoVaultState() {
   const openVault = useVaultStore((s) => s.openVault);
   return (
-    <div className="flex flex-col items-center justify-center h-full px-5 text-center">
-      <FolderOpen className="w-6 h-6 text-[var(--text-muted)] mb-4" />
-      <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-6">
+    <div className="flex flex-col items-center justify-center h-full text-center" style={{ padding: '0 24px' }}>
+      <FolderOpen style={{ width: 24, height: 24, color: 'var(--text-muted)', marginBottom: 16 }} />
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 24 }}>
         No vault open
       </p>
       <button
         onClick={() => openVault()}
-        className="text-[13px] font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-        style={{ height: 36, paddingLeft: 24, paddingRight: 24 }}
+        className="btn-primary text-white border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        style={{ height: 36, paddingLeft: 24, paddingRight: 24, fontSize: 13, fontWeight: 500, borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}
       >
         Open Vault
       </button>

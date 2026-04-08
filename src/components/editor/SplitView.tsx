@@ -238,31 +238,37 @@ function EditorPane({ paneIndex, pane }: EditorPaneProps) {
 function EmptyState() {
   const openVault = useVaultStore((s) => s.openVault);
   return (
-    <div className="flex flex-col items-center text-center px-8 max-w-md">
+    <div className="flex flex-col items-center text-center" style={{ maxWidth: 400, padding: '0 32px' }}>
       {/* Icon with glow ring */}
-      <div className="relative w-16 h-16 mb-8">
+      <div className="relative" style={{ width: 64, height: 64, marginBottom: 32 }}>
         <div
-          className="absolute inset-0 rounded-[var(--radius-xl)] glow-blue blur-lg opacity-40"
-          style={{ animation: 'glow-pulse 3s ease-in-out infinite' }}
+          className="absolute inset-0 glow-blue blur-lg"
+          style={{ borderRadius: 'var(--radius-xl)', opacity: 0.4, animation: 'glow-pulse 3s ease-in-out infinite' }}
         />
-        <div className="relative w-full h-full rounded-[var(--radius-xl)] glow-blue border border-[var(--border)] flex items-center justify-center shadow-[var(--shadow-md)]">
-          <FolderOpen className="w-7 h-7 text-[var(--accent)]" />
+        <div
+          className="relative w-full h-full glow-blue flex items-center justify-center"
+          style={{ borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)' }}
+        >
+          <FolderOpen style={{ width: 28, height: 28, color: 'var(--accent)' }} />
         </div>
       </div>
-      <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+
+      <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>
         Open a vault to begin
       </h2>
-      <p className="text-[13px] text-[var(--text-muted)] leading-relaxed mb-8 max-w-[280px]">
+
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 32, maxWidth: 300 }}>
         Press{" "}
-        <kbd className="px-2 py-1 rounded-[var(--radius-md)] bg-[var(--muted)] border border-[var(--border)] text-xs font-mono text-[var(--text-secondary)]">
+        <kbd style={{ padding: '3px 8px', borderRadius: 'var(--radius-md)', background: 'var(--muted)', border: '1px solid var(--border)', fontSize: 12, fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
           Cmd+O
         </kbd>{" "}
         to open an existing vault or create a new one.
       </p>
+
       <button
         onClick={() => openVault()}
-        className="text-sm font-medium rounded-[var(--radius-lg)] btn-primary text-white shadow-[var(--shadow-sm)] border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-        style={{ height: 40, paddingLeft: 28, paddingRight: 28 }}
+        className="btn-primary text-white border border-[rgba(255,255,255,0.12)] hover:shadow-[var(--shadow-glow)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+        style={{ height: 40, paddingLeft: 28, paddingRight: 28, fontSize: 14, fontWeight: 500, borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' }}
       >
         Open Vault
       </button>
