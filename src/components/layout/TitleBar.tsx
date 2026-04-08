@@ -28,7 +28,7 @@ export function TitleBar() {
     <div
       style={{
         display: 'flex', alignItems: 'center', height: 40,
-        paddingLeft: 68, paddingRight: 12,
+        paddingLeft: 16, paddingRight: 12,
         background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)',
         userSelect: 'none',
       }}
