@@ -54,7 +54,7 @@ export function Sidebar() {
     >
       {/* Icon rail */}
       <div
-        className="flex flex-col items-center w-[48px] flex-shrink-0 py-3 gap-1.5 bg-[var(--bg-primary)] border-r border-[var(--border)]"
+        className="flex flex-col items-center w-[52px] flex-shrink-0 py-4 gap-1 bg-[var(--bg-primary)] border-r border-[var(--border)]"
         style={{
           opacity: sidebarCollapsed ? 0 : 1,
           pointerEvents: sidebarCollapsed ? "none" : "auto",
@@ -62,21 +62,21 @@ export function Sidebar() {
         }}
       >
         <DailyNoteButton />
-        <div className="w-5 border-b border-[var(--border)] my-1" />
+        <div className="w-6 border-b border-[var(--border)] my-2" />
         {navItems.map(({ id, icon: Icon, label }) => {
           const isActive = activePanel === id;
           return (
             <Tooltip key={id} content={label} side="right">
               <button
                 onClick={() => setActivePanel(id)}
-                className={`flex items-center justify-center w-9 h-9 rounded-md transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
+                className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 ${
                   isActive
-                    ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                    ? "bg-[var(--accent-soft)] text-[var(--accent)] shadow-sm"
                     : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
                 }`}
                 aria-label={label}
               >
-                <Icon size={18} strokeWidth={isActive ? 2 : 1.5} />
+                <Icon size={20} strokeWidth={isActive ? 2 : 1.5} />
               </button>
             </Tooltip>
           );
@@ -85,21 +85,21 @@ export function Sidebar() {
 
       {/* Panel content */}
       <div
-        className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)] border-r border-[var(--border)]"
+        className="flex-1 min-w-0 overflow-hidden bg-[var(--bg-secondary)]"
         style={{
           opacity: sidebarCollapsed ? 0 : 1,
           transition: "opacity 150ms ease",
         }}
       >
         {/* Panel header */}
-        <div className="flex items-center h-10 px-5 border-b border-[var(--border)]">
-          <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">
+        <div className="flex items-center h-12 px-6 border-b border-[var(--border)]">
+          <span className="text-sm font-bold uppercase tracking-wider text-[var(--text-primary)]">
             {activePanel}
           </span>
         </div>
 
         {/* Panel body */}
-        <div className="p-5 overflow-y-auto h-[calc(100%-2.5rem)]">
+        <div className="px-5 py-5 overflow-y-auto h-[calc(100%-3rem)]">
           {activePanel === "files" && <FileExplorer />}
           {activePanel === "search" && <SearchPanel />}
           {activePanel === "backlinks" && <BacklinksPanel />}
@@ -115,33 +115,58 @@ export function Sidebar() {
   );
 }
 
-// SearchPanel is now imported from @/components/sidebar/SearchPanel
+/** Reusable empty state for sidebar panels */
+function SidebarEmptyState({
+  icon: Icon,
+  title,
+  description,
+  showVaultButton = true,
+}: {
+  icon: typeof FileText;
+  title: string;
+  description: string;
+  showVaultButton?: boolean;
+}) {
+  const openVault = useVaultStore((s) => s.openVault);
+
+  return (
+    <div className="flex flex-col items-center text-center pt-16 px-2">
+      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--bg-tertiary)] border border-[var(--border)] mb-5 shadow-sm">
+        <Icon size={28} className="text-[var(--text-muted)]" />
+      </div>
+      <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">
+        {title}
+      </h3>
+      <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-6 max-w-[200px]">
+        {description}
+      </p>
+      {showVaultButton && (
+        <button
+          onClick={() => openVault()}
+          className="px-6 py-3 text-sm font-medium rounded-xl bg-[var(--accent)] text-white shadow-sm hover:shadow-md hover:brightness-110 active:scale-[0.98] transition-all duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
+        >
+          Open a Vault
+        </button>
+      )}
+    </div>
+  );
+}
 
 function GraphPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
-  const openVault = useVaultStore((s) => s.openVault);
 
   if (!isVaultOpen) {
     return (
-      <div className="flex flex-col items-center gap-4 pt-12 text-center">
-        <GitFork size={40} className="text-[var(--text-muted)]" />
-        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-          No graph to display.
-          <br />
-          Open a vault to explore connections.
-        </p>
-        <button
-          onClick={() => openVault()}
-          className="px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-        >
-          Open a vault
-        </button>
-      </div>
+      <SidebarEmptyState
+        icon={GitFork}
+        title="Knowledge Graph"
+        description="Open a vault to explore connections between your notes."
+      />
     );
   }
 
   return (
-    <div className="w-full h-full -m-3" style={{ minHeight: 200 }}>
+    <div className="w-full h-full -m-5" style={{ minHeight: 200 }}>
       <GraphView compact />
     </div>
   );
@@ -149,41 +174,32 @@ function GraphPanel() {
 
 function VoicePanel() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <VoiceNoteCreator />
-      <div className="w-full border-b border-[var(--border)] my-1" />
-      <div className="flex flex-col items-center gap-4 pt-8 text-center">
-        <Mic size={40} className="text-[var(--text-muted)]" />
-        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-          Record voice notes or dictate text
-          <br />
-          directly into your editor.
-        </p>
-      </div>
+      <div className="w-full border-b border-[var(--border)]" />
+      <SidebarEmptyState
+        icon={Mic}
+        title="Voice Notes"
+        description="Record voice notes or dictate text directly into your editor."
+        showVaultButton={false}
+      />
     </div>
   );
 }
 
 function TagsPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
-  const openVault = useVaultStore((s) => s.openVault);
 
   return (
-    <div className="flex flex-col items-center gap-4 pt-12 text-center">
-      <Tags size={40} className="text-[var(--text-muted)]" />
-      <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-        No tags found.
-        <br />
-        Open a vault to see tags.
-      </p>
-      {!isVaultOpen && (
-        <button
-          onClick={() => openVault()}
-          className="px-5 py-2.5 text-sm rounded-lg font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-opacity duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-        >
-          Open a vault
-        </button>
-      )}
-    </div>
+    <SidebarEmptyState
+      icon={Tags}
+      title="Tags"
+      description={
+        isVaultOpen
+          ? "No tags found in your vault yet."
+          : "Open a vault to browse tags."
+      }
+      showVaultButton={!isVaultOpen}
+    />
   );
 }

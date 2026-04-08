@@ -238,25 +238,23 @@ function EditorPane({ paneIndex, pane }: EditorPaneProps) {
 function EmptyState() {
   const openVault = useVaultStore((s) => s.openVault);
   return (
-    <div className="flex flex-col items-center gap-6 text-center px-8">
-      <div className="flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)]">
-        <FolderOpen size={32} className="text-[var(--text-muted)]" />
+    <div className="flex flex-col items-center text-center px-8 max-w-md">
+      <div className="flex items-center justify-center w-24 h-24 rounded-3xl bg-[var(--bg-secondary)] border border-[var(--border)] shadow-lg mb-8">
+        <FolderOpen size={40} className="text-[var(--text-muted)]" />
       </div>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-          Open a vault to begin
-        </h2>
-        <p className="text-sm text-[var(--text-muted)]">
-          Press{" "}
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] border border-[var(--border)] text-xs font-mono text-[var(--text-secondary)]">
-            Cmd+O
-          </kbd>{" "}
-          to open an existing vault or create a new one.
-        </p>
-      </div>
+      <h2 className="text-xl font-bold text-[var(--text-primary)] mb-3">
+        Open a vault to begin
+      </h2>
+      <p className="text-base text-[var(--text-muted)] leading-relaxed mb-8">
+        Press{" "}
+        <kbd className="px-2 py-1 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)] text-sm font-mono text-[var(--text-secondary)]">
+          Cmd+O
+        </kbd>{" "}
+        to open an existing vault or create a new one.
+      </p>
       <button
         onClick={() => openVault()}
-        className="mt-3 px-6 py-3 rounded-lg text-sm font-medium bg-[var(--accent)] text-white hover:opacity-90 transition-all duration-150 ease-out cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
+        className="px-8 py-3.5 rounded-xl text-base font-semibold bg-[var(--accent)] text-white shadow-md hover:shadow-lg hover:brightness-110 active:scale-[0.98] transition-all duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]"
       >
         Open Vault
       </button>
@@ -266,18 +264,16 @@ function EmptyState() {
 
 function EmptyEditor() {
   return (
-    <div className="flex flex-col items-center gap-6 text-center px-8">
-      <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+    <div className="flex flex-col items-center text-center px-8 max-w-sm">
+      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] shadow-sm mb-6">
         <FileText size={28} className="text-[var(--text-muted)]" />
       </div>
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-[var(--text-secondary)]">
-          No file open
-        </h3>
-        <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-          Select a file from the sidebar to start editing.
-        </p>
-      </div>
+      <h3 className="text-base font-semibold text-[var(--text-secondary)] mb-2">
+        No file open
+      </h3>
+      <p className="text-sm leading-relaxed text-[var(--text-muted)]">
+        Select a file from the sidebar to start editing.
+      </p>
     </div>
   );
 }

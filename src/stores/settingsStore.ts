@@ -35,7 +35,7 @@ export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set, get) => ({
       theme: "dark",
-      sidebarWidth: 250,
+      sidebarWidth: 300,
       sidebarCollapsed: false,
       fontFamily: "system",
       fontSize: 14,
