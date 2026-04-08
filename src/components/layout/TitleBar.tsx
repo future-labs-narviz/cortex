@@ -6,29 +6,29 @@ export function TitleBar() {
 
   return (
     <div
-      className="flex items-center h-11 px-4 bg-[var(--bg-secondary)] border-b border-[var(--border)] select-none"
+      className="flex items-center select-none"
+      style={{ height: 40, paddingLeft: 80, paddingRight: 16, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
       data-tauri-drag-region
     >
-      {/* macOS traffic light spacing */}
-      <div className="w-[70px] flex-shrink-0" data-tauri-drag-region />
-
-      <button
-        onClick={toggleSidebar}
-        className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-200 cursor-pointer"
-        aria-label="Toggle sidebar"
-      >
-        <PanelLeft size={16} />
-      </button>
-
-      <div
-        className="flex-1 text-center text-[13px] font-medium text-[var(--text-muted)] tracking-wide"
+      {/* App title — far left, minimal */}
+      <span
+        style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: '0.04em', marginRight: 12 }}
         data-tauri-drag-region
       >
         Cortex
-      </div>
+      </span>
 
-      {/* Balance the right side */}
-      <div className="w-[70px] flex-shrink-0" />
+      {/* Sidebar toggle */}
+      <button
+        onClick={toggleSidebar}
+        style={{ padding: 6, borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none', display: 'flex', alignItems: 'center' }}
+        aria-label="Toggle sidebar"
+      >
+        <PanelLeft style={{ width: 15, height: 15 }} />
+      </button>
+
+      {/* Spacer for dragging */}
+      <div style={{ flex: 1 }} data-tauri-drag-region />
     </div>
   );
 }

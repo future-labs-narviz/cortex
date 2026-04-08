@@ -27,48 +27,34 @@ export function Calendar() {
   const setActiveFile = useVaultStore((s) => s.setActiveFile);
   const openTab = useEditorStore((s) => s.openTab);
 
-  // Build a set of dates (YYYY-MM-DD) that have daily notes.
   const dailyDates = useMemo(() => {
     const flat = flattenFiles(files);
     const dates = new Set<string>();
     for (const file of flat) {
       const match = file.path.match(/^daily\/(\d{4}-\d{2}-\d{2})\.md$/);
-      if (match) {
-        dates.add(match[1]);
-      }
+      if (match) dates.add(match[1]);
     }
     return dates;
   }, [files]);
 
   const totalDays = daysInMonth(viewYear, viewMonth);
   const startDay = firstDayOfWeek(viewYear, viewMonth);
-
   const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
 
   const handlePrev = () => {
-    if (viewMonth === 0) {
-      setViewYear(viewYear - 1);
-      setViewMonth(11);
-    } else {
-      setViewMonth(viewMonth - 1);
-    }
+    if (viewMonth === 0) { setViewYear(viewYear - 1); setViewMonth(11); }
+    else setViewMonth(viewMonth - 1);
   };
 
   const handleNext = () => {
-    if (viewMonth === 11) {
-      setViewYear(viewYear + 1);
-      setViewMonth(0);
-    } else {
-      setViewMonth(viewMonth + 1);
-    }
+    if (viewMonth === 11) { setViewYear(viewYear + 1); setViewMonth(0); }
+    else setViewMonth(viewMonth + 1);
   };
 
   const handleDayClick = async (day: number) => {
     const dateStr = `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
     const relativePath = `daily/${dateStr}.md`;
-
     try {
-      // Use create_daily_note for today, otherwise just open the file.
       if (dateStr === todayStr) {
         const path = await invoke<string>("create_daily_note");
         setActiveFile(path);
@@ -77,7 +63,6 @@ export function Calendar() {
         setActiveFile(relativePath);
         openTab(relativePath, "");
       }
-      // If the date has no note and isn't today, do nothing.
     } catch (err) {
       console.warn("[Cortex] Calendar day click failed:", err);
     }
@@ -89,53 +74,45 @@ export function Calendar() {
   });
 
   const cells: (number | null)[] = [];
-  for (let i = 0; i < startDay; i++) {
-    cells.push(null);
-  }
-  for (let d = 1; d <= totalDays; d++) {
-    cells.push(d);
-  }
+  for (let i = 0; i < startDay; i++) cells.push(null);
+  for (let d = 1; d <= totalDays; d++) cells.push(d);
+
+  const navBtn: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: 28, height: 28, borderRadius: 'var(--radius-md)',
+    background: 'none', border: 'none', color: 'var(--text-secondary)',
+    cursor: 'pointer',
+  };
 
   return (
-    <div className="select-none rounded-[var(--radius-lg)]">
+    <div style={{ userSelect: 'none' }}>
       {/* Month header */}
-      <div className="flex items-center justify-between mb-2">
-        <button
-          onClick={handlePrev}
-          className="p-0.5 rounded-[var(--radius-md)] hover:bg-[var(--muted)] text-[var(--text-muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-          aria-label="Previous month"
-        >
-          <ChevronLeft size={14} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <button onClick={handlePrev} style={navBtn} aria-label="Previous month">
+          <ChevronLeft style={{ width: 16, height: 16 }} />
         </button>
-        <span className="text-sm font-semibold text-[var(--text-primary)]">
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
           {monthLabel}
         </span>
-        <button
-          onClick={handleNext}
-          className="p-0.5 rounded-[var(--radius-md)] hover:bg-[var(--muted)] text-[var(--text-muted)] cursor-pointer transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2"
-          aria-label="Next month"
-        >
-          <ChevronRight size={14} />
+        <button onClick={handleNext} style={navBtn} aria-label="Next month">
+          <ChevronRight style={{ width: 16, height: 16 }} />
         </button>
       </div>
 
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-0 mb-0.5">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 8 }}>
         {WEEKDAYS.map((wd) => (
-          <div
-            key={wd}
-            className="text-[10px] text-center font-medium text-[var(--text-muted)] uppercase py-0.5"
-          >
+          <div key={wd} style={{ textAlign: 'center', fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', padding: '4px 0' }}>
             {wd}
           </div>
         ))}
       </div>
 
       {/* Day grid */}
-      <div className="grid grid-cols-7 gap-0">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
         {cells.map((day, idx) => {
           if (day === null) {
-            return <div key={`empty-${idx}`} className="w-full aspect-square" />;
+            return <div key={`empty-${idx}`} style={{ aspectRatio: '1' }} />;
           }
 
           const dateStr = `${viewYear}-${pad(viewMonth + 1)}-${pad(day)}`;
@@ -143,18 +120,28 @@ export function Calendar() {
           const hasNote = dailyDates.has(dateStr);
           const isClickable = isToday || hasNote;
 
+          const cellStyle: React.CSSProperties = {
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '100%', aspectRatio: '1',
+            fontSize: 12, fontWeight: isToday ? 700 : hasNote ? 500 : 400,
+            borderRadius: 'var(--radius-md)',
+            border: 'none',
+            cursor: isClickable ? 'pointer' : 'default',
+            transition: 'all 150ms',
+            ...(isToday
+              ? { background: 'var(--accent)', color: '#fff' }
+              : hasNote
+                ? { background: 'var(--accent-soft)', color: 'var(--accent)' }
+                : { background: 'transparent', color: 'var(--text-muted)' }
+            ),
+          };
+
           return (
             <button
               key={day}
               onClick={() => handleDayClick(day)}
               disabled={!isClickable}
-              className={`w-8 h-8 flex items-center justify-center text-xs rounded-[var(--radius-md)] transition-colors duration-150 p-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1 ${
-                isToday
-                  ? "bg-[var(--accent)] text-white font-bold rounded-[var(--radius-md)] hover:opacity-90"
-                  : hasNote
-                    ? "bg-[var(--accent-soft)] text-[var(--accent)] font-medium cursor-pointer hover:bg-[var(--accent)] hover:text-white"
-                    : "text-[var(--text-muted)] hover:bg-[var(--muted)]"
-              } ${isClickable ? "cursor-pointer" : "cursor-default"}`}
+              style={cellStyle}
             >
               {day}
             </button>
