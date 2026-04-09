@@ -120,6 +120,31 @@ pub async fn open_vault(
         *si = Some(search_idx);
     }
 
+    // Reload the typed knowledge graph from this vault's .cortex/kg.json.
+    // Without this, opening a new vault leaves the in-memory KG holding the
+    // previous vault's state, which silently breaks SessionStart context injection.
+    {
+        let kg_path = vault_path.join(".cortex").join("kg.json");
+        let loaded = if kg_path.exists() {
+            match cortex_kg::TypedKnowledgeGraph::load(&kg_path) {
+                Ok(kg) => {
+                    log::info!("Reloaded knowledge graph from {:?}", kg_path);
+                    kg
+                }
+                Err(e) => {
+                    log::warn!("Failed to load KG from {:?}: {}", kg_path, e);
+                    cortex_kg::TypedKnowledgeGraph::new()
+                }
+            }
+        } else {
+            log::info!("No KG at {:?}, starting empty", kg_path);
+            cortex_kg::TypedKnowledgeGraph::new()
+        };
+        if let Ok(mut guard) = state.knowledge_graph.write() {
+            *guard = Some(loaded);
+        }
+    }
+
     // Write .claude/settings.json with Cortex hook entries (non-destructive).
     if let Err(e) = write_claude_settings(&vault_path) {
         log::warn!("Failed to write .claude/settings.json: {}", e);
