@@ -24,35 +24,55 @@ export function LiveSessionView({ runId, planPath }: LiveSessionViewProps) {
     if (!useRunStore.getState().runs[runId]) {
       initRun(runId, planPath);
     }
+
+    // StrictMode-safe async subscribe: track cancellation so the cleanup
+    // function tears down listeners that resolve AFTER the effect was
+    // already torn down. Without this, dev mode registers each listener
+    // twice and every stream event is applied twice.
+    let cancelled = false;
     const unlistens: Array<() => void> = [];
 
-    listen<unknown>(`cortex://session/event/${runId}`, (e) => applyEvent(runId, e.payload))
-      .then((u) => unlistens.push(u))
-      .catch((err) => console.warn("[Cortex] failed to subscribe to session events", err));
-
-    listen<{
-      run_id: string;
-      total_cost_usd: number;
-      duration_ms: number;
-      num_turns: number;
-      is_error?: boolean;
-      retrospective_path?: string | null;
-    }>("cortex://session/completed", (e) => {
-      if (e.payload.run_id === runId) markCompleted(runId, e.payload);
-    }).then((u) => unlistens.push(u));
-
-    listen<{ run_id: string; partial_event_count: number }>(
-      "cortex://session/aborted",
-      (e) => {
-        if (e.payload.run_id === runId) markAborted(runId, e.payload.partial_event_count);
+    const register = async (
+      event: string,
+      handler: (payload: unknown) => void
+    ) => {
+      try {
+        const unlisten = await listen<unknown>(event, (e) => handler(e.payload));
+        if (cancelled) {
+          unlisten();
+          return;
+        }
+        unlistens.push(unlisten);
+      } catch (err) {
+        console.warn(`[Cortex] failed to subscribe to ${event}`, err);
       }
-    ).then((u) => unlistens.push(u));
+    };
 
-    listen<{ run_id: string; message: string }>("cortex://session/error", (e) => {
-      if (e.payload.run_id === runId) markError(runId, e.payload.message);
-    }).then((u) => unlistens.push(u));
+    register(`cortex://session/event/${runId}`, (payload) =>
+      applyEvent(runId, payload)
+    );
+    register("cortex://session/completed", (payload) => {
+      const p = payload as {
+        run_id: string;
+        total_cost_usd: number;
+        duration_ms: number;
+        num_turns: number;
+        is_error?: boolean;
+        retrospective_path?: string | null;
+      };
+      if (p.run_id === runId) markCompleted(runId, p);
+    });
+    register("cortex://session/aborted", (payload) => {
+      const p = payload as { run_id: string; partial_event_count: number };
+      if (p.run_id === runId) markAborted(runId, p.partial_event_count);
+    });
+    register("cortex://session/error", (payload) => {
+      const p = payload as { run_id: string; message: string };
+      if (p.run_id === runId) markError(runId, p.message);
+    });
 
     return () => {
+      cancelled = true;
       unlistens.forEach((u) => u());
     };
   }, [runId, planPath]); // eslint-disable-line react-hooks/exhaustive-deps
