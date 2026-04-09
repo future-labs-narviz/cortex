@@ -1,10 +1,11 @@
 import { useState, useCallback } from "react";
 import { FolderOpen, Plus } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 import { useVaultStore } from "@/stores/vaultStore";
-import { useEditorStore } from "@/stores/editorStore";
+import { useLayoutStore } from "@/stores/layoutStore";
 import { FileTreeItem } from "./FileTreeItem";
 import { FileContextMenu } from "./FileContextMenu";
-import type { VaultFile } from "@/lib/types";
+import type { VaultFile, NoteData } from "@/lib/types";
 
 interface ContextMenuState {
   x: number;
@@ -25,20 +26,30 @@ export function FileExplorer() {
   const renameNote = useVaultStore((s) => s.renameNote);
   const deleteNote = useVaultStore((s) => s.deleteNote);
   const vaultPath = useVaultStore((s) => s.vaultPath);
-  const _openTab = useEditorStore((s) => s.openTab);
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(
     null,
   );
 
+  const openNote = useCallback(
+    (path: string) => {
+      setActiveFile(path);
+      const layout = useLayoutStore.getState();
+      const sheetId = layout.activeSheetId;
+      invoke<NoteData>("read_note", { path })
+        .then((data) => layout.openFile(sheetId, path, data.content))
+        .catch(() => layout.openFile(sheetId, path, ""));
+    },
+    [setActiveFile],
+  );
+
   const handleClickFile = useCallback(
     (file: VaultFile) => {
       if (!file.is_dir) {
-        setActiveFile(file.path);
-        // Content will be loaded by AppShell's activeFilePath effect
+        openNote(file.path);
       }
     },
-    [setActiveFile],
+    [openNote],
   );
 
   const handleContextMenu = useCallback(
@@ -55,10 +66,9 @@ export function FileExplorer() {
       const title = window.prompt("Note name:");
       if (!title) return;
       const path = await createNote(title, folder);
-      setActiveFile(path);
-      _openTab(path, "");
+      openNote(path);
     },
-    [createNote, setActiveFile, _openTab],
+    [createNote, openNote],
   );
 
   const handleNewFolder = useCallback(
