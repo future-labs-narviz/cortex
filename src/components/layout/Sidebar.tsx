@@ -7,6 +7,7 @@ import {
   Plug,
   FolderOpen,
   ArrowUpRight,
+  Plus,
 } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useVaultStore } from "@/stores/vaultStore";
@@ -78,6 +79,36 @@ export function Sidebar() {
     <div className="flex h-full flex-shrink-0" style={{ width: sidebarCollapsed ? 0 : width, overflow: 'hidden', transition: 'width 200ms ease' }}>
       {/* Icon rail */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 56, flexShrink: 0, padding: '12px 0', gap: 4, background: 'var(--bg-primary)', borderRight: '1px solid var(--border)' }}>
+        {/* New note */}
+        <Tooltip content="New Note" side="right">
+          <button
+            onClick={() => {
+              const vaultPath = useVaultStore.getState().vaultPath;
+              if (!vaultPath) return;
+              const now = new Date();
+              const title = `Untitled ${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+              useVaultStore.getState().createNote(title).then((path) => {
+                useVaultStore.getState().setActiveFile(path);
+                useLayoutStore.getState().openTab(path, "");
+              });
+            }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 40, height: 40, padding: 0,
+              borderRadius: 'var(--radius-lg)',
+              border: '1px solid transparent',
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              cursor: 'pointer', transition: 'all 200ms', outline: 'none',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--muted)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+            aria-label="New Note"
+          >
+            <Plus size={20} strokeWidth={1.5} />
+          </button>
+        </Tooltip>
+        <div style={{ height: 1, background: 'var(--border)', margin: '2px 8px', alignSelf: 'stretch' }} />
         {navItems.map(({ id, icon: Icon, label }) => {
           const isActive = activePanel === id;
           return (

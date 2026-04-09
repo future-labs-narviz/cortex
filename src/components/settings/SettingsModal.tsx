@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, Settings, Palette, Mic, Plug } from "lucide-react";
+import { X, Settings, Palette, Mic, Plug, Brain } from "lucide-react";
 import { GeneralSettings } from "./GeneralSettings";
 import { AppearanceSettings } from "./AppearanceSettings";
 import { VoiceSettings } from "./VoiceSettings";
+import { KnowledgeGraphSettings } from "./KnowledgeGraphSettings";
 
-type Section = "general" | "appearance" | "voice" | "integrations";
+type Section = "general" | "appearance" | "voice" | "integrations" | "knowledge-graph";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ const SECTIONS: { id: Section; label: string; icon: typeof Settings }[] = [
   { id: "appearance", label: "Appearance", icon: Palette },
   { id: "voice", label: "Voice", icon: Mic },
   { id: "integrations", label: "Integrations", icon: Plug },
+  { id: "knowledge-graph", label: "Knowledge Graph", icon: Brain },
 ];
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
@@ -179,6 +181,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </p>
             </div>
           )}
+          {activeSection === "knowledge-graph" && <KnowledgeGraphSettings />}
         </div>
 
         {/* Close button */}

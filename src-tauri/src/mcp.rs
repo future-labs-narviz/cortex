@@ -157,6 +157,97 @@ fn get_tools() -> Value {
                     },
                     "required": ["title", "content"]
                 }
+            },
+            {
+                "name": "cortex/query-graph",
+                "description": "Get the knowledge subgraph around a topic. Returns entity profile and relation triples for the calling LLM to reason over.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "topic": {"type": "string", "description": "Topic or entity name to center the subgraph on"},
+                        "hops": {"type": "integer", "default": 2, "description": "Number of relation hops to include in subgraph (1-3)"}
+                    },
+                    "required": ["topic"]
+                }
+            },
+            {
+                "name": "cortex/entity-profile",
+                "description": "Get a profile for a named entity including description, relations, and source notes.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "entity_name": {"type": "string", "description": "Name of the entity to look up"}
+                    },
+                    "required": ["entity_name"]
+                }
+            },
+            {
+                "name": "cortex/store-entities",
+                "description": "Store entities extracted from a note into the typed knowledge graph. Called by Claude Code after reading and analyzing a note.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "note_path": {"type": "string", "description": "Relative path of the note these entities were extracted from"},
+                        "entities": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string"},
+                                    "entity_type": {"type": "string", "enum": ["Person", "Project", "Technology", "Decision", "Pattern", "Organization", "Concept"]},
+                                    "description": {"type": "string", "description": "One-sentence description grounded in the note"}
+                                },
+                                "required": ["name", "entity_type", "description"]
+                            }
+                        }
+                    },
+                    "required": ["note_path", "entities"]
+                }
+            },
+            {
+                "name": "cortex/store-relations",
+                "description": "Store relations extracted from a note into the typed knowledge graph.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "note_path": {"type": "string"},
+                        "relations": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "source": {"type": "string", "description": "Source entity name"},
+                                    "predicate": {"type": "string", "description": "Short verb phrase: decided, built_with, depends_on, supersedes, extracted_from, caused, led_to, part_of, used_by"},
+                                    "target": {"type": "string", "description": "Target entity name"}
+                                },
+                                "required": ["source", "predicate", "target"]
+                            }
+                        }
+                    },
+                    "required": ["note_path", "relations"]
+                }
+            },
+            {
+                "name": "cortex/resolve-entity",
+                "description": "Merge entity aliases into a canonical name. E.g., merge 'JWT tokens' and 'JSON Web Tokens' into 'JWT'.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "canonical": {"type": "string", "description": "The canonical name to keep"},
+                        "aliases": {"type": "array", "items": {"type": "string"}, "description": "Names that should resolve to the canonical"}
+                    },
+                    "required": ["canonical", "aliases"]
+                }
+            },
+            {
+                "name": "cortex/get-unprocessed-notes",
+                "description": "Get a list of notes that haven't been entity-extracted yet. Use this to find notes that need processing.",
+                "inputSchema": {"type": "object", "properties": {}}
+            },
+            {
+                "name": "cortex/kg-stats",
+                "description": "Get knowledge graph statistics: entity count, relation count, processed/unprocessed note counts.",
+                "inputSchema": {"type": "object", "properties": {}}
             }
         ]
     })
@@ -389,6 +480,13 @@ fn handle_tools_call(state: &AppState, params: Option<Value>) -> Result<Value, S
         "cortex/list-tags" => handle_list_tags(state),
         "cortex/get-note" => handle_get_note(state, &arguments),
         "cortex/create-note" => handle_create_note(state, &arguments),
+        "cortex/query-graph" => handle_query_graph(state, &arguments),
+        "cortex/entity-profile" => handle_entity_profile(state, &arguments),
+        "cortex/store-entities" => handle_store_entities(state, &arguments),
+        "cortex/store-relations" => handle_store_relations(state, &arguments),
+        "cortex/resolve-entity" => handle_resolve_entity(state, &arguments),
+        "cortex/get-unprocessed-notes" => handle_get_unprocessed_notes(state, &arguments),
+        "cortex/kg-stats" => handle_kg_stats(state, &arguments),
         _ => Err(format!("Unknown tool: {}", tool_name)),
     }
 }
@@ -1651,4 +1749,336 @@ pub async fn start_mcp_server(state: Arc<AppState>) -> anyhow::Result<()> {
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+/// cortex/query-graph - Get subgraph around a topic for the calling LLM to reason over.
+fn handle_query_graph(state: &AppState, arguments: &Value) -> Result<Value, String> {
+    let topic = arguments
+        .get("topic")
+        .and_then(|v| v.as_str())
+        .ok_or("Missing 'topic'")?;
+    let hops = arguments
+        .get("hops")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(2) as u32;
+
+    let kg_guard = state
+        .knowledge_graph
+        .read()
+        .map_err(|e| e.to_string())?;
+    let kg = kg_guard
+        .as_ref()
+        .ok_or("Knowledge graph not initialized.")?;
+
+    // Find relevant entities.
+    let entities = kg.search_entities(topic);
+    if entities.is_empty() {
+        return Ok(json!({
+            "content": [{"type": "text", "text": "No matching entities found in the knowledge graph."}]
+        }));
+    }
+
+    let center = &entities[0].name;
+    let triples = kg.serialize_subgraph(center, hops);
+
+    // Return the subgraph triples directly for the calling LLM to reason over.
+    let profile = kg.entity_profile(center);
+    let mut text = format!("## Knowledge Graph Subgraph for: {}\n\n", center);
+    if let Some(p) = &profile {
+        text.push_str(&format!("**Type:** {:?}\n", p.entity.entity_type));
+        text.push_str(&format!("**Description:** {}\n", p.entity.description));
+        text.push_str(&format!("**Mentions:** {} notes\n\n", p.mention_count));
+    }
+    text.push_str("### Relations (triples):\n");
+    text.push_str(&triples);
+
+    Ok(json!({
+        "content": [{"type": "text", "text": text}]
+    }))
+}
+
+/// cortex/entity-profile - Get entity details.
+fn handle_entity_profile(state: &AppState, arguments: &Value) -> Result<Value, String> {
+    let entity_name = arguments
+        .get("entity_name")
+        .and_then(|v| v.as_str())
+        .ok_or("Missing 'entity_name'")?;
+
+    let kg_guard = state
+        .knowledge_graph
+        .read()
+        .map_err(|e| e.to_string())?;
+    let kg = kg_guard.as_ref().ok_or("Knowledge graph not initialized.")?;
+
+    let profile = kg
+        .entity_profile(entity_name)
+        .ok_or_else(|| format!("Entity '{}' not found", entity_name))?;
+
+    let mut text = format!("# {}\n\n", profile.entity.name);
+    text.push_str(&format!("**Type:** {:?}\n", profile.entity.entity_type));
+    text.push_str(&format!("**Description:** {}\n", profile.entity.description));
+    text.push_str(&format!(
+        "**Mentioned in:** {} notes\n\n",
+        profile.mention_count
+    ));
+
+    if !profile.relations_out.is_empty() {
+        text.push_str("## Outgoing Relations\n");
+        for rel in &profile.relations_out {
+            text.push_str(&format!("- {} -> {}\n", rel.predicate, rel.target));
+        }
+        text.push_str("\n");
+    }
+
+    if !profile.relations_in.is_empty() {
+        text.push_str("## Incoming Relations\n");
+        for rel in &profile.relations_in {
+            text.push_str(&format!("- {} <- {}\n", rel.predicate, rel.source));
+        }
+        text.push_str("\n");
+    }
+
+    if !profile.entity.source_notes.is_empty() {
+        text.push_str("## Source Notes\n");
+        for note in &profile.entity.source_notes {
+            text.push_str(&format!("- {}\n", note));
+        }
+    }
+
+    Ok(json!({
+        "content": [{"type": "text", "text": text}]
+    }))
+}
+
+/// cortex/store-entities - Store entities from Claude Code.
+fn handle_store_entities(state: &AppState, arguments: &Value) -> Result<Value, String> {
+    let note_path = arguments
+        .get("note_path")
+        .and_then(|v| v.as_str())
+        .ok_or("Missing 'note_path'")?;
+    let entities_val = arguments
+        .get("entities")
+        .and_then(|v| v.as_array())
+        .ok_or("Missing 'entities' array")?;
+
+    let mut entities = Vec::new();
+    for ev in entities_val {
+        let name = ev
+            .get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        let entity_type_str = ev
+            .get("entity_type")
+            .and_then(|v| v.as_str())
+            .unwrap_or("Concept");
+        let description = ev
+            .get("description")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+
+        let entity_type = match entity_type_str {
+            "Person" => cortex_kg::EntityType::Person,
+            "Project" => cortex_kg::EntityType::Project,
+            "Technology" => cortex_kg::EntityType::Technology,
+            "Decision" => cortex_kg::EntityType::Decision,
+            "Pattern" => cortex_kg::EntityType::Pattern,
+            "Organization" => cortex_kg::EntityType::Organization,
+            _ => cortex_kg::EntityType::Concept,
+        };
+
+        entities.push(cortex_kg::KgEntity {
+            name,
+            entity_type,
+            description,
+            source_notes: Vec::new(),
+            aliases: Vec::new(),
+        });
+    }
+
+    let count = entities.len();
+    {
+        let mut kg_guard = state.knowledge_graph.write().map_err(|e| e.to_string())?;
+        let kg = kg_guard.get_or_insert_with(cortex_kg::TypedKnowledgeGraph::new);
+        kg.store_entities(note_path, entities);
+    }
+    save_kg(state);
+
+    Ok(json!({
+        "content": [{"type": "text", "text": format!("Stored {} entities from '{}'", count, note_path)}]
+    }))
+}
+
+/// cortex/store-relations - Store relations from Claude Code.
+fn handle_store_relations(state: &AppState, arguments: &Value) -> Result<Value, String> {
+    let note_path = arguments
+        .get("note_path")
+        .and_then(|v| v.as_str())
+        .ok_or("Missing 'note_path'")?;
+    let relations_val = arguments
+        .get("relations")
+        .and_then(|v| v.as_array())
+        .ok_or("Missing 'relations' array")?;
+
+    let mut relations = Vec::new();
+    for rv in relations_val {
+        let source = rv
+            .get("source")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        let predicate = rv
+            .get("predicate")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        let target = rv
+            .get("target")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+
+        relations.push(cortex_kg::KgRelation {
+            source,
+            predicate,
+            target,
+            source_note: String::new(),
+        });
+    }
+
+    let count = relations.len();
+    {
+        let mut kg_guard = state.knowledge_graph.write().map_err(|e| e.to_string())?;
+        let kg = kg_guard.get_or_insert_with(cortex_kg::TypedKnowledgeGraph::new);
+        kg.store_relations(note_path, relations);
+    }
+    save_kg(state);
+
+    Ok(json!({
+        "content": [{"type": "text", "text": format!("Stored {} relations from '{}'", count, note_path)}]
+    }))
+}
+
+/// cortex/resolve-entity - Merge entity aliases.
+fn handle_resolve_entity(state: &AppState, arguments: &Value) -> Result<Value, String> {
+    let canonical = arguments
+        .get("canonical")
+        .and_then(|v| v.as_str())
+        .ok_or("Missing 'canonical'")?;
+    let aliases: Vec<String> = arguments
+        .get("aliases")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_str().map(String::from))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    {
+        let mut kg_guard = state.knowledge_graph.write().map_err(|e| e.to_string())?;
+        let kg = kg_guard.get_or_insert_with(cortex_kg::TypedKnowledgeGraph::new);
+        kg.resolve_entity(canonical, aliases.clone());
+    }
+    save_kg(state);
+
+    Ok(json!({
+        "content": [{"type": "text", "text": format!("Resolved '{}' with {} aliases", canonical, aliases.len())}]
+    }))
+}
+
+/// cortex/get-unprocessed-notes - Notes needing extraction.
+fn handle_get_unprocessed_notes(state: &AppState, _arguments: &Value) -> Result<Value, String> {
+    let all_notes = {
+        let vault_guard = state.vault.lock().map_err(|e| e.to_string())?;
+        let vault = vault_guard.as_ref().ok_or("No vault open")?;
+        let files = vault.list_files().map_err(|e| e.to_string())?;
+        files
+            .iter()
+            .filter(|f| !f.is_dir && f.path.ends_with(".md"))
+            .map(|f| f.path.clone())
+            .collect::<Vec<_>>()
+    };
+
+    let unprocessed = {
+        let kg_guard = state.knowledge_graph.read().map_err(|e| e.to_string())?;
+        match kg_guard.as_ref() {
+            Some(kg) => kg.get_unprocessed_notes(&all_notes),
+            None => all_notes.clone(),
+        }
+    };
+
+    let text = if unprocessed.is_empty() {
+        "All notes have been processed.".to_string()
+    } else {
+        format!(
+            "{} unprocessed notes:\n{}",
+            unprocessed.len(),
+            unprocessed.join("\n")
+        )
+    };
+
+    Ok(json!({
+        "content": [{"type": "text", "text": text}]
+    }))
+}
+
+/// cortex/kg-stats - Knowledge graph statistics.
+fn handle_kg_stats(state: &AppState, _arguments: &Value) -> Result<Value, String> {
+    let kg_guard = state
+        .knowledge_graph
+        .read()
+        .map_err(|e| e.to_string())?;
+    let kg = kg_guard
+        .as_ref()
+        .ok_or("Knowledge graph not initialized.")?;
+
+    let all_notes_count = {
+        let vault_guard = state.vault.lock().map_err(|e| e.to_string())?;
+        match vault_guard.as_ref() {
+            Some(vault) => {
+                let files = vault.list_files().map_err(|e| e.to_string())?;
+                files
+                    .iter()
+                    .filter(|f| !f.is_dir && f.path.ends_with(".md"))
+                    .count()
+            }
+            None => 0,
+        }
+    };
+
+    let text = format!(
+        "Knowledge Graph Stats:\n- {} entities\n- {} relations\n- {}/{} notes processed",
+        kg.entity_count(),
+        kg.relation_count(),
+        kg.processed_count(),
+        all_notes_count
+    );
+
+    Ok(json!({
+        "content": [{"type": "text", "text": text}]
+    }))
+}
+
+/// Save the knowledge graph to .cortex/kg.json.
+fn save_kg(state: &AppState) {
+    let vault_root = {
+        let vault_guard = match state.vault.lock() {
+            Ok(g) => g,
+            Err(_) => return,
+        };
+        match vault_guard.as_ref() {
+            Some(v) => v.root().to_path_buf(),
+            None => return,
+        }
+    };
+    let kg_path = vault_root.join(".cortex").join("kg.json");
+    if let Ok(kg_guard) = state.knowledge_graph.read() {
+        if let Some(kg) = kg_guard.as_ref() {
+            if let Err(e) = kg.save(&kg_path) {
+                log::error!("Failed to save knowledge graph: {}", e);
+            }
+        }
+    }
 }

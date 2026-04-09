@@ -116,15 +116,6 @@ export function FileExplorer() {
 
   return (
     <div className="flex flex-col gap-1">
-      {/* New note button at top */}
-      <button
-        onClick={() => handleNewNote(vaultPath ?? "")}
-        className="flex items-center gap-1.5 h-8 px-3 text-xs rounded-[var(--radius-md)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--muted)] transition-colors duration-200 cursor-pointer self-start"
-      >
-        <Plus size={12} />
-        New Note
-      </button>
-
       {/* File tree */}
       <FileTree
         files={files}

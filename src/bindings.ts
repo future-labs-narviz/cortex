@@ -280,6 +280,39 @@ async voiceIsRecording() : Promise<Result<boolean, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * Get typed graph data for D3 visualization.
+ */
+async getKgGraphData() : Promise<Result<KgGraphData, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_kg_graph_data") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Get the profile for a specific entity.
+ */
+async getEntityProfile(name: string) : Promise<Result<KgEntityProfile, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_entity_profile", { name }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Get knowledge graph stats.
+ */
+async getKgStats() : Promise<Result<KgStats, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_kg_stats") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -314,6 +347,7 @@ context: string;
  * Line number in the source note.
  */
 line: number }
+export type EntityType = "Person" | "Project" | "Technology" | "Decision" | "Pattern" | "Organization" | "Concept"
 /**
  * Parsed YAML frontmatter from a note.
  */
@@ -354,6 +388,11 @@ label: string;
  * Number of connections (forward + backward links).
  */
 weight: number }
+export type KgEntity = { name: string; entity_type: EntityType; description: string; source_notes: string[]; aliases: string[] }
+export type KgEntityProfile = { entity: KgEntity; relations_out: KgRelation[]; relations_in: KgRelation[]; mention_count: number }
+export type KgGraphData = { entities: KgEntity[]; relations: KgRelation[] }
+export type KgRelation = { source: string; predicate: string; target: string; source_note: string }
+export type KgStats = { entity_count: number; relation_count: number; processed_count: number; unprocessed_count: number }
 /**
  * Data returned to the frontend when reading a note.
  */

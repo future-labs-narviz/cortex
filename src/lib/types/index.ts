@@ -139,3 +139,43 @@ export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
 }
+
+// Knowledge Graph types
+
+export type EntityType = "Person" | "Project" | "Technology" | "Decision" | "Pattern" | "Organization" | "Concept";
+
+export interface KgEntity {
+  name: string;
+  entity_type: EntityType;
+  description: string;
+  source_notes: string[];
+  aliases: string[];
+}
+
+export interface KgRelation {
+  source: string;
+  predicate: string;
+  target: string;
+  source_note: string;
+}
+
+export interface KgEntityProfile {
+  entity: KgEntity;
+  relations_out: KgRelation[];
+  relations_in: KgRelation[];
+  mention_count: number;
+}
+
+export interface KgGraphData {
+  entities: KgEntity[];
+  relations: KgRelation[];
+}
+
+export interface KgStats {
+  entity_count: number;
+  relation_count: number;
+  processed_count: number;
+  unprocessed_count: number;
+}
+
+export type GraphLayer = "wikilinks" | "typed" | "both";

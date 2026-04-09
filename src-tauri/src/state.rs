@@ -3,6 +3,7 @@
 use cortex_core::vault::Vault;
 use cortex_core::watcher::{FileWatcher, VaultEvent};
 use cortex_graph::index::LinkIndex;
+use cortex_kg::TypedKnowledgeGraph;
 use cortex_search::indexer::SearchIndex;
 use cortex_voice::VoicePipeline;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -28,6 +29,8 @@ pub struct AppState {
     pub mcp_running: AtomicBool,
     /// The Tauri app handle, set during setup so the MCP server can emit events.
     pub app_handle: Mutex<Option<AppHandle>>,
+    /// Claude-powered typed knowledge graph.
+    pub knowledge_graph: RwLock<Option<TypedKnowledgeGraph>>,
 }
 
 impl AppState {
@@ -43,6 +46,7 @@ impl AppState {
             voice_pipeline: Mutex::new(None),
             mcp_running: AtomicBool::new(false),
             app_handle: Mutex::new(None),
+            knowledge_graph: RwLock::new(None),
         }
     }
 

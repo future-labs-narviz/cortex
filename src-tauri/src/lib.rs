@@ -73,6 +73,9 @@ pub fn run() {
         commands::voice::voice_cancel_recording,
         commands::voice::voice_get_devices,
         commands::voice::voice_is_recording,
+        commands::kg::get_kg_graph_data,
+        commands::kg::get_entity_profile,
+        commands::kg::get_kg_stats,
     ]);
 
     #[cfg(debug_assertions)]
@@ -122,6 +125,7 @@ pub fn run() {
             cortex_search::init();
             cortex_graph::init();
             cortex_voice::init();
+            cortex_kg::init();
 
             // Build the search index for the default vault.
             {
@@ -226,6 +230,93 @@ pub fn run() {
                             }
                             Err(tokio::sync::broadcast::error::RecvError::Closed) => {
                                 log::info!("Link index event channel closed");
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Load knowledge graph from persistence.
+            {
+                let vault_dir = vault_path();
+                let kg_path = vault_dir.join(".cortex").join("kg.json");
+                let state: tauri::State<Arc<AppState>> = app.state();
+                let app_state: Arc<AppState> = state.inner().clone();
+                drop(state);
+                if kg_path.exists() {
+                    match cortex_kg::TypedKnowledgeGraph::load(&kg_path) {
+                        Ok(kg) => {
+                            if let Ok(mut guard) = app_state.knowledge_graph.write() {
+                                *guard = Some(kg);
+                                log::info!("Loaded knowledge graph from {:?}", kg_path);
+                            }
+                        }
+                        Err(e) => {
+                            log::warn!("Failed to load knowledge graph: {}", e);
+                            if let Ok(mut guard) = app_state.knowledge_graph.write() {
+                                *guard = Some(cortex_kg::TypedKnowledgeGraph::new());
+                            }
+                        }
+                    }
+                } else {
+                    if let Ok(mut guard) = app_state.knowledge_graph.write() {
+                        *guard = Some(cortex_kg::TypedKnowledgeGraph::new());
+                    }
+                }
+            }
+
+            // Spawn knowledge graph invalidation on vault events.
+            {
+                let kg_app_handle = app.handle().clone();
+                let mut kg_event_rx = vault_event_tx.subscribe();
+                tauri::async_runtime::spawn(async move {
+                    loop {
+                        match kg_event_rx.recv().await {
+                            Ok(event) => {
+                                let state: tauri::State<Arc<AppState>> =
+                                    kg_app_handle.state();
+                                match &event {
+                                    VaultEvent::Modified(path) => {
+                                        if path.ends_with(".md") {
+                                            if let Ok(mut kg) =
+                                                state.knowledge_graph.write()
+                                            {
+                                                if let Some(kg) = kg.as_mut() {
+                                                    kg.invalidate_note(path);
+                                                    log::debug!(
+                                                        "KG invalidated note: {}",
+                                                        path
+                                                    );
+                                                }
+                                            }
+                                        }
+                                    }
+                                    VaultEvent::Deleted(path) => {
+                                        if path.ends_with(".md") {
+                                            if let Ok(mut kg) =
+                                                state.knowledge_graph.write()
+                                            {
+                                                if let Some(kg) = kg.as_mut() {
+                                                    kg.invalidate_note(path);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                            }
+                            Err(
+                                tokio::sync::broadcast::error::RecvError::Lagged(n),
+                            ) => {
+                                log::warn!(
+                                    "KG event receiver lagged, missed {} events",
+                                    n
+                                );
+                            }
+                            Err(
+                                tokio::sync::broadcast::error::RecvError::Closed,
+                            ) => {
                                 break;
                             }
                         }

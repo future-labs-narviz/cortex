@@ -4,6 +4,7 @@ import { useVaultStore } from "@/stores/vaultStore";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphControls } from "./GraphControls";
 import { GraphTooltip } from "./GraphTooltip";
+import { KgStatsBar } from "./KgStatsBar";
 import { Loader2, AlertTriangle, Network } from "lucide-react";
 import type { GraphNode } from "@/lib/types";
 
@@ -169,6 +170,9 @@ export function GraphView({ compact = false }: GraphViewProps) {
           onCenterActive={handleCenterActive}
         />
       )}
+
+      {/* KG Stats Bar */}
+      <KgStatsBar />
 
       {/* Tooltip */}
       <GraphTooltip
