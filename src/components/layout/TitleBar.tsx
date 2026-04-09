@@ -1,15 +1,45 @@
+import { useState } from "react";
 import { PanelLeft, Sun, Moon } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
 
-const TITLE_COLORS_DARK = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444'];
-const TITLE_COLORS_LIGHT = ['#2563eb','#7c3aed','#0891b2','#059669','#d97706','#dc2626'];
+/**
+ * Builds a stacked text-shadow string that simulates a chiseled 3D extrusion.
+ * Layers a series of 1px offsets along a 45° axis, fading from a near-black
+ * blue at the front to a deep midnight at the back, then closes with a tight
+ * contact shadow and an ambient blue glow.
+ */
+function build3DShadow(isDark: boolean): string {
+  // Subtle 3-layer extrusion — just enough depth to feel sculpted, not loud.
+  const startColor = isDark ? [30, 41, 59] : [15, 23, 42];
+  const endColor = isDark ? [8, 12, 28] : [2, 6, 23];
+
+  const layers: string[] = [];
+  for (let i = 1; i <= 3; i++) {
+    const t = (i - 1) / 2;
+    const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * t);
+    const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * t);
+    const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * t);
+    layers.push(`${i}px ${i}px 0 rgb(${r}, ${g}, ${b})`);
+  }
+
+  const contact = isDark
+    ? "3px 4px 6px rgba(0, 0, 0, 0.35)"
+    : "3px 4px 6px rgba(15, 23, 42, 0.18)";
+
+  return [...layers, contact].join(", ");
+}
 
 export function TitleBar() {
   const toggleSidebar = useSettingsStore((s) => s.toggleSidebar);
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
   const isDark = theme === "dark";
-  const colors = isDark ? TITLE_COLORS_DARK : TITLE_COLORS_LIGHT;
+  const [titleHover, setTitleHover] = useState(false);
+
+  // Subtle top-down gradient: white highlight → blue body → deep navy base
+  const titleGradient = isDark
+    ? "linear-gradient(180deg, #f1f5f9 0%, #93c5fd 35%, #3b82f6 70%, #1e40af 100%)"
+    : "linear-gradient(180deg, #f8fafc 0%, #60a5fa 35%, #2563eb 70%, #1e3a8a 100%)";
 
   const iconBtn: React.CSSProperties = {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -39,21 +69,80 @@ export function TitleBar() {
         onClick={(e) => { e.stopPropagation(); toggleSidebar(); }}
         onMouseEnter={(e) => hover(e, true)}
         onMouseLeave={(e) => hover(e, false)}
-        style={{ ...iconBtn, marginRight: 8 }}
+        style={{ ...iconBtn, marginRight: 12 }}
         aria-label="Toggle sidebar"
       >
         <PanelLeft style={{ width: 15, height: 15 }} />
       </button>
 
-      {/* Cortex title */}
-      <span
-        style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', fontFamily: '"JetBrains Mono", monospace' }}
+      {/* Cortex 3D title */}
+      <div
+        onMouseEnter={() => setTitleHover(true)}
+        onMouseLeave={() => setTitleHover(false)}
+        style={{
+          position: 'relative',
+          display: 'inline-block',
+          paddingLeft: 2,
+          paddingRight: 10,
+          paddingTop: 1,
+          paddingBottom: 4,
+          cursor: 'default',
+          isolation: 'isolate',
+        }}
         data-tauri-drag-region
       >
-        {'Cortex'.split('').map((ch, i) => (
-          <span key={i} style={{ color: colors[i] }}>{ch}</span>
-        ))}
-      </span>
+        {/* Shadow layer (extrusion + glow), absolutely positioned BEHIND the foreground */}
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: 2,
+            top: 1,
+            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
+            fontSize: 17,
+            fontWeight: 800,
+            letterSpacing: '0.01em',
+            lineHeight: 1,
+            color: isDark ? '#0b1220' : '#0c1a3d',
+            textShadow: build3DShadow(isDark),
+            zIndex: 0,
+            userSelect: 'none',
+            pointerEvents: 'none',
+            transform: titleHover ? 'translate(0px, 1px)' : 'translate(0, 0)',
+            transition: 'transform 220ms cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          Cortex
+        </span>
+
+        {/* Foreground: gradient-filled glyphs (the lit face of the 3D extrusion) */}
+        <span
+          aria-label="Cortex"
+          style={{
+            position: 'relative',
+            display: 'inline-block',
+            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif',
+            fontSize: 17,
+            fontWeight: 800,
+            letterSpacing: '0.01em',
+            lineHeight: 1,
+            background: titleGradient,
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            color: 'transparent',
+            filter: isDark
+              ? 'drop-shadow(0 1px 0 rgba(255,255,255,0.18))'
+              : 'drop-shadow(0 1px 0 rgba(255,255,255,0.7))',
+            transform: titleHover ? 'translate(-1px, -1px)' : 'translate(0, 0)',
+            transition: 'transform 220ms cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: 1,
+            userSelect: 'none',
+          }}
+        >
+          Cortex
+        </span>
+      </div>
 
       {/* Spacer */}
       <div style={{ flex: 1 }} data-tauri-drag-region />
