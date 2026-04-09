@@ -1220,6 +1220,8 @@ struct SessionFile {
     key_decisions: Vec<String>,
     what_worked: Option<String>,
     what_failed: Option<String>,
+    #[serde(default)]
+    pub prompts: Vec<String>,
 }
 
 /// Return the vault root directory (same logic as lib.rs).
@@ -1293,6 +1295,7 @@ async fn handle_session_start(
         key_decisions: Vec::new(),
         what_worked: None,
         what_failed: None,
+        prompts: Vec::new(),
     };
 
     if let Err(e) = write_session_file(&vault_root, &session) {
@@ -1339,6 +1342,7 @@ async fn handle_session_end(
             key_decisions: Vec::new(),
             what_worked: None,
             what_failed: None,
+            prompts: Vec::new(),
         }
     });
 
@@ -1730,9 +1734,303 @@ fn compute_duration(started: Option<&str>, ended: Option<&str>) -> String {
     }
 }
 
+// ---------------------------------------------------------------------------
+// HTTP Hook Endpoints (Phase A)
+// ---------------------------------------------------------------------------
+//
+// These endpoints are called by Claude Code via HTTP-type hooks configured in
+// ~/.claude/settings.json. They run alongside the existing /api/capture/*
+// endpoints and the MCP JSON-RPC route on port 3847.
+
+/// POST /hooks/session-start
+/// Called by Claude Code's SessionStart hook. Returns KG context for injection.
+async fn handle_hook_session_start(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let session_id = payload.get("session_id").and_then(|v| v.as_str()).unwrap_or("unknown");
+    let cwd = payload.get("cwd").and_then(|v| v.as_str());
+
+    // Get the vault root from AppState.
+    let vault_root = {
+        let vault_guard = state.vault.lock().unwrap_or_else(|e| e.into_inner());
+        match &*vault_guard {
+            Some(v) => v.root().to_path_buf(),
+            None => {
+                log::info!("Hook session-start: no vault open, skipping");
+                return Json(json!({}));
+            }
+        }
+    };
+
+    let vault_root_str = vault_root.to_string_lossy().to_string();
+
+    // Build KG context markdown (Team A provides these functions).
+    let markdown_string: String = {
+        let kg_guard = state.knowledge_graph.read().unwrap_or_else(|e| e.into_inner());
+        if let Some(kg) = kg_guard.as_ref() {
+            let data = kg.nearby_for_cwd(cwd.unwrap_or(""), &vault_root_str, 20);
+            cortex_kg::graph::render_context_markdown(&data)
+        } else {
+            String::new()
+        }
+    };
+
+    // Write a markdown session note to <vault>/sessions/<session_id>.md.
+    let now = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+    let sessions_dir = vault_root.join("sessions");
+    if let Err(e) = std::fs::create_dir_all(&sessions_dir) {
+        log::error!("Hook session-start: failed to create sessions dir: {}", e);
+    } else {
+        let md_note = format!(
+            "---\ntype: session\nsession_id: {}\ncwd: {}\nstarted_at: {}\n---\n",
+            session_id,
+            cwd.unwrap_or("unknown"),
+            now,
+        );
+        let md_path = sessions_dir.join(format!("{}.md", session_id));
+        if let Err(e) = std::fs::write(&md_path, &md_note) {
+            log::error!("Hook session-start: failed to write session note: {}", e);
+        }
+    }
+
+    // Also ensure the .cortex/sessions directory exists and create/update the SessionFile.
+    let cortex_sessions_dir = vault_root.join(".cortex").join("sessions");
+    if std::fs::create_dir_all(&cortex_sessions_dir).is_ok() {
+        let session_file_path = cortex_sessions_dir.join(format!("{}.json", session_id));
+        // Only create if it doesn't already exist.
+        if !session_file_path.exists() {
+            let session = SessionFile {
+                session_id: session_id.to_string(),
+                project: None,
+                cwd: cwd.map(|s| s.to_string()),
+                started_at: Some(now.clone()),
+                ended_at: None,
+                goal: None,
+                summary: None,
+                tool_uses: Vec::new(),
+                insights: Vec::new(),
+                files_modified: Vec::new(),
+                tools_used: Vec::new(),
+                prompts_count: None,
+                key_decisions: Vec::new(),
+                what_worked: None,
+                what_failed: None,
+                prompts: Vec::new(),
+            };
+            let _ = write_session_file(&vault_root, &session);
+        }
+    }
+
+    log::info!("Hook session-start: session_id={}", session_id);
+
+    Json(json!({
+        "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": markdown_string
+        }
+    }))
+}
+
+/// POST /hooks/prompt
+/// Called by Claude Code's UserPromptSubmit hook. Records the prompt in the SessionFile.
+async fn handle_hook_user_prompt(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let session_id = match payload.get("session_id").and_then(|v| v.as_str()) {
+        Some(id) => id.to_string(),
+        None => return Json(json!({})),
+    };
+    let prompt = payload
+        .get("prompt")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let vault_root = {
+        let vault_guard = state.vault.lock().unwrap_or_else(|e| e.into_inner());
+        match &*vault_guard {
+            Some(v) => v.root().to_path_buf(),
+            None => return Json(json!({})),
+        }
+    };
+
+    if let Some(mut session) = read_session_file(&vault_root, &session_id) {
+        session.prompts.push(prompt);
+        let _ = write_session_file(&vault_root, &session);
+    }
+
+    log::info!("Hook user-prompt: session_id={}", session_id);
+    Json(json!({}))
+}
+
+/// POST /hooks/tool-use
+/// Called by Claude Code's PostToolUse hook. Appends a ToolUseEntry to the SessionFile.
+async fn handle_hook_post_tool_use(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let session_id = match payload.get("session_id").and_then(|v| v.as_str()) {
+        Some(id) => id.to_string(),
+        None => return Json(json!({})),
+    };
+    let tool_name = payload
+        .get("tool_name")
+        .and_then(|v| v.as_str())
+        .unwrap_or("unknown")
+        .to_string();
+    let tool_input = payload.get("tool_input").cloned().unwrap_or(Value::Null);
+
+    // Extract a file path from tool_input if present.
+    let file = tool_input
+        .get("file_path")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    // Use tool_response as description if it's a string.
+    let description = payload
+        .get("tool_response")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    let vault_root = {
+        let vault_guard = state.vault.lock().unwrap_or_else(|e| e.into_inner());
+        match &*vault_guard {
+            Some(v) => v.root().to_path_buf(),
+            None => return Json(json!({})),
+        }
+    };
+
+    let now = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+    if let Some(mut session) = read_session_file(&vault_root, &session_id) {
+        session.tool_uses.push(ToolUseEntry {
+            tool: tool_name,
+            file,
+            description,
+            at: now,
+        });
+        let _ = write_session_file(&vault_root, &session);
+    }
+
+    log::info!("Hook post-tool-use: session_id={}", session_id);
+    Json(json!({}))
+}
+
+/// POST /hooks/session-end
+/// Called by Claude Code's Stop hook. Reads the JSONL transcript to compute files_modified,
+/// then updates the SessionFile and the markdown session note.
+async fn handle_hook_session_end(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let session_id_owned = match payload.get("session_id").and_then(|v| v.as_str()) {
+        Some(id) => id.to_string(),
+        None => return Json(json!({})),
+    };
+    let transcript_path_owned = payload
+        .get("transcript_path")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    let vault_root = {
+        let vault_guard = state.vault.lock().unwrap_or_else(|e| e.into_inner());
+        match &*vault_guard {
+            Some(v) => v.root().to_path_buf(),
+            None => return Json(json!({})),
+        }
+    };
+
+    // Parse the JSONL transcript to collect modified file paths.
+    let mut files_modified: Vec<String> = Vec::new();
+    if !transcript_path_owned.is_empty() {
+        if let Ok(contents) = std::fs::read_to_string(&transcript_path_owned) {
+            for line in contents.lines() {
+                if line.trim().is_empty() {
+                    continue;
+                }
+                if let Ok(entry) = serde_json::from_str::<Value>(line) {
+                    // Look for tool_use entries with file-writing tool names.
+                    if entry.get("type").and_then(|v| v.as_str()) == Some("tool_use") {
+                        let name = entry.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                        if matches!(name, "Edit" | "Write" | "MultiEdit" | "NotebookEdit") {
+                            if let Some(fp) = entry
+                                .get("input")
+                                .and_then(|i| i.get("file_path"))
+                                .and_then(|v| v.as_str())
+                            {
+                                files_modified.push(fp.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Deduplicate while preserving order.
+    let mut seen = std::collections::HashSet::new();
+    files_modified.retain(|p| seen.insert(p.clone()));
+
+    let now = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+
+    // Update the SessionFile.
+    if let Some(mut session) = read_session_file(&vault_root, &session_id_owned) {
+        session.ended_at = Some(now.clone());
+        if !files_modified.is_empty() {
+            session.files_modified = files_modified.clone();
+        }
+        let _ = write_session_file(&vault_root, &session);
+    }
+
+    // Update the markdown session note to add ended_at in frontmatter.
+    let md_path = vault_root.join("sessions").join(format!("{}.md", session_id_owned));
+    if md_path.exists() {
+        if let Ok(existing) = std::fs::read_to_string(&md_path) {
+            // Insert ended_at before the closing --- of the frontmatter.
+            let updated = if let Some(second_delim) = existing.find("\n---\n") {
+                let (front, rest) = existing.split_at(second_delim);
+                format!("{}\nended_at: {}{}", front, now, rest)
+            } else {
+                existing
+            };
+            let _ = std::fs::write(&md_path, updated);
+        }
+    }
+
+    log::info!("Hook session-end: session_id={}", session_id_owned);
+
+    // Kick off the post-session extraction pipeline in the background. The job
+    // gracefully no-ops if GCP_SERVICE_ACCOUNT_JSON is unset (cortex-extract logs
+    // a warning), so this is safe whether or not the user has Vertex configured.
+    {
+        let kg_handle = state.knowledge_graph.clone();
+        let vault_root_clone = vault_root.clone();
+        let session_id_clone = session_id_owned.clone();
+        let transcript_clone = std::path::PathBuf::from(&transcript_path_owned);
+        tokio::spawn(async move {
+            if let Err(e) = cortex_extract::extraction_job(
+                kg_handle,
+                vault_root_clone,
+                session_id_clone,
+                transcript_clone,
+            )
+            .await
+            {
+                log::error!("cortex-extract job failed: {}", e);
+            }
+        });
+    }
+
+    Json(json!({}))
+}
+
 /// Start the MCP HTTP server on port 3847.
 pub async fn start_mcp_server(state: Arc<AppState>) -> anyhow::Result<()> {
     let app = Router::new()
+        .route("/hooks/session-start", post(handle_hook_session_start))
+        .route("/hooks/prompt", post(handle_hook_user_prompt))
+        .route("/hooks/tool-use", post(handle_hook_post_tool_use))
+        .route("/hooks/session-end", post(handle_hook_session_end))
         .route("/mcp", post(handle_mcp))
         .route("/api/capture/session-start", post(handle_session_start))
         .route("/api/capture/session-end", post(handle_session_end))

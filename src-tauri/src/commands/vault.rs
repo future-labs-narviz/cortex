@@ -6,9 +6,72 @@ use cortex_core::vault::Vault;
 use cortex_core::watcher::FileWatcher;
 use cortex_graph::index::LinkIndex;
 use cortex_search::indexer::SearchIndex;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tauri::State;
+
+/// Merge Cortex hook entries into .claude/settings.json (non-destructively).
+fn write_claude_settings(vault_path: &Path) -> anyhow::Result<()> {
+    let claude_dir = vault_path.join(".claude");
+    std::fs::create_dir_all(&claude_dir)?;
+    let settings_path = claude_dir.join("settings.json");
+
+    // Read existing JSON or start with empty object.
+    let mut settings: serde_json::Value = if settings_path.exists() {
+        let raw = std::fs::read_to_string(&settings_path)?;
+        serde_json::from_str(&raw).unwrap_or(serde_json::json!({}))
+    } else {
+        serde_json::json!({})
+    };
+
+    // Ensure top-level "hooks" object exists.
+    if !settings.get("hooks").is_some_and(|v| v.is_object()) {
+        settings["hooks"] = serde_json::json!({});
+    }
+    let hooks = settings["hooks"].as_object_mut().unwrap();
+
+    // Hook event → route mapping.
+    let hook_entries = [
+        ("SessionStart", "session-start"),
+        ("UserPromptSubmit", "prompt"),
+        ("PostToolUse", "tool-use"),
+        ("Stop", "session-end"),
+    ];
+
+    for (event, route) in hook_entries {
+        let url = format!("http://localhost:3847/hooks/{}", route);
+
+        // Get or create the array for this event.
+        if !hooks.get(event).is_some_and(|v| v.is_array()) {
+            hooks.insert(event.to_string(), serde_json::json!([]));
+        }
+        let arr = hooks.get_mut(event).unwrap().as_array_mut().unwrap();
+
+        // Idempotency: skip if any existing entry already has this URL.
+        let already_present = arr.iter().any(|entry| {
+            entry
+                .get("hooks")
+                .and_then(|h| h.as_array())
+                .map(|inner| {
+                    inner
+                        .iter()
+                        .any(|h| h.get("url").and_then(|u| u.as_str()) == Some(&url))
+                })
+                .unwrap_or(false)
+        });
+
+        if !already_present {
+            arr.push(serde_json::json!({
+                "hooks": [{ "type": "http", "url": url }]
+            }));
+        }
+    }
+
+    let pretty = serde_json::to_string_pretty(&settings)?;
+    std::fs::write(&settings_path, pretty)?;
+    log::info!("Wrote .claude/settings.json at {:?}", settings_path);
+    Ok(())
+}
 
 /// Open a vault at the given path, start the file watcher, and return the file listing.
 #[tauri::command]
@@ -55,6 +118,11 @@ pub async fn open_vault(
     {
         let mut si = state.search_index.lock().map_err(|e| e.to_string())?;
         *si = Some(search_idx);
+    }
+
+    // Write .claude/settings.json with Cortex hook entries (non-destructive).
+    if let Err(e) = write_claude_settings(&vault_path) {
+        log::warn!("Failed to write .claude/settings.json: {}", e);
     }
 
     Ok(files)

@@ -219,4 +219,249 @@ impl TypedKnowledgeGraph {
         let json = std::fs::read_to_string(path)?;
         Ok(serde_json::from_str(&json)?)
     }
+
+    pub fn nearby_for_cwd(
+        &self,
+        cwd: &str,
+        vault_root: &str,
+        max_entities: usize,
+    ) -> KgGraphData {
+        let mut matched: Vec<KgEntity> = if cwd.starts_with(vault_root) {
+            // cwd is inside (or equal to) the vault — match by relative subpath prefix
+            let rel_subpath = if cwd == vault_root {
+                String::new()
+            } else {
+                // Strip the vault_root prefix; handle trailing slash on vault_root
+                let stripped = cwd.strip_prefix(vault_root).unwrap_or("");
+                let stripped = stripped.strip_prefix('/').unwrap_or(stripped);
+                stripped.to_string()
+            };
+
+            self.entities
+                .values()
+                .filter(|e| {
+                    if rel_subpath.is_empty() {
+                        // cwd == vault_root: all entities match
+                        true
+                    } else {
+                        e.source_notes.iter().any(|note| {
+                            note.starts_with(&rel_subpath)
+                                || note.contains(&format!("/{}", rel_subpath))
+                        })
+                    }
+                })
+                .cloned()
+                .collect()
+        } else {
+            // cwd is outside vault — match by basename of cwd
+            let basename = Path::new(cwd)
+                .file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or(cwd)
+                .to_lowercase();
+
+            self.entities
+                .values()
+                .filter(|e| {
+                    // Check source_notes filenames
+                    let note_match = e.source_notes.iter().any(|note| {
+                        Path::new(note)
+                            .file_name()
+                            .and_then(|s| s.to_str())
+                            .map(|f| f.to_lowercase().contains(&basename))
+                            .unwrap_or(false)
+                    });
+                    note_match
+                        || e.name.to_lowercase().contains(&basename)
+                        || e.description.to_lowercase().contains(&basename)
+                })
+                .cloned()
+                .collect()
+        };
+
+        // Sort by source_notes length descending, then cap
+        matched.sort_by(|a, b| b.source_notes.len().cmp(&a.source_notes.len()));
+        matched.truncate(max_entities);
+
+        // Collect matched entity names into a set for relation filtering
+        let matched_names: HashSet<String> = matched.iter().map(|e| e.name.clone()).collect();
+
+        let relations = self
+            .relations
+            .iter()
+            .filter(|r| matched_names.contains(&r.source) && matched_names.contains(&r.target))
+            .cloned()
+            .collect();
+
+        KgGraphData {
+            entities: matched,
+            relations,
+        }
+    }
+}
+
+pub fn render_context_markdown(data: &KgGraphData) -> String {
+    if data.entities.is_empty() {
+        return String::new();
+    }
+
+    let mut out = String::from("## Cortex Knowledge Graph — relevant context\n\n### Entities\n");
+    for entity in &data.entities {
+        let note_count = entity.source_notes.len();
+        out.push_str(&format!(
+            "- **{}** ({:?}): {} (mentioned in {} note{})\n",
+            entity.name,
+            entity.entity_type,
+            entity.description,
+            note_count,
+            if note_count == 1 { "" } else { "s" }
+        ));
+    }
+
+    if !data.relations.is_empty() {
+        out.push_str("\n### Relations\n");
+        for rel in &data.relations {
+            out.push_str(&format!(
+                "- ({}) --[{}]--> ({})\n",
+                rel.source, rel.predicate, rel.target
+            ));
+        }
+    }
+
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::{EntityType, KgEntity, KgRelation};
+
+    fn make_entity(name: &str, source_notes: Vec<&str>, description: &str) -> KgEntity {
+        KgEntity {
+            name: name.to_string(),
+            entity_type: EntityType::Concept,
+            description: description.to_string(),
+            source_notes: source_notes.into_iter().map(|s| s.to_string()).collect(),
+            aliases: vec![],
+        }
+    }
+
+    fn make_relation(source: &str, predicate: &str, target: &str) -> KgRelation {
+        KgRelation {
+            source: source.to_string(),
+            predicate: predicate.to_string(),
+            target: target.to_string(),
+            source_note: "test.md".to_string(),
+        }
+    }
+
+    fn build_graph() -> TypedKnowledgeGraph {
+        let mut graph = TypedKnowledgeGraph::new();
+        graph.store_entities(
+            "projects/cortex/overview.md",
+            vec![make_entity("Cortex", vec!["projects/cortex/overview.md"], "A PKM app")],
+        );
+        graph.store_entities(
+            "projects/cortex/design.md",
+            vec![make_entity("Cortex", vec!["projects/cortex/design.md"], "A PKM app with design")],
+        );
+        graph.store_entities(
+            "people/alice.md",
+            vec![make_entity("Alice", vec!["people/alice.md"], "A developer")],
+        );
+        graph.store_entities(
+            "misc/random.md",
+            vec![make_entity("Random", vec!["misc/random.md"], "Some random concept")],
+        );
+        graph.store_relations(
+            "projects/cortex/overview.md",
+            vec![make_relation("Cortex", "created-by", "Alice")],
+        );
+        graph
+    }
+
+    #[test]
+    fn test_vault_prefix_match() {
+        let graph = build_graph();
+        let vault = "/vault";
+        // Entities in "projects/cortex/" should match; "people/alice.md" should not
+        let result = graph.nearby_for_cwd("/vault/projects/cortex", vault, 100);
+        let names: Vec<&str> = result.entities.iter().map(|e| e.name.as_str()).collect();
+        assert!(names.contains(&"Cortex"), "Cortex entity expected for projects/cortex cwd");
+        assert!(!names.contains(&"Alice"), "Alice not expected for projects/cortex cwd");
+    }
+
+    #[test]
+    fn test_vault_root_returns_all() {
+        let graph = build_graph();
+        let vault = "/vault";
+        // cwd == vault_root: all entities should be returned (up to cap)
+        let result = graph.nearby_for_cwd("/vault", vault, 100);
+        assert_eq!(result.entities.len(), 3, "All 3 unique entities expected when cwd == vault_root");
+    }
+
+    #[test]
+    fn test_basename_fallback_outside_vault() {
+        let graph = build_graph();
+        let vault = "/vault";
+        // cwd is outside vault, basename is "cortex" — should match Cortex entity
+        let result = graph.nearby_for_cwd("/home/user/projects/cortex", vault, 100);
+        let names: Vec<&str> = result.entities.iter().map(|e| e.name.as_str()).collect();
+        assert!(names.contains(&"Cortex"), "Cortex expected via basename match");
+    }
+
+    #[test]
+    fn test_max_entities_cap() {
+        let graph = build_graph();
+        let vault = "/vault";
+        // cap to 1; should return exactly 1 entity
+        let result = graph.nearby_for_cwd("/vault", vault, 1);
+        assert_eq!(result.entities.len(), 1, "max_entities cap of 1 should be respected");
+    }
+
+    #[test]
+    fn test_empty_graph() {
+        let graph = TypedKnowledgeGraph::new();
+        let result = graph.nearby_for_cwd("/vault/projects/foo", "/vault", 100);
+        assert!(result.entities.is_empty(), "Empty graph should return no entities");
+        assert!(result.relations.is_empty(), "Empty graph should return no relations");
+    }
+
+    #[test]
+    fn test_relations_filtered_to_matched_entities() {
+        let graph = build_graph();
+        let vault = "/vault";
+        // Only projects/cortex matches — Cortex is in matched, Alice is not
+        let result = graph.nearby_for_cwd("/vault/projects/cortex", vault, 100);
+        // The relation Cortex->Alice should NOT appear since Alice is not matched
+        for rel in &result.relations {
+            assert!(
+                result.entities.iter().any(|e| e.name == rel.source),
+                "relation source must be in matched entities"
+            );
+            assert!(
+                result.entities.iter().any(|e| e.name == rel.target),
+                "relation target must be in matched entities"
+            );
+        }
+    }
+
+    #[test]
+    fn test_render_context_markdown_empty() {
+        let data = KgGraphData { entities: vec![], relations: vec![] };
+        assert_eq!(render_context_markdown(&data), String::new());
+    }
+
+    #[test]
+    fn test_render_context_markdown_output() {
+        let data = KgGraphData {
+            entities: vec![make_entity("Cortex", vec!["notes/cortex.md"], "A PKM app")],
+            relations: vec![make_relation("Cortex", "uses", "Rust")],
+        };
+        let md = render_context_markdown(&data);
+        assert!(md.contains("## Cortex Knowledge Graph"), "should have header");
+        assert!(md.contains("**Cortex**"), "should have entity name bolded");
+        assert!(md.contains("(Concept)"), "should have entity type");
+        assert!(md.contains("--[uses]-->"), "should have relation");
+    }
 }

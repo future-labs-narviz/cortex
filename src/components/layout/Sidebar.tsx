@@ -5,6 +5,7 @@ import {
   Clock,
   Mic,
   Plug,
+  Activity,
   FolderOpen,
   ArrowUpRight,
   Plus,
@@ -15,6 +16,7 @@ import { useLayoutStore } from "@/stores/layoutStore";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { FileExplorer } from "@/components/sidebar/FileExplorer";
 import { SearchPanel } from "@/components/sidebar/SearchPanel";
+import { SessionsPanel } from "@/components/sidebar/SessionsPanel";
 import { ContextTimeline } from "@/components/capture/ContextTimeline";
 import { VoiceNoteCreator } from "@/components/voice/VoiceNoteCreator";
 import { IntegrationSettings } from "@/components/settings/IntegrationSettings";
@@ -29,6 +31,7 @@ interface SidebarNavItem {
 const navItems: SidebarNavItem[] = [
   { id: "files", icon: FileText, label: "Files" },
   { id: "search", icon: Search, label: "Search" },
+  { id: "sessions", icon: Activity, label: "Sessions" },
   { id: "timeline", icon: Clock, label: "Timeline" },
   { id: "voice", icon: Mic, label: "Voice" },
   { id: "integrations", icon: Plug, label: "Integrations" },
@@ -38,6 +41,7 @@ const navItems: SidebarNavItem[] = [
 const panelLabels: Record<string, string> = {
   files: "Files",
   search: "Search",
+  sessions: "Sessions",
   timeline: "Timeline",
   voice: "Voice",
   integrations: "Integrations",
@@ -176,6 +180,7 @@ export function Sidebar() {
         <div className="p-4 overflow-y-auto h-[calc(100%-2.75rem)]">
           {activePanel === "files" && (isVaultOpen ? <FileExplorer /> : <NoVaultState />)}
           {activePanel === "search" && (isVaultOpen ? <SearchPanel /> : <NoVaultState />)}
+          {activePanel === "sessions" && <SessionsPanel />}
           {activePanel === "timeline" && <ContextTimeline />}
           {activePanel === "voice" && <VoicePanel />}
           {activePanel === "integrations" && <IntegrationSettings />}

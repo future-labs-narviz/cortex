@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "crates/cortex-core", "crates/cortex-search", "crates/cortex-graph", "crates/cortex-voice", "crates/cortex-kg"]
+members = [".", "crates/cortex-core", "crates/cortex-search", "crates/cortex-graph", "crates/cortex-voice", "crates/cortex-kg", "crates/cortex-extract"]
 resolver = "2"
 
 [package]
@@ -22,6 +22,7 @@ cortex-search = { path = "crates/cortex-search" }
 cortex-graph = { path = "crates/cortex-graph" }
 cortex-voice = { path = "crates/cortex-voice" }
 cortex-kg = { path = "crates/cortex-kg" }
+cortex-extract = { path = "crates/cortex-extract" }
 
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-log = "2"
@@ -41,6 +42,7 @@ log = "0.4"
 chrono = { version = "0.4", features = ["serde"] }
 dirs = "5"
 specta-typescript = "0.0.9"
+dotenvy = "0.15"
 
 
 [build-dependencies]

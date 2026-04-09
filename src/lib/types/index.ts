@@ -37,7 +37,7 @@ export interface EditorTab {
   isDirty: boolean;
 }
 
-export type SidebarPanel = "files" | "search" | "graph" | "tags" | "backlinks" | "timeline" | "calendar" | "voice" | "integrations";
+export type SidebarPanel = "files" | "search" | "graph" | "tags" | "backlinks" | "timeline" | "calendar" | "voice" | "integrations" | "sessions";
 
 export type Theme = "dark" | "light";
 

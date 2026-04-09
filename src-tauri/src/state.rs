@@ -7,7 +7,7 @@ use cortex_kg::TypedKnowledgeGraph;
 use cortex_search::indexer::SearchIndex;
 use cortex_voice::VoicePipeline;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use tauri::AppHandle;
 use tokio::sync::broadcast;
 
@@ -29,8 +29,9 @@ pub struct AppState {
     pub mcp_running: AtomicBool,
     /// The Tauri app handle, set during setup so the MCP server can emit events.
     pub app_handle: Mutex<Option<AppHandle>>,
-    /// Claude-powered typed knowledge graph.
-    pub knowledge_graph: RwLock<Option<TypedKnowledgeGraph>>,
+    /// Claude-powered typed knowledge graph. Wrapped in Arc so background extraction
+    /// jobs (cortex-extract) can clone the handle and write back into the same lock.
+    pub knowledge_graph: Arc<RwLock<Option<TypedKnowledgeGraph>>>,
 }
 
 impl AppState {
@@ -46,7 +47,7 @@ impl AppState {
             voice_pipeline: Mutex::new(None),
             mcp_running: AtomicBool::new(false),
             app_handle: Mutex::new(None),
-            knowledge_graph: RwLock::new(None),
+            knowledge_graph: Arc::new(RwLock::new(None)),
         }
     }
 

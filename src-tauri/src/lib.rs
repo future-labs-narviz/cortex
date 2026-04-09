@@ -46,6 +46,19 @@ fn vault_path() -> PathBuf {
 /// Returns an error if Tauri setup fails.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Load env vars from ~/Desktop/Cortex/.env (GUI-launched .app has barebones env).
+    if let Some(home) = dirs::home_dir() {
+        let env_path = home.join("Desktop").join("Cortex").join(".env");
+        if env_path.exists() {
+            match dotenvy::from_path(&env_path) {
+                Ok(_) => log::info!("Loaded env from {:?}", env_path),
+                Err(e) => log::warn!("Failed to load env from {:?}: {}", env_path, e),
+            }
+        } else {
+            log::info!("No .env at {:?} (extract pipeline will be disabled)", env_path);
+        }
+    }
+
     // Set up specta type export and command builder.
     let specta_builder = Builder::<tauri::Wry>::new().commands(collect_commands![
         get_app_version,
@@ -76,6 +89,8 @@ pub fn run() {
         commands::kg::get_kg_graph_data,
         commands::kg::get_entity_profile,
         commands::kg::get_kg_stats,
+        commands::sessions::list_session_notes,
+        commands::sessions::get_session_note,
     ]);
 
     #[cfg(debug_assertions)]

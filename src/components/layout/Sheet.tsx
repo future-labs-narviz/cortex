@@ -12,6 +12,7 @@ import { GraphView } from "@/components/graph/GraphView";
 import { SearchPanel } from "@/components/sidebar/SearchPanel";
 import { BacklinksPanel } from "@/components/sidebar/BacklinksPanel";
 import { TagsPanel } from "@/components/sidebar/TagsPanel";
+import { SessionsPanel } from "@/components/sidebar/SessionsPanel";
 import { Calendar } from "@/components/daily-notes/Calendar";
 import { ContextTimeline } from "@/components/capture/ContextTimeline";
 import { VoiceNoteCreator } from "@/components/voice/VoiceNoteCreator";
@@ -248,6 +249,8 @@ function PanelContent({ panel }: { panel: SidebarPanel }) {
       return <VoiceNoteCreator />;
     case "integrations":
       return <IntegrationSettings />;
+    case "sessions":
+      return <SessionsPanel />;
     default:
       return null;
   }
