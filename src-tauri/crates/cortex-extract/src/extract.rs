@@ -16,7 +16,7 @@ pub async fn extraction_job(
     vault_root: PathBuf,
     session_id: String,
     transcript_path: PathBuf,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Option<PathBuf>> {
     let parsed = transcript::parse_jsonl(&transcript_path)
         .with_context(|| format!("Failed to parse transcript at {}", transcript_path.display()))?;
     extraction_job_from_parsed(kg, vault_root, session_id, parsed).await
@@ -25,18 +25,23 @@ pub async fn extraction_job(
 /// Variant of `extraction_job` that takes an already-parsed transcript
 /// instead of reading from a JSONL file. Used by Phase B's `execute_plan`
 /// when the in-memory transcript is built from stream-json events.
+///
+/// Returns `Ok(Some(path))` with the vault-relative retrospective path if
+/// extraction ran and a retrospective was written. Returns `Ok(None)` if
+/// the Vertex client is not configured (graceful no-op so callers don't
+/// hallucinate retrospective links).
 pub async fn extraction_job_from_parsed(
     kg: Arc<RwLock<Option<TypedKnowledgeGraph>>>,
     vault_root: PathBuf,
     session_id: String,
     parsed: transcript::ParsedTranscript,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Option<PathBuf>> {
     // 2. Build VertexClient or skip
     let client = match vertex::VertexClient::from_env() {
         Some(c) => c,
         None => {
             log::warn!("extract pipeline disabled: populate ~/Desktop/Cortex/.env with GCP_SERVICE_ACCOUNT_JSON to enable post-session entity extraction via Vertex AI");
-            return Ok(());
+            return Ok(None);
         }
     };
 
@@ -256,14 +261,17 @@ session_id: {}
     );
 
     let sessions_dir = vault_root.join("sessions");
+    let mut retro_rel: Option<PathBuf> = None;
     if let Err(e) = std::fs::create_dir_all(&sessions_dir) {
         log::error!("cortex-extract: failed to create sessions dir: {}", e);
     } else {
-        let retro_path = sessions_dir.join(format!("{}-retrospective.md", session_id));
+        let retro_filename = format!("{}-retrospective.md", session_id);
+        let retro_path = sessions_dir.join(&retro_filename);
         if let Err(e) = std::fs::write(&retro_path, &retro_note) {
             log::error!("cortex-extract: failed to write retrospective note: {}", e);
         } else {
             log::info!("cortex-extract: wrote retrospective to {}", retro_path.display());
+            retro_rel = Some(PathBuf::from("sessions").join(retro_filename));
         }
     }
 
@@ -271,7 +279,7 @@ session_id: {}
         "cortex-extract: extraction complete for session {}",
         session_id
     );
-    Ok(())
+    Ok(retro_rel)
 }
 
 fn parse_entity_type(s: &str) -> EntityType {

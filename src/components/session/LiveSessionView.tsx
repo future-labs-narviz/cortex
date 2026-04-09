@@ -1,8 +1,13 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { Activity, Loader2, CheckCircle2, XCircle, Square, FileText } from "lucide-react";
-import { useRunStore, type RunBlock, type RunMessage, type RunStatus } from "@/stores/runStore";
+import {
+  useRunStore,
+  type RunBlock,
+  type RunMessage,
+  type RunStatus,
+} from "@/stores/runStore";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useLayoutStore } from "@/stores/layoutStore";
 import type { NoteData } from "@/lib/types";
@@ -12,6 +17,18 @@ interface LiveSessionViewProps {
   planPath: string;
 }
 
+/** Pull a `key: value` line out of a YAML frontmatter block. */
+function fmField(content: string, key: string): string | null {
+  const trimmed = content.replace(/^\uFEFF/, "");
+  if (!trimmed.startsWith("---")) return null;
+  const end = trimmed.indexOf("\n---", 3);
+  if (end === -1) return null;
+  const fm = trimmed.slice(3, end);
+  const re = new RegExp(`^${key}:\\s*(.+)$`, "m");
+  const match = fm.match(re);
+  return match ? match[1].trim() : null;
+}
+
 export function LiveSessionView({ runId, planPath }: LiveSessionViewProps) {
   const run = useRunStore((s) => s.runs[runId]);
   const initRun = useRunStore((s) => s.initRun);
@@ -19,6 +36,71 @@ export function LiveSessionView({ runId, planPath }: LiveSessionViewProps) {
   const markCompleted = useRunStore((s) => s.markCompleted);
   const markAborted = useRunStore((s) => s.markAborted);
   const markError = useRunStore((s) => s.markError);
+  const replayFromEvents = useRunStore((s) => s.replayFromEvents);
+  const [replayState, setReplayState] = useState<
+    "idle" | "loading" | "loaded" | "no-transcript"
+  >("idle");
+
+  // Replay path: if there's no live state for this run, attempt to load
+  // a persisted JSONL transcript and feed it through the runStore so the
+  // user can scroll back through completed runs from the Sessions panel.
+  useEffect(() => {
+    if (run) return; // already in store (live or replayed)
+    if (replayState !== "idle") return;
+    setReplayState("loading");
+    (async () => {
+      try {
+        const lines = await invoke<string[]>("load_run_transcript", { runId });
+        if (lines.length === 0) {
+          // No persisted JSONL — could be a Phase A session or an
+          // in-flight/never-started run. Initialize empty state and
+          // bail out of replay; live subscription effect below will
+          // still attach in case events arrive.
+          initRun(runId, planPath);
+          setReplayState("no-transcript");
+          return;
+        }
+        // Read session note frontmatter for status + cost metadata.
+        let finalStatus: RunStatus = "complete";
+        const meta: {
+          totalCostUsd?: number;
+          durationMs?: number;
+          numTurns?: number;
+          retrospectivePath?: string;
+        } = {};
+        try {
+          const noteData = await invoke<NoteData>("read_note", {
+            path: `sessions/${runId}.md`,
+          });
+          const status = fmField(noteData.content, "status");
+          if (status === "complete" || status === "failed" || status === "aborted") {
+            finalStatus = status;
+          }
+          const cost = fmField(noteData.content, "total_cost_usd");
+          if (cost) meta.totalCostUsd = parseFloat(cost);
+          const dur = fmField(noteData.content, "duration_ms");
+          if (dur) meta.durationMs = parseInt(dur, 10);
+          const turns = fmField(noteData.content, "num_turns");
+          if (turns) meta.numTurns = parseInt(turns, 10);
+        } catch {
+          // No session note (or unreadable) — fall through with defaults.
+        }
+        const retroCandidate = `sessions/${runId}-retrospective.md`;
+        try {
+          await invoke<NoteData>("read_note", { path: retroCandidate });
+          meta.retrospectivePath = retroCandidate;
+        } catch {
+          // No retrospective — leave undefined.
+        }
+        replayFromEvents(runId, planPath, lines, finalStatus, meta);
+        setReplayState("loaded");
+      } catch (err) {
+        console.warn("[Cortex] load_run_transcript failed", err);
+        initRun(runId, planPath);
+        setReplayState("no-transcript");
+      }
+    })();
+  }, [runId, planPath, run, replayState, initRun, replayFromEvents]);
 
   useEffect(() => {
     if (!useRunStore.getState().runs[runId]) {

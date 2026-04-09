@@ -93,6 +93,8 @@ pub fn run() {
         commands::sessions::list_session_notes,
         commands::sessions::get_session_note,
         commands::plans::list_plan_notes,
+        commands::plans::create_plan_note,
+        commands::plans::load_run_transcript,
         run::execute::execute_plan,
         run::execute::abort_run,
     ]);

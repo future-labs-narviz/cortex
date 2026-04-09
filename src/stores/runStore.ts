@@ -46,6 +46,23 @@ interface RunStore {
   ) => void;
   markAborted: (runId: string, partialEventCount: number) => void;
   markError: (runId: string, message: string) => void;
+  /**
+   * Replay a Phase B run from a persisted JSONL transcript. Builds full
+   * runStore state from scratch (overwrites any prior state for this
+   * runId). Used by the Sessions panel when reopening a past run.
+   */
+  replayFromEvents: (
+    runId: string,
+    planPath: string,
+    rawJsonLines: string[],
+    finalStatus: RunStatus,
+    metadata?: {
+      totalCostUsd?: number;
+      durationMs?: number;
+      numTurns?: number;
+      retrospectivePath?: string;
+    }
+  ) => void;
 }
 
 // ─── Reducer helpers ─────────────────────────────────────────────────────
@@ -248,5 +265,36 @@ export const useRunStore = create<RunStore>((set) => ({
       return {
         runs: { ...s.runs, [runId]: { ...run, status: "failed", errorMessage: message } },
       };
+    }),
+
+  replayFromEvents: (runId, planPath, rawJsonLines, finalStatus, metadata) =>
+    set((s) => {
+      // Start from a fresh empty state for this run.
+      let run: RunState = {
+        runId,
+        planPath,
+        status: "starting",
+        messages: [],
+        totalCostUsd: 0,
+        eventCount: 0,
+      };
+      for (const line of rawJsonLines) {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(line);
+        } catch {
+          continue;
+        }
+        run = applyEventReducer(run, parsed);
+      }
+      run.status = finalStatus;
+      if (metadata) {
+        if (typeof metadata.totalCostUsd === "number") run.totalCostUsd = metadata.totalCostUsd;
+        if (typeof metadata.durationMs === "number") run.durationMs = metadata.durationMs;
+        if (typeof metadata.numTurns === "number") run.numTurns = metadata.numTurns;
+        if (typeof metadata.retrospectivePath === "string")
+          run.retrospectivePath = metadata.retrospectivePath;
+      }
+      return { runs: { ...s.runs, [runId]: run } };
     }),
 }));

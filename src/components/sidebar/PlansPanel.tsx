@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Play, RefreshCw, FileText } from "lucide-react";
+import { listen } from "@tauri-apps/api/event";
+import { Play, RefreshCw, FileText, Plus } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
 
 interface PlanSummary {
@@ -37,10 +38,52 @@ export function PlansPanel() {
     fetchPlans();
   }, [fetchPlans]);
 
+  // Auto-refresh on Phase B run lifecycle so the status pill on each
+  // plan card reflects reality without a manual refresh click.
+  useEffect(() => {
+    let cancelled = false;
+    const unlistens: Array<() => void> = [];
+    const subscribe = async (event: string) => {
+      try {
+        const u = await listen(event, () => {
+          if (!cancelled) fetchPlans();
+        });
+        if (cancelled) {
+          u();
+          return;
+        }
+        unlistens.push(u);
+      } catch (err) {
+        console.warn(`[Cortex] failed to subscribe to ${event}`, err);
+      }
+    };
+    subscribe("cortex://session/started");
+    subscribe("cortex://session/completed");
+    subscribe("cortex://session/aborted");
+    return () => {
+      cancelled = true;
+      unlistens.forEach((u) => u());
+    };
+  }, [fetchPlans]);
+
   const openPlan = useCallback((path: string) => {
     const layout = useLayoutStore.getState();
     layout.setSheetContent(layout.activeSheetId, { kind: "plan-runner", planPath: path });
   }, []);
+
+  const handleNewPlan = useCallback(async () => {
+    const title = window.prompt("New plan title:");
+    if (!title || !title.trim()) return;
+    try {
+      const path = await invoke<string>("create_plan_note", { title: title.trim() });
+      await fetchPlans();
+      const layout = useLayoutStore.getState();
+      layout.setSheetContent(layout.activeSheetId, { kind: "plan-runner", planPath: path });
+    } catch (e) {
+      console.warn("[Cortex] create_plan_note failed", e);
+      window.alert(`Failed to create plan: ${e}`);
+    }
+  }, [fetchPlans]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
@@ -61,40 +104,69 @@ export function PlansPanel() {
         >
           {plans.length} plan{plans.length !== 1 ? "s" : ""}
         </span>
-        <button
-          onClick={fetchPlans}
-          disabled={loading}
-          title="Refresh plans"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 28,
-            height: 28,
-            borderRadius: 6,
-            border: "none",
-            background: "transparent",
-            color: "var(--text-muted)",
-            cursor: loading ? "default" : "pointer",
-            transition: "all 150ms",
-            opacity: loading ? 0.5 : 1,
-          }}
-          onMouseEnter={(e) => {
-            if (!loading) {
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <button
+            onClick={handleNewPlan}
+            title="New plan from template"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "none",
+              background: "transparent",
+              color: "var(--text-muted)",
+              cursor: "pointer",
+              transition: "all 150ms",
+            }}
+            onMouseEnter={(e) => {
               e.currentTarget.style.background = "var(--muted-hover)";
-              e.currentTarget.style.color = "var(--text-secondary)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "var(--text-muted)";
-          }}
-        >
-          <RefreshCw
-            size={14}
-            style={{ animation: loading ? "spin 1s linear infinite" : "none" }}
-          />
-        </button>
+              e.currentTarget.style.color = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--text-muted)";
+            }}
+          >
+            <Plus size={14} />
+          </button>
+          <button
+            onClick={fetchPlans}
+            disabled={loading}
+            title="Refresh plans"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "none",
+              background: "transparent",
+              color: "var(--text-muted)",
+              cursor: loading ? "default" : "pointer",
+              transition: "all 150ms",
+              opacity: loading ? 0.5 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.currentTarget.style.background = "var(--muted-hover)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--text-muted)";
+            }}
+          >
+            <RefreshCw
+              size={14}
+              style={{ animation: loading ? "spin 1s linear infinite" : "none" }}
+            />
+          </button>
+        </div>
       </div>
 
       {loading && plans.length === 0 && (

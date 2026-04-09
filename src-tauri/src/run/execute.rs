@@ -276,9 +276,23 @@ async fn run_event_loop(
         runs.remove(&run_spec.run_id);
     }
 
+    // Persist the captured stream events as a vault-local JSONL file so
+    // the live view can be replayed later from the Sessions panel. This
+    // is the canonical Phase B transcript artifact (the JSONL Claude Code
+    // itself writes to ~/.claude/projects/... is parallel but unowned).
+    let transcript_rel = format!("sessions/{}.jsonl", run_spec.run_id);
+    let transcript_abs = run_spec.cwd.join(&transcript_rel);
+    if let Err(e) = write_events_jsonl(&transcript_abs, &events) {
+        log::warn!(
+            "failed to write transcript JSONL for run {}: {}",
+            run_spec.run_id,
+            e
+        );
+    }
+
     if result_seen {
         let meta = result_payload.unwrap_or_default();
-        if let Err(e) = update_session_note_complete(&run_spec, &meta) {
+        if let Err(e) = update_session_note_complete(&run_spec, &meta, &transcript_rel) {
             log::warn!("failed to update session note for {}: {}", run_spec.run_id, e);
         }
 
@@ -299,8 +313,13 @@ async fn run_event_loop(
         )
         .await;
 
-        let retrospective_path = match &extraction_result {
-            Ok(_) => Some(format!("sessions/{}-retrospective.md", run_spec.run_id)),
+        // Only set a retrospective path if Vertex actually wrote one.
+        // extraction_job_from_parsed returns Ok(None) when GCP env is
+        // missing — surfacing a phantom path would point at a missing
+        // file in the UI.
+        let retrospective_path = match extraction_result {
+            Ok(Some(rel)) => Some(rel.to_string_lossy().to_string()),
+            Ok(None) => None,
             Err(e) => {
                 log::error!(
                     "extraction_job_from_parsed failed for run {}: {}",
@@ -311,6 +330,17 @@ async fn run_event_loop(
             }
         };
 
+        // Write back the plan note status so the Plans panel reflects
+        // reality next time it lists.
+        let plan_status = if meta.is_error { "failed" } else { "complete" };
+        if let Err(e) = update_plan_note_after_run(&run_spec, plan_status) {
+            log::warn!(
+                "failed to update plan note status for {}: {}",
+                run_spec.plan_path,
+                e
+            );
+        }
+
         let _ = app.emit(
             "cortex://session/completed",
             serde_json::json!({
@@ -320,18 +350,28 @@ async fn run_event_loop(
                 "num_turns": meta.num_turns,
                 "is_error": meta.is_error,
                 "retrospective_path": retrospective_path,
+                "transcript_path": transcript_rel,
+                "plan_path": run_spec.plan_path,
             }),
         );
     } else {
         // No result event seen → process exited early. Treat as aborted.
-        if let Err(e) = update_session_note_aborted(&run_spec) {
+        if let Err(e) = update_session_note_aborted(&run_spec, &transcript_rel) {
             log::warn!("failed to mark session aborted for {}: {}", run_spec.run_id, e);
+        }
+        if let Err(e) = update_plan_note_after_run(&run_spec, "aborted") {
+            log::warn!(
+                "failed to update plan note status for {}: {}",
+                run_spec.plan_path,
+                e
+            );
         }
         let _ = app.emit(
             "cortex://session/aborted",
             serde_json::json!({
                 "run_id": run_spec.run_id,
                 "partial_event_count": events.len(),
+                "plan_path": run_spec.plan_path,
             }),
         );
     }
@@ -344,6 +384,29 @@ async fn run_event_loop(
             e
         );
     }
+}
+
+/// Write a sequence of stream-json events as NDJSON to disk. One event
+/// per line, no trailing newline missing. Used to persist Phase B
+/// transcripts so the live view can be replayed from the Sessions panel.
+fn write_events_jsonl(
+    path: &std::path::Path,
+    events: &[serde_json::Value],
+) -> std::io::Result<()> {
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let mut buf = String::with_capacity(events.len() * 256);
+    for event in events {
+        match serde_json::to_string(event) {
+            Ok(s) => {
+                buf.push_str(&s);
+                buf.push('\n');
+            }
+            Err(_) => continue,
+        }
+    }
+    std::fs::write(path, buf)
 }
 
 #[derive(Debug, Default, Clone)]
@@ -377,7 +440,11 @@ fn extract_result_metadata(value: &serde_json::Value) -> ResultMetadata {
     }
 }
 
-fn update_session_note_complete(spec: &RunSpec, meta: &ResultMetadata) -> std::io::Result<()> {
+fn update_session_note_complete(
+    spec: &RunSpec,
+    meta: &ResultMetadata,
+    transcript_rel: &str,
+) -> std::io::Result<()> {
     let abs = spec.cwd.join(&spec.session_note_path);
     let raw = std::fs::read_to_string(&abs)?;
     let ended_at = chrono::Utc::now().to_rfc3339();
@@ -387,14 +454,18 @@ fn update_session_note_complete(spec: &RunSpec, meta: &ResultMetadata) -> std::i
         .replace(
             "---\n\n# Session",
             &format!(
-                "ended_at: {}\ntotal_cost_usd: {}\nduration_ms: {}\nnum_turns: {}\n---\n\n# Session",
-                ended_at, meta.total_cost_usd, meta.duration_ms, meta.num_turns
+                "ended_at: {}\ntotal_cost_usd: {}\nduration_ms: {}\nnum_turns: {}\ntranscript_path: {}\n---\n\n# Session",
+                ended_at,
+                meta.total_cost_usd,
+                meta.duration_ms,
+                meta.num_turns,
+                transcript_rel,
             ),
         );
     std::fs::write(&abs, updated)
 }
 
-fn update_session_note_aborted(spec: &RunSpec) -> std::io::Result<()> {
+fn update_session_note_aborted(spec: &RunSpec, transcript_rel: &str) -> std::io::Result<()> {
     let abs = spec.cwd.join(&spec.session_note_path);
     let raw = std::fs::read_to_string(&abs)?;
     let ended_at = chrono::Utc::now().to_rfc3339();
@@ -402,9 +473,123 @@ fn update_session_note_aborted(spec: &RunSpec) -> std::io::Result<()> {
         .replace("status: running", "status: aborted")
         .replace(
             "---\n\n# Session",
-            &format!("ended_at: {}\n---\n\n# Session", ended_at),
+            &format!(
+                "ended_at: {}\ntranscript_path: {}\n---\n\n# Session",
+                ended_at, transcript_rel
+            ),
         );
     std::fs::write(&abs, updated)
+}
+
+/// After a Phase B run terminates, write the run outcome back into the
+/// plan note's frontmatter so the Plans panel sort order and status pill
+/// reflect reality. Status, last_run_id, and last_run_at are all upserted
+/// — existing values for those keys are replaced; missing keys are
+/// inserted just before the closing `---` fence.
+///
+/// `new_status` is one of `complete`, `failed`, `aborted`.
+fn update_plan_note_after_run(spec: &RunSpec, new_status: &str) -> std::io::Result<()> {
+    let abs = spec.cwd.join(&spec.plan_path);
+    let raw = std::fs::read_to_string(&abs)?;
+    let now = chrono::Utc::now().to_rfc3339();
+    let updated = upsert_frontmatter_keys(
+        &raw,
+        &[
+            ("status", new_status),
+            ("last_run_id", &spec.run_id),
+            ("last_run_at", &now),
+        ],
+    );
+    std::fs::write(&abs, updated)
+}
+
+/// Replace or insert simple `key: value` lines inside the YAML frontmatter
+/// block of a markdown file. Preserves all other lines verbatim. Values
+/// must not contain newlines or YAML special characters that would need
+/// escaping; all callers here pass plain ASCII identifiers and ISO
+/// timestamps so this is safe.
+fn upsert_frontmatter_keys(raw: &str, kvs: &[(&str, &str)]) -> String {
+    // Locate the frontmatter block. If absent, prepend one.
+    let trimmed = raw.trim_start_matches('\u{feff}');
+    let body_start = if trimmed.starts_with("---\n") || trimmed.starts_with("---\r\n") {
+        // Find the closing fence after the opening one.
+        let after_opening = &trimmed[4..];
+        match after_opening.find("\n---") {
+            Some(end_rel) => {
+                let fm = &after_opening[..end_rel];
+                let mut new_fm = update_yaml_block(fm, kvs);
+                if !new_fm.ends_with('\n') {
+                    new_fm.push('\n');
+                }
+                let body = &after_opening[end_rel + 4..]; // skip "\n---"
+                let mut out = String::with_capacity(raw.len() + 64);
+                out.push_str("---\n");
+                out.push_str(&new_fm);
+                out.push_str("---");
+                out.push_str(body);
+                return out;
+            }
+            None => 0,
+        }
+    } else {
+        0
+    };
+    // No frontmatter — synthesize one.
+    let mut new_fm = String::new();
+    for (k, v) in kvs {
+        new_fm.push_str(k);
+        new_fm.push_str(": ");
+        new_fm.push_str(v);
+        new_fm.push('\n');
+    }
+    let mut out = String::with_capacity(raw.len() + new_fm.len() + 16);
+    out.push_str("---\n");
+    out.push_str(&new_fm);
+    out.push_str("---\n\n");
+    out.push_str(&raw[body_start..]);
+    out
+}
+
+/// Helper for upsert_frontmatter_keys: rewrite a YAML block in place,
+/// replacing existing keys and appending any that were missing.
+fn update_yaml_block(fm: &str, kvs: &[(&str, &str)]) -> String {
+    use std::collections::HashSet;
+    let mut handled: HashSet<&str> = HashSet::new();
+    let mut out = String::with_capacity(fm.len() + 128);
+    for line in fm.lines() {
+        let trimmed = line.trim_start();
+        let mut wrote = false;
+        for (k, v) in kvs {
+            if handled.contains(*k) {
+                continue;
+            }
+            // Match `key:` exactly at line start (after optional indent).
+            let prefix = format!("{}:", k);
+            if trimmed.starts_with(&prefix) {
+                out.push_str(k);
+                out.push_str(": ");
+                out.push_str(v);
+                out.push('\n');
+                handled.insert(*k);
+                wrote = true;
+                break;
+            }
+        }
+        if !wrote {
+            out.push_str(line);
+            out.push('\n');
+        }
+    }
+    // Append any keys we never saw.
+    for (k, v) in kvs {
+        if !handled.contains(*k) {
+            out.push_str(k);
+            out.push_str(": ");
+            out.push_str(v);
+            out.push('\n');
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -497,6 +682,61 @@ mod tests {
         assert_eq!(meta.num_turns, 3);
         assert!((meta.total_cost_usd - 0.075).abs() < 1e-9);
         assert!(!meta.is_error);
+    }
+
+    #[test]
+    fn upsert_frontmatter_replaces_existing_keys() {
+        let raw = "---\ntype: plan\nstatus: ready\nmodel: claude-sonnet-4-5\n---\n\nbody\n";
+        let updated = upsert_frontmatter_keys(
+            raw,
+            &[("status", "complete"), ("last_run_id", "abc-123")],
+        );
+        assert!(updated.contains("status: complete"));
+        assert!(!updated.contains("status: ready"));
+        assert!(updated.contains("last_run_id: abc-123"));
+        // Untouched keys remain in place.
+        assert!(updated.contains("type: plan"));
+        assert!(updated.contains("model: claude-sonnet-4-5"));
+        // Body is preserved.
+        assert!(updated.contains("\nbody\n"));
+    }
+
+    #[test]
+    fn upsert_frontmatter_appends_missing_keys() {
+        let raw = "---\ntype: plan\nstatus: ready\n---\n\nbody\n";
+        let updated = upsert_frontmatter_keys(
+            raw,
+            &[("last_run_id", "xyz"), ("last_run_at", "2026-04-09T00:00:00Z")],
+        );
+        assert!(updated.contains("last_run_id: xyz"));
+        assert!(updated.contains("last_run_at: 2026-04-09T00:00:00Z"));
+        // Existing keys untouched.
+        assert!(updated.contains("status: ready"));
+    }
+
+    #[test]
+    fn upsert_frontmatter_handles_no_frontmatter_block() {
+        let raw = "no frontmatter here\njust body\n";
+        let updated = upsert_frontmatter_keys(raw, &[("status", "complete")]);
+        assert!(updated.starts_with("---\nstatus: complete\n---"));
+        assert!(updated.contains("just body"));
+    }
+
+    #[test]
+    fn write_events_jsonl_round_trips() {
+        use tempfile::TempDir;
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("events.jsonl");
+        let events = vec![
+            serde_json::json!({"type": "system", "subtype": "init"}),
+            serde_json::json!({"type": "result", "subtype": "success"}),
+        ];
+        write_events_jsonl(&path, &events).unwrap();
+        let raw = std::fs::read_to_string(&path).unwrap();
+        let lines: Vec<&str> = raw.lines().collect();
+        assert_eq!(lines.len(), 2);
+        let first: serde_json::Value = serde_json::from_str(lines[0]).unwrap();
+        assert_eq!(first.get("type").unwrap().as_str(), Some("system"));
     }
 
     #[test]

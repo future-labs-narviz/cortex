@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useVaultStore } from "@/stores/vaultStore";
 import { useLayoutStore } from "@/stores/layoutStore";
-import { Activity, RefreshCw, Clock } from "lucide-react";
+import { Activity, RefreshCw, Clock, Play } from "lucide-react";
 import type { NoteData } from "@/lib/types";
 
 interface SessionSummary {
@@ -12,6 +13,9 @@ interface SessionSummary {
   ended_at: string | null;
   goal: string | null;
   note_type: string;
+  plan_ref: string | null;
+  transcript_path: string | null;
+  status: string;
 }
 
 /** Format an ISO timestamp into relative human-readable text. */
@@ -59,14 +63,53 @@ export function SessionsPanel() {
     fetchSessions();
   }, [fetchSessions]);
 
-  const openNote = useCallback((path: string) => {
-    const setActiveFile = useVaultStore.getState().setActiveFile;
-    setActiveFile(path);
+  // Auto-refresh whenever a Phase B run starts, completes, or aborts.
+  // The backend emits these events from execute.rs::run_event_loop.
+  useEffect(() => {
+    let cancelled = false;
+    const unlistens: Array<() => void> = [];
+    const subscribe = async (event: string) => {
+      try {
+        const u = await listen(event, () => {
+          if (!cancelled) fetchSessions();
+        });
+        if (cancelled) {
+          u();
+          return;
+        }
+        unlistens.push(u);
+      } catch (err) {
+        console.warn(`[Cortex] failed to subscribe to ${event}`, err);
+      }
+    };
+    subscribe("cortex://session/started");
+    subscribe("cortex://session/completed");
+    subscribe("cortex://session/aborted");
+    return () => {
+      cancelled = true;
+      unlistens.forEach((u) => u());
+    };
+  }, [fetchSessions]);
+
+  const openSession = useCallback((session: SessionSummary) => {
     const layout = useLayoutStore.getState();
     const sheetId = layout.activeSheetId;
-    invoke<NoteData>("read_note", { path })
-      .then((data) => layout.openFile(sheetId, path, data.content))
-      .catch(() => layout.openFile(sheetId, path, ""));
+    // Phase B sessions (those with a plan_ref) → live transcript replay
+    // sheet, which loads the JSONL via load_run_transcript and feeds it
+    // through the runStore reducer.
+    if (session.plan_ref && session.note_type === "session") {
+      layout.setSheetContent(sheetId, {
+        kind: "session",
+        runId: session.session_id,
+        planPath: session.plan_ref,
+      });
+      return;
+    }
+    // Phase A sessions and retrospective notes → regular file editor.
+    useVaultStore.getState().setActiveFile(session.path);
+    invoke<NoteData>("read_note", { path: session.path })
+      .then((data) => layout.openFile(sheetId, session.path, data.content))
+      .catch(() => layout.openFile(sheetId, session.path, ""));
   }, []);
 
   return (
@@ -142,7 +185,7 @@ export function SessionsPanel() {
             <SessionCard
               key={session.path}
               session={session}
-              onOpen={openNote}
+              onOpen={openSession}
             />
           ))}
         </div>
@@ -156,15 +199,31 @@ function SessionCard({
   onOpen,
 }: {
   session: SessionSummary;
-  onOpen: (path: string) => void;
+  onOpen: (s: SessionSummary) => void;
 }) {
   const [hovered, setHovered] = useState(false);
 
   const isRetro = session.note_type === "retrospective";
+  const isPhaseB = session.plan_ref !== null && session.note_type === "session";
+
+  const statusColor = (() => {
+    switch (session.status) {
+      case "running":
+        return "var(--accent)";
+      case "complete":
+        return "#22c55e";
+      case "failed":
+        return "#ef4444";
+      case "aborted":
+        return "#f59e0b";
+      default:
+        return "var(--text-muted)";
+    }
+  })();
 
   return (
     <button
-      onClick={() => onOpen(session.path)}
+      onClick={() => onOpen(session)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -183,14 +242,25 @@ function SessionCard({
     >
       {/* Top row: icon + time + badge */}
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <Activity
-          size={14}
-          style={{
-            flexShrink: 0,
-            color: hovered ? "var(--accent)" : "var(--text-muted)",
-            transition: "color 150ms",
-          }}
-        />
+        {isPhaseB ? (
+          <Play
+            size={14}
+            style={{
+              flexShrink: 0,
+              color: hovered ? "var(--accent)" : statusColor,
+              transition: "color 150ms",
+            }}
+          />
+        ) : (
+          <Activity
+            size={14}
+            style={{
+              flexShrink: 0,
+              color: hovered ? "var(--accent)" : "var(--text-muted)",
+              transition: "color 150ms",
+            }}
+          />
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1, minWidth: 0 }}>
           {session.started_at && (
             <span
@@ -218,12 +288,17 @@ function SessionCard({
             textTransform: "uppercase",
             padding: "2px 6px",
             borderRadius: 4,
-            background: isRetro ? "rgba(168,85,247,0.12)" : "rgba(59,130,246,0.12)",
-            color: isRetro ? "#a855f7" : "var(--accent)",
+            background: isRetro
+              ? "rgba(168,85,247,0.12)"
+              : isPhaseB
+                ? "rgba(34,197,94,0.12)"
+                : "rgba(59,130,246,0.12)",
+            color: isRetro ? "#a855f7" : isPhaseB ? "#22c55e" : "var(--accent)",
             flexShrink: 0,
           }}
+          title={isPhaseB ? `Phase B: ${session.status}` : undefined}
         >
-          {isRetro ? "retro" : "session"}
+          {isRetro ? "retro" : isPhaseB ? `B·${session.status || "?"}` : "session"}
         </span>
       </div>
 

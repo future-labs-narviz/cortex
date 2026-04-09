@@ -349,6 +349,41 @@ async listPlanNotes() : Promise<Result<PlanSummary[], string>> {
 }
 },
 /**
+ * Create a new draft plan note from the built-in template, sanitizing
+ * the title into a filesystem-safe slug. Returns the new file's
+ * vault-relative path so the frontend can immediately route to the
+ * plan-runner sheet for it.
+ */
+async createPlanNote(title: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("create_plan_note", { title }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Read a Phase B run's persisted JSONL transcript and return its events
+ * in order so the live session view can replay it. Reads from the
+ * canonical vault-local path `sessions/<run_id>.jsonl` written by
+ * `run::execute` after a run terminates. Returns an empty Vec if the
+ * file does not exist (e.g. for Phase A interactive sessions, which
+ * don't write a Cortex-owned transcript).
+ * 
+ * Returns a Vec of raw JSON strings — one per stream-json event — so
+ * the frontend can parse them with the same `applyEvent` reducer the
+ * live view uses. (specta can't serialize `serde_json::Value`, hence
+ * the string-list shape.)
+ */
+async loadRunTranscript(runId: string) : Promise<Result<string[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("load_run_transcript", { runId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Tauri command: prepare and spawn a claude run from a `type:plan` note.
  * 
  * Returns immediately after the child process is spawned. The frontend
@@ -481,7 +516,23 @@ snippet: string;
  * Relevance score from the search engine.
  */
 score: number }
-export type SessionSummary = { session_id: string; path: string; started_at: string | null; ended_at: string | null; goal: string | null; note_type: string }
+export type SessionSummary = { session_id: string; path: string; started_at: string | null; ended_at: string | null; goal: string | null; note_type: string; 
+/**
+ * Plan note path for Phase B-spawned sessions; None for Phase A
+ * interactive sessions. Lets the frontend route Phase B sessions
+ * to the live transcript replay view.
+ */
+plan_ref: string | null; 
+/**
+ * Vault-relative path to the persisted JSONL transcript, if any.
+ * Phase B writes one to `sessions/<run_id>.jsonl`; Phase A does not.
+ */
+transcript_path: string | null; 
+/**
+ * Status from the session note frontmatter. `running`, `complete`,
+ * `failed`, `aborted`, or empty string if not set.
+ */
+status: string }
 /**
  * Tag information with occurrence count.
  */

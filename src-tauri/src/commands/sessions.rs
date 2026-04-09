@@ -13,6 +13,16 @@ pub struct SessionSummary {
     pub ended_at: Option<String>,
     pub goal: Option<String>,
     pub note_type: String, // "session" | "retrospective"
+    /// Plan note path for Phase B-spawned sessions; None for Phase A
+    /// interactive sessions. Lets the frontend route Phase B sessions
+    /// to the live transcript replay view.
+    pub plan_ref: Option<String>,
+    /// Vault-relative path to the persisted JSONL transcript, if any.
+    /// Phase B writes one to `sessions/<run_id>.jsonl`; Phase A does not.
+    pub transcript_path: Option<String>,
+    /// Status from the session note frontmatter. `running`, `complete`,
+    /// `failed`, `aborted`, or empty string if not set.
+    pub status: String,
 }
 
 /// List all session/retrospective notes from <vault>/sessions/.
@@ -74,6 +84,9 @@ pub async fn list_session_notes(
         let started_at = fm.extra.get("started_at").cloned();
         let ended_at = fm.extra.get("ended_at").cloned();
         let goal = fm.extra.get("goal").cloned();
+        let plan_ref = fm.extra.get("plan_ref").cloned();
+        let transcript_path = fm.extra.get("transcript_path").cloned();
+        let status = fm.extra.get("status").cloned().unwrap_or_default();
 
         summaries.push(SessionSummary {
             session_id,
@@ -82,6 +95,9 @@ pub async fn list_session_notes(
             ended_at,
             goal,
             note_type,
+            plan_ref,
+            transcript_path,
+            status,
         });
     }
 
