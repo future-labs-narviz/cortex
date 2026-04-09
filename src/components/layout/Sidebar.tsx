@@ -9,6 +9,7 @@ import {
   FolderOpen,
   ArrowUpRight,
   Plus,
+  Play,
 } from "lucide-react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useVaultStore } from "@/stores/vaultStore";
@@ -17,6 +18,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { FileExplorer } from "@/components/sidebar/FileExplorer";
 import { SearchPanel } from "@/components/sidebar/SearchPanel";
 import { SessionsPanel } from "@/components/sidebar/SessionsPanel";
+import { PlansPanel } from "@/components/sidebar/PlansPanel";
 import { ContextTimeline } from "@/components/capture/ContextTimeline";
 import { VoiceNoteCreator } from "@/components/voice/VoiceNoteCreator";
 import { IntegrationSettings } from "@/components/settings/IntegrationSettings";
@@ -31,6 +33,7 @@ interface SidebarNavItem {
 const navItems: SidebarNavItem[] = [
   { id: "files", icon: FileText, label: "Files" },
   { id: "search", icon: Search, label: "Search" },
+  { id: "plans", icon: Play, label: "Plans" },
   { id: "sessions", icon: Activity, label: "Sessions" },
   { id: "timeline", icon: Clock, label: "Timeline" },
   { id: "voice", icon: Mic, label: "Voice" },
@@ -41,6 +44,7 @@ const navItems: SidebarNavItem[] = [
 const panelLabels: Record<string, string> = {
   files: "Files",
   search: "Search",
+  plans: "Plans",
   sessions: "Sessions",
   timeline: "Timeline",
   voice: "Voice",
@@ -181,6 +185,7 @@ export function Sidebar() {
           {activePanel === "files" && (isVaultOpen ? <FileExplorer /> : <NoVaultState />)}
           {activePanel === "search" && (isVaultOpen ? <SearchPanel /> : <NoVaultState />)}
           {activePanel === "sessions" && <SessionsPanel />}
+          {activePanel === "plans" && <PlansPanel />}
           {activePanel === "timeline" && <ContextTimeline />}
           {activePanel === "voice" && <VoicePanel />}
           {activePanel === "integrations" && <IntegrationSettings />}

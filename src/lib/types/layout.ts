@@ -14,6 +14,8 @@ export type SheetContent =
   | { kind: "file"; viewMode: ViewMode }
   | { kind: "graph" }
   | { kind: "panel"; panel: SidebarPanel }
+  | { kind: "session"; runId: string; planPath: string }
+  | { kind: "plan-runner"; planPath: string }
   | { kind: "empty" };
 
 // ── Sheet: the fundamental layout unit ───────────────────────

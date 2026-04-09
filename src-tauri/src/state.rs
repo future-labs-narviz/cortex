@@ -6,10 +6,13 @@ use cortex_graph::index::LinkIndex;
 use cortex_kg::TypedKnowledgeGraph;
 use cortex_search::indexer::SearchIndex;
 use cortex_voice::VoicePipeline;
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use tauri::AppHandle;
+use tauri_plugin_shell::process::CommandChild;
 use tokio::sync::broadcast;
+use tokio::sync::Mutex as AsyncMutex;
 
 /// Shared application state managed by Tauri.
 pub struct AppState {
@@ -32,6 +35,9 @@ pub struct AppState {
     /// Claude-powered typed knowledge graph. Wrapped in Arc so background extraction
     /// jobs (cortex-extract) can clone the handle and write back into the same lock.
     pub knowledge_graph: Arc<RwLock<Option<TypedKnowledgeGraph>>>,
+    /// In-flight Phase B runs keyed by run_id, tracked so `abort_run` can
+    /// SIGTERM the spawned `claude` child process.
+    pub active_runs: AsyncMutex<HashMap<String, CommandChild>>,
 }
 
 impl AppState {
@@ -48,6 +54,7 @@ impl AppState {
             mcp_running: AtomicBool::new(false),
             app_handle: Mutex::new(None),
             knowledge_graph: Arc::new(RwLock::new(None)),
+            active_runs: AsyncMutex::new(HashMap::new()),
         }
     }
 

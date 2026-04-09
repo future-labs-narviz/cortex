@@ -13,6 +13,9 @@ import { SearchPanel } from "@/components/sidebar/SearchPanel";
 import { BacklinksPanel } from "@/components/sidebar/BacklinksPanel";
 import { TagsPanel } from "@/components/sidebar/TagsPanel";
 import { SessionsPanel } from "@/components/sidebar/SessionsPanel";
+import { PlansPanel } from "@/components/sidebar/PlansPanel";
+import { LiveSessionView } from "@/components/session/LiveSessionView";
+import { PlanRunnerView } from "@/components/plan/PlanRunnerView";
 import { Calendar } from "@/components/daily-notes/Calendar";
 import { ContextTimeline } from "@/components/capture/ContextTimeline";
 import { VoiceNoteCreator } from "@/components/voice/VoiceNoteCreator";
@@ -108,6 +111,17 @@ function SheetContent({ sheetId }: { sheetId: SheetId }) {
       );
     case "file":
       return <FileSheetContent sheetId={sheetId} />;
+    case "session":
+      return (
+        <LiveSessionView
+          runId={sheet.content.runId}
+          planPath={sheet.content.planPath}
+        />
+      );
+    case "plan-runner":
+      return (
+        <PlanRunnerView sheetId={sheetId} planPath={sheet.content.planPath} />
+      );
     case "panel":
       return (
         <div className="flex-1 min-h-0 overflow-y-auto p-4">
@@ -251,6 +265,8 @@ function PanelContent({ panel }: { panel: SidebarPanel }) {
       return <IntegrationSettings />;
     case "sessions":
       return <SessionsPanel />;
+    case "plans":
+      return <PlansPanel />;
     default:
       return null;
   }

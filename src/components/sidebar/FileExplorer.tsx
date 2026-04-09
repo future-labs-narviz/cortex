@@ -37,7 +37,22 @@ export function FileExplorer() {
       const layout = useLayoutStore.getState();
       const sheetId = layout.activeSheetId;
       invoke<NoteData>("read_note", { path })
-        .then((data) => layout.openFile(sheetId, path, data.content))
+        .then((data) => {
+          // Route type:plan notes to the plan-runner sheet kind instead of
+          // the regular file editor. The Rust Frontmatter has typed fields
+          // for title/tags/etc and stringifies everything else into `extra`,
+          // so the discriminator lives at frontmatter.extra.type.
+          const fm = data.frontmatter as
+            | { extra?: Record<string, string> }
+            | null
+            | undefined;
+          const noteType = fm?.extra?.type;
+          if (noteType === "plan") {
+            layout.setSheetContent(sheetId, { kind: "plan-runner", planPath: path });
+          } else {
+            layout.openFile(sheetId, path, data.content);
+          }
+        })
         .catch(() => layout.openFile(sheetId, path, ""));
     },
     [setActiveFile],

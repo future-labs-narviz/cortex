@@ -5,6 +5,7 @@
 
 mod commands;
 mod mcp;
+mod run;
 mod state;
 
 use cortex_core::vault::Vault;
@@ -91,6 +92,9 @@ pub fn run() {
         commands::kg::get_kg_stats,
         commands::sessions::list_session_notes,
         commands::sessions::get_session_note,
+        commands::plans::list_plan_notes,
+        run::execute::execute_plan,
+        run::execute::abort_run,
     ]);
 
     #[cfg(debug_assertions)]
@@ -116,6 +120,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .invoke_handler(invoke_handler)
         .manage(app_state)

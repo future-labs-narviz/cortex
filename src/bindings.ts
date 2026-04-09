@@ -313,6 +313,68 @@ async getKgStats() : Promise<Result<KgStats, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * List all session/retrospective notes from <vault>/sessions/.
+ */
+async listSessionNotes() : Promise<Result<SessionSummary[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_session_notes") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Read the raw content of a session note by vault-relative path.
+ */
+async getSessionNote(path: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_session_note", { path }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * List all `type:plan` notes anywhere in the vault. Walks the tree
+ * recursively (markdown only) and inspects frontmatter to discriminate.
+ */
+async listPlanNotes() : Promise<Result<PlanSummary[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_plan_notes") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Tauri command: prepare and spawn a claude run from a `type:plan` note.
+ * 
+ * Returns immediately after the child process is spawned. The frontend
+ * subscribes to `cortex://session/event/<run_id>` for the live transcript
+ * and `cortex://session/{started,completed,aborted,error}` for lifecycle.
+ */
+async executePlan(planPath: string) : Promise<Result<ExecuteRunResponse, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("execute_plan", { planPath }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Tauri command: SIGTERM an in-flight run by run_id. The background event
+ * loop will detect the early termination and emit
+ * `cortex://session/aborted`.
+ */
+async abortRun(runId: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("abort_run", { runId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -348,6 +410,7 @@ context: string;
  */
 line: number }
 export type EntityType = "Person" | "Project" | "Technology" | "Decision" | "Pattern" | "Organization" | "Concept"
+export type ExecuteRunResponse = { run_id: string; session_note_path: string; plan_path: string }
 /**
  * Parsed YAML frontmatter from a note.
  */
@@ -397,6 +460,7 @@ export type KgStats = { entity_count: number; relation_count: number; processed_
  * Data returned to the frontend when reading a note.
  */
 export type NoteData = { content: string; frontmatter: Frontmatter | null }
+export type PlanSummary = { path: string; title: string; goal: string | null; status: string; model: string | null; last_run_id: string | null; last_run_at: string | null }
 /**
  * A single search result returned from a full-text query.
  */
@@ -417,6 +481,7 @@ snippet: string;
  * Relevance score from the search engine.
  */
 score: number }
+export type SessionSummary = { session_id: string; path: string; started_at: string | null; ended_at: string | null; goal: string | null; note_type: string }
 /**
  * Tag information with occurrence count.
  */

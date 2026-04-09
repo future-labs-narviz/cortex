@@ -8,16 +8,29 @@ use serde_json::json;
 
 use crate::{transcript, vertex};
 
+#[allow(unused_imports)]
+use transcript::ParsedTranscript;
+
 pub async fn extraction_job(
     kg: Arc<RwLock<Option<TypedKnowledgeGraph>>>,
     vault_root: PathBuf,
     session_id: String,
     transcript_path: PathBuf,
 ) -> anyhow::Result<()> {
-    // 1. Parse transcript
     let parsed = transcript::parse_jsonl(&transcript_path)
         .with_context(|| format!("Failed to parse transcript at {}", transcript_path.display()))?;
+    extraction_job_from_parsed(kg, vault_root, session_id, parsed).await
+}
 
+/// Variant of `extraction_job` that takes an already-parsed transcript
+/// instead of reading from a JSONL file. Used by Phase B's `execute_plan`
+/// when the in-memory transcript is built from stream-json events.
+pub async fn extraction_job_from_parsed(
+    kg: Arc<RwLock<Option<TypedKnowledgeGraph>>>,
+    vault_root: PathBuf,
+    session_id: String,
+    parsed: transcript::ParsedTranscript,
+) -> anyhow::Result<()> {
     // 2. Build VertexClient or skip
     let client = match vertex::VertexClient::from_env() {
         Some(c) => c,

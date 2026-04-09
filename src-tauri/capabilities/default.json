@@ -10,6 +10,20 @@
     "dialog:default",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
-    "log:default"
+    "log:default",
+    "shell:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "claude",
+          "cmd": "claude",
+          "args": true,
+          "sidecar": false
+        }
+      ]
+    },
+    "shell:allow-kill",
+    "shell:allow-stdin-write"
   ]
 }
