@@ -363,6 +363,26 @@ async createPlanNote(title: string) : Promise<Result<string, string>> {
 }
 },
 /**
+ * Spawn `claude --print --permission-mode plan` against the open vault
+ * and use Anthropic's canonical 5-phase plan-mode workflow (Explore →
+ * Design → Review → Finalize → ExitPlanMode) to draft a plan from a
+ * short user goal. Captures the `ExitPlanMode` tool_use input.plan
+ * field from the stream-json output, then writes it as the body of a
+ * new Cortex plan note.
+ * 
+ * This is the symmetric counterpart to `execute_plan`: that command
+ * spawns `claude` to *execute* a plan, this one spawns `claude` (in
+ * plan mode) to *draft* one. Both use Max plan OAuth keychain auth.
+ */
+async draftPlanFromGoal(goal: string) : Promise<Result<string, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("draft_plan_from_goal", { goal }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Read a Phase B run's persisted JSONL transcript and return its events
  * in order so the live session view can replay it. Reads from the
  * canonical vault-local path `sessions/<run_id>.jsonl` written by

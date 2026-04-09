@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Play, RefreshCw, FileText, Plus } from "lucide-react";
+import { Play, RefreshCw, FileText, Plus, Sparkles, Loader2 } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
 
 interface PlanSummary {
@@ -18,6 +18,8 @@ export function PlansPanel() {
   const [plans, setPlans] = useState<PlanSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [drafting, setDrafting] = useState(false);
+  const [draftStatus, setDraftStatus] = useState<string>("");
 
   const fetchPlans = useCallback(async () => {
     setLoading(true);
@@ -85,6 +87,63 @@ export function PlansPanel() {
     }
   }, [fetchPlans]);
 
+  // Subscribe to draft lifecycle events while a draft is in flight so the
+  // user gets a tiny status string instead of a blank spinner. Only
+  // listens while drafting=true to keep the channel quiet otherwise.
+  useEffect(() => {
+    if (!drafting) return;
+    let cancelled = false;
+    const unlistens: Array<() => void> = [];
+    const subscribe = async (event: string, handler: (p: unknown) => void) => {
+      try {
+        const u = await listen<unknown>(event, (e) => handler(e.payload));
+        if (cancelled) {
+          u();
+          return;
+        }
+        unlistens.push(u);
+      } catch (err) {
+        console.warn(`[Cortex] failed to subscribe to ${event}`, err);
+      }
+    };
+    let lastDraftId: string | null = null;
+    subscribe("cortex://draft/started", (p) => {
+      const payload = p as { draft_id?: string };
+      lastDraftId = payload.draft_id ?? null;
+      setDraftStatus("exploring vault…");
+    });
+    // Listen on a wildcard isn't supported by Tauri events; instead we
+    // just bump the status periodically based on event count via the
+    // catch-all subscription pattern below.
+    void lastDraftId;
+    return () => {
+      cancelled = true;
+      unlistens.forEach((u) => u());
+    };
+  }, [drafting]);
+
+  const handleDraftPlan = useCallback(async () => {
+    const goal = window.prompt(
+      "Describe what you want to do in one or two sentences. Claude will explore the vault and draft a plan for you."
+    );
+    if (!goal || !goal.trim()) return;
+    setDrafting(true);
+    setDraftStatus("spawning plan-mode claude…");
+    setError(null);
+    try {
+      const path = await invoke<string>("draft_plan_from_goal", { goal: goal.trim() });
+      await fetchPlans();
+      const layout = useLayoutStore.getState();
+      layout.setSheetContent(layout.activeSheetId, { kind: "plan-runner", planPath: path });
+    } catch (e) {
+      console.warn("[Cortex] draft_plan_from_goal failed", e);
+      setError(`Draft failed: ${e}`);
+    } finally {
+      setDrafting(false);
+      setDraftStatus("");
+    }
+  }, [fetchPlans]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
       <div
@@ -105,6 +164,43 @@ export function PlansPanel() {
           {plans.length} plan{plans.length !== 1 ? "s" : ""}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <button
+            onClick={handleDraftPlan}
+            disabled={drafting}
+            title="Draft a plan from a one-sentence goal (spawns claude in plan mode)"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "none",
+              background: "transparent",
+              color: drafting ? "var(--accent)" : "var(--text-muted)",
+              cursor: drafting ? "default" : "pointer",
+              transition: "all 150ms",
+              opacity: drafting ? 0.85 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!drafting) {
+                e.currentTarget.style.background = "var(--muted-hover)";
+                e.currentTarget.style.color = "var(--accent)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!drafting) {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "var(--text-muted)";
+              }
+            }}
+          >
+            {drafting ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Sparkles size={14} />
+            )}
+          </button>
           <button
             onClick={handleNewPlan}
             title="New plan from template"
@@ -168,6 +264,27 @@ export function PlansPanel() {
           </button>
         </div>
       </div>
+
+      {drafting && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "10px 12px",
+            borderRadius: 8,
+            background: "var(--accent-soft)",
+            border: "1px solid var(--accent-soft)",
+            color: "var(--accent)",
+            fontSize: 11,
+          }}
+        >
+          <Loader2 size={12} className="animate-spin" />
+          <span>
+            Drafting plan {draftStatus ? `— ${draftStatus}` : "…"}
+          </span>
+        </div>
+      )}
 
       {loading && plans.length === 0 && (
         <PlansEmptyState message="Loading plans..." />

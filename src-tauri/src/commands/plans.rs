@@ -3,7 +3,9 @@
 use crate::state::AppState;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tauri::State;
+use tauri::{AppHandle, Emitter, State};
+use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::ShellExt;
 
 const PLAN_TEMPLATE: &str = r#"---
 type: plan
@@ -196,6 +198,241 @@ fn slugify(title: &str) -> String {
     } else {
         slug
     }
+}
+
+/// Spawn `claude --print --permission-mode plan` against the open vault
+/// and use Anthropic's canonical 5-phase plan-mode workflow (Explore →
+/// Design → Review → Finalize → ExitPlanMode) to draft a plan from a
+/// short user goal. Captures the `ExitPlanMode` tool_use input.plan
+/// field from the stream-json output, then writes it as the body of a
+/// new Cortex plan note.
+///
+/// This is the symmetric counterpart to `execute_plan`: that command
+/// spawns `claude` to *execute* a plan, this one spawns `claude` (in
+/// plan mode) to *draft* one. Both use Max plan OAuth keychain auth.
+#[tauri::command]
+#[specta::specta]
+pub async fn draft_plan_from_goal(
+    goal: String,
+    app: AppHandle,
+    state: State<'_, Arc<AppState>>,
+) -> Result<String, String> {
+    let goal = goal.trim().to_string();
+    if goal.is_empty() {
+        return Err("goal must not be empty".to_string());
+    }
+
+    let vault_root = {
+        let guard = state.vault.lock().map_err(|e| e.to_string())?;
+        guard
+            .as_ref()
+            .ok_or_else(|| "No vault is currently open".to_string())?
+            .root()
+            .to_path_buf()
+    };
+
+    let draft_id = uuid::Uuid::new_v4().to_string();
+
+    // Build args for the plan-mode spawn. Same flag spine as execute_plan
+    // but with --permission-mode plan and a tighter budget — plan mode
+    // typically completes in 30-60s with a few exploration tool calls.
+    let args: Vec<String> = vec![
+        "--print".to_string(),
+        "--verbose".to_string(),
+        "--setting-sources".to_string(),
+        "user".to_string(),
+        "--strict-mcp-config".to_string(),
+        "--mcp-config".to_string(),
+        "{\"mcpServers\":{}}".to_string(),
+        "--output-format".to_string(),
+        "stream-json".to_string(),
+        "--include-partial-messages".to_string(),
+        "--include-hook-events".to_string(),
+        "--max-turns".to_string(),
+        "20".to_string(),
+        "--max-budget-usd".to_string(),
+        "3".to_string(),
+        "--permission-mode".to_string(),
+        "plan".to_string(),
+        "--session-id".to_string(),
+        draft_id.clone(),
+        "--add-dir".to_string(),
+        vault_root.to_string_lossy().to_string(),
+        "-p".to_string(),
+        goal.clone(),
+    ];
+
+    log::info!(
+        "draft_plan_from_goal: spawning plan-mode claude (draft_id={})",
+        draft_id
+    );
+
+    let _ = app.emit(
+        "cortex://draft/started",
+        serde_json::json!({ "draft_id": draft_id, "goal": goal }),
+    );
+
+    let shell = app.shell();
+    let (mut rx, _child) = shell
+        .command("claude")
+        .args(&args)
+        .current_dir(&vault_root)
+        .spawn()
+        .map_err(|e| format!("Failed to spawn claude (plan mode): {}", e))?;
+
+    // Drain the stream until termination, looking for the ExitPlanMode
+    // tool_use whose input.plan field carries the freeform markdown plan
+    // (the SDK shim injects it there in print mode — see
+    // ExitPlanModeV2Tool.outputSchema in the Claude Code source).
+    let mut plan_text: Option<String> = None;
+    let mut last_assistant_text: Option<String> = None;
+    let mut event_count = 0u32;
+
+    while let Some(ev) = rx.recv().await {
+        match ev {
+            CommandEvent::Stdout(line_bytes) => {
+                let line = String::from_utf8_lossy(&line_bytes);
+                let line = line.trim();
+                if line.is_empty() {
+                    continue;
+                }
+                let value: serde_json::Value = match serde_json::from_str(line) {
+                    Ok(v) => v,
+                    Err(_) => continue,
+                };
+                event_count += 1;
+
+                let _ = app.emit(
+                    &format!("cortex://draft/event/{}", draft_id),
+                    &value,
+                );
+
+                // Look for ExitPlanMode in any assistant message snapshot.
+                if value.get("type").and_then(|t| t.as_str()) == Some("assistant") {
+                    if let Some(content) = value
+                        .get("message")
+                        .and_then(|m| m.get("content"))
+                        .and_then(|c| c.as_array())
+                    {
+                        for block in content {
+                            if block.get("type").and_then(|t| t.as_str()) == Some("tool_use")
+                                && block.get("name").and_then(|n| n.as_str())
+                                    == Some("ExitPlanMode")
+                            {
+                                if let Some(plan) = block
+                                    .get("input")
+                                    .and_then(|i| i.get("plan"))
+                                    .and_then(|p| p.as_str())
+                                {
+                                    plan_text = Some(plan.to_string());
+                                }
+                            }
+                            if block.get("type").and_then(|t| t.as_str()) == Some("text") {
+                                if let Some(t) = block.get("text").and_then(|t| t.as_str()) {
+                                    if !t.trim().is_empty() {
+                                        last_assistant_text = Some(t.to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            CommandEvent::Stderr(line_bytes) => {
+                let line = String::from_utf8_lossy(&line_bytes);
+                let line = line.trim();
+                if !line.is_empty() {
+                    log::debug!("draft_plan_from_goal stderr: {}", line);
+                }
+            }
+            CommandEvent::Terminated(payload) => {
+                log::info!(
+                    "draft_plan_from_goal: terminated (code={:?}, signal={:?}, events={})",
+                    payload.code,
+                    payload.signal,
+                    event_count
+                );
+                break;
+            }
+            CommandEvent::Error(err) => {
+                let _ = app.emit(
+                    "cortex://draft/error",
+                    serde_json::json!({ "draft_id": draft_id, "message": err }),
+                );
+                return Err(format!("draft spawn errored: {}", err));
+            }
+            _ => {}
+        }
+    }
+
+    let body_md = match plan_text.or(last_assistant_text) {
+        Some(t) => t,
+        None => {
+            return Err(
+                "claude finished without producing a plan (no ExitPlanMode tool call and no assistant text)"
+                    .to_string(),
+            );
+        }
+    };
+
+    // Try to extract a title from the first H1 of the drafted plan;
+    // fall back to a truncated version of the goal.
+    let drafted_title = body_md
+        .lines()
+        .find_map(|l| l.strip_prefix("# ").map(|s| s.trim().to_string()))
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| {
+            let mut t = goal.clone();
+            if t.len() > 60 {
+                t.truncate(60);
+                t.push('…');
+            }
+            t
+        });
+
+    // Reuse the create_plan_note machinery to seed a fresh template,
+    // then rewrite it with the drafted body and the user's goal.
+    let plans_dir = vault_root.join("plans");
+    std::fs::create_dir_all(&plans_dir).map_err(|e| e.to_string())?;
+    let slug = slugify(&drafted_title);
+    let mut filename = format!("{}.md", slug);
+    let mut counter = 2;
+    while plans_dir.join(&filename).exists() {
+        filename = format!("{}-{}.md", slug, counter);
+        counter += 1;
+        if counter > 100 {
+            return Err("too many existing plans with similar name".to_string());
+        }
+    }
+
+    // Build the file content directly. status starts at `ready` because
+    // a drafted plan is meant to be reviewed and run, not parked as a
+    // draft template. last_drafted_at marks provenance.
+    let drafted_at = chrono::Utc::now().to_rfc3339();
+    let escaped_goal = goal.replace('\n', " ").replace('"', "\\\"");
+    let escaped_title = drafted_title.replace('\n', " ").replace('"', "\\\"");
+    let body = format!(
+        "---\ntype: plan\ntitle: \"{title}\"\nstatus: ready\ngoal: \"{goal}\"\nmcp_servers: []\nallowed_tools: [\"Read\", \"Write\", \"Edit\", \"Grep\", \"Glob\"]\ndenied_tools: [\"Bash(rm *)\", \"Bash(git push *)\"]\ncontext_entities: []\ncontext_notes: []\nmodel: claude-sonnet-4-5\nmax_turns: 30\nmax_budget_usd: 5\npermission_mode: acceptEdits\nworktree: false\ndrafted_by: claude-plan-mode\ndrafted_at: {drafted_at}\n---\n\n<!-- Drafted by Claude in plan mode from the goal above. Review and edit before executing. -->\n\n{body_md}\n",
+        title = escaped_title,
+        goal = escaped_goal,
+        drafted_at = drafted_at,
+        body_md = body_md,
+    );
+
+    let abs = plans_dir.join(&filename);
+    std::fs::write(&abs, body).map_err(|e| e.to_string())?;
+
+    let rel = format!("plans/{}", filename);
+    let _ = app.emit(
+        "cortex://draft/completed",
+        serde_json::json!({
+            "draft_id": draft_id,
+            "plan_path": rel,
+            "event_count": event_count,
+        }),
+    );
+
+    Ok(rel)
 }
 
 #[cfg(test)]
