@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { Tags, FileText, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVaultStore } from "@/stores/vaultStore";
+import { useLayoutStore } from "@/stores/layoutStore";
+import type { NoteData } from "@/lib/types";
 
 // Consistent color palette for tag dots — hash tag name to pick a color
 const TAG_COLORS = [
@@ -26,6 +28,15 @@ function hashTagColor(name: string): string {
 export function TagsPanel() {
   const isVaultOpen = useVaultStore((s) => s.isVaultOpen);
   const setActiveFile = useVaultStore((s) => s.setActiveFile);
+
+  const openNote = useCallback((path: string) => {
+    setActiveFile(path);
+    const layout = useLayoutStore.getState();
+    const sheetId = layout.activeSheetId;
+    invoke<NoteData>("read_note", { path })
+      .then((data) => layout.openFile(sheetId, path, data.content))
+      .catch(() => layout.openFile(sheetId, path, ""));
+  }, [setActiveFile]);
   const [tags, setTags] = useState<{ name: string; count: number }[]>([]);
   const [expandedTag, setExpandedTag] = useState<string | null>(null);
   const [tagNotes, setTagNotes] = useState<string[]>([]);
@@ -134,7 +145,7 @@ export function TagsPanel() {
             tagNotes={expandedTag === tag.name ? tagNotes : []}
             loading={expandedTag === tag.name && loading}
             onClick={() => handleTagClick(tag.name)}
-            onNoteClick={setActiveFile}
+            onNoteClick={openNote}
           />
         ))}
       </div>

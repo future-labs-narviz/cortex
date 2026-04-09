@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVaultStore } from "@/stores/vaultStore";
+import { useLayoutStore } from "@/stores/layoutStore";
 import { Link2, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import type { NoteData } from "@/lib/types";
 
 interface Backlink {
   source_path: string;
@@ -13,6 +15,16 @@ interface Backlink {
 export function BacklinksPanel() {
   const activeFilePath = useVaultStore((s) => s.activeFilePath);
   const setActiveFile = useVaultStore((s) => s.setActiveFile);
+
+  const openNote = useCallback((path: string) => {
+    setActiveFile(path);
+    const layout = useLayoutStore.getState();
+    const sheetId = layout.activeSheetId;
+    invoke<NoteData>("read_note", { path })
+      .then((data) => layout.openFile(sheetId, path, data.content))
+      .catch(() => layout.openFile(sheetId, path, ""));
+  }, [setActiveFile]);
+
   const [backlinks, setBacklinks] = useState<Backlink[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +121,7 @@ export function BacklinksPanel() {
             <BacklinkCard
               key={`${bl.source_path}-${bl.line}-${idx}`}
               backlink={bl}
-              onNavigate={setActiveFile}
+              onNavigate={openNote}
             />
           ))}
         </div>
