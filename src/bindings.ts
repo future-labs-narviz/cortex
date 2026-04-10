@@ -370,6 +370,14 @@ async createPlanNote(title: string) : Promise<Result<string, string>> {
  * field from the stream-json output, then writes it as the body of a
  * new Cortex plan note.
  * 
+ * KG-aware: before spawning, the active typed knowledge graph is
+ * fuzzy-matched against the goal text to pick the top ~5 relevant
+ * entities. Their 2-hop subgraphs + a full entity index are written
+ * to a temp context bundle and passed via `--append-system-prompt-file`.
+ * The matched entity names are also injected into the drafted plan's
+ * `context_entities: [...]` field so a subsequent execute_plan run
+ * inherits the same KG context automatically.
+ * 
  * This is the symmetric counterpart to `execute_plan`: that command
  * spawns `claude` to *execute* a plan, this one spawns `claude` (in
  * plan mode) to *draft* one. Both use Max plan OAuth keychain auth.
