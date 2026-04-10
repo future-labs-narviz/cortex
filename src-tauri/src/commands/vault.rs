@@ -159,7 +159,229 @@ pub async fn open_vault(
         log::warn!("Failed to write .claude/settings.json: {}", e);
     }
 
+    // Sweep orphaned Phase B session notes. A session note stuck with
+    // `status: running` after the app restarts means its run_event_loop
+    // task was killed before the cleanup path could execute — typically
+    // because the user quit Cortex mid-run, the process crashed, or the
+    // dev server hot-reloaded while a self-modifying plan was rebuilding
+    // Cortex itself. See CLAUDE.md "Phase B self-modification rule".
+    let active_run_ids: Vec<String> = {
+        let runs = state.active_runs.lock().await;
+        runs.keys().cloned().collect()
+    };
+    match sweep_orphan_sessions(&vault_path, &active_run_ids) {
+        Ok(n) if n > 0 => {
+            log::info!("open_vault: transitioned {} orphan session(s) to aborted", n);
+        }
+        Ok(_) => {}
+        Err(e) => {
+            log::warn!("open_vault: orphan sweep failed: {}", e);
+        }
+    }
+
     Ok(files)
+}
+
+/// Scan `<vault>/sessions/*.md` for session notes whose frontmatter has
+/// `status: running` but whose `session_id` is NOT in the provided list
+/// of currently-active runs. Those are orphans — their run_event_loop
+/// task never reached the cleanup block that would have flipped their
+/// status. Transition each orphan to `status: aborted` with a synthetic
+/// `ended_at` timestamp and an `orphaned: true` marker. Returns the
+/// number of orphans swept.
+///
+/// This is a best-effort janitor. It does not need to be perfectly atomic
+/// (a crashed write just means the next open_vault will retry). It does
+/// need to be safe to run during a live session — the `active_run_ids`
+/// check ensures we never clobber an in-flight run.
+fn sweep_orphan_sessions(
+    vault_root: &Path,
+    active_run_ids: &[String],
+) -> anyhow::Result<usize> {
+    let sessions_dir = vault_root.join("sessions");
+    if !sessions_dir.exists() {
+        return Ok(0);
+    }
+
+    let now = chrono::Utc::now().to_rfc3339();
+    let mut swept = 0usize;
+
+    for entry in std::fs::read_dir(&sessions_dir)? {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        let path = entry.path();
+        let name = match path.file_name().and_then(|n| n.to_str()) {
+            Some(n) => n.to_string(),
+            None => continue,
+        };
+        // Skip retrospectives (they're just markdown, no status field).
+        if name.ends_with("-retrospective.md") || !name.ends_with(".md") {
+            continue;
+        }
+
+        let raw = match std::fs::read_to_string(&path) {
+            Ok(r) => r,
+            Err(_) => continue,
+        };
+
+        // Parse out session_id + status from the YAML frontmatter.
+        // Plain regex is fine — the frontmatter we write is deterministic.
+        let session_id = extract_fm_field(&raw, "session_id");
+        let status = extract_fm_field(&raw, "status");
+
+        let is_orphan = status.as_deref() == Some("running")
+            && session_id
+                .as_ref()
+                .map(|sid| !active_run_ids.iter().any(|a| a == sid))
+                .unwrap_or(false);
+
+        if !is_orphan {
+            continue;
+        }
+
+        // Rewrite frontmatter: status: running → aborted, add ended_at
+        // and orphaned: true if missing. Uses simple string replacement
+        // to preserve everything else verbatim.
+        let mut updated = raw.replace("status: running", "status: aborted");
+        if !updated.contains("ended_at:") {
+            updated = updated.replacen(
+                "status: aborted",
+                &format!("status: aborted\nended_at: {}", now),
+                1,
+            );
+        }
+        if !updated.contains("orphaned:") {
+            updated = updated.replacen(
+                "status: aborted",
+                "status: aborted\norphaned: true",
+                1,
+            );
+        }
+
+        if let Err(e) = std::fs::write(&path, updated) {
+            log::warn!("sweep_orphan_sessions: failed to write {}: {}", name, e);
+            continue;
+        }
+        swept += 1;
+        log::info!("sweep_orphan_sessions: marked {} as aborted", name);
+    }
+
+    Ok(swept)
+}
+
+/// Extract a single top-level YAML scalar field from a markdown note's
+/// frontmatter block. Returns None if no frontmatter is present or if
+/// the field is not found. Intentionally simple — good enough for the
+/// deterministic frontmatter Cortex writes for session notes.
+fn extract_fm_field(raw: &str, key: &str) -> Option<String> {
+    let trimmed = raw.trim_start_matches('\u{feff}');
+    if !trimmed.starts_with("---\n") && !trimmed.starts_with("---\r\n") {
+        return None;
+    }
+    let after_first = &trimmed[4..];
+    let end = after_first.find("\n---")?;
+    let fm = &after_first[..end];
+    let prefix = format!("{}:", key);
+    for line in fm.lines() {
+        let line = line.trim_start();
+        if let Some(rest) = line.strip_prefix(&prefix) {
+            return Some(rest.trim().to_string());
+        }
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn write_session(dir: &Path, name: &str, content: &str) {
+        let sessions = dir.join("sessions");
+        std::fs::create_dir_all(&sessions).unwrap();
+        std::fs::write(sessions.join(name), content).unwrap();
+    }
+
+    fn read_status(dir: &Path, name: &str) -> Option<String> {
+        let raw = std::fs::read_to_string(dir.join("sessions").join(name)).ok()?;
+        extract_fm_field(&raw, "status")
+    }
+
+    #[test]
+    fn sweep_marks_orphan_running_sessions_as_aborted() {
+        let dir = TempDir::new().unwrap();
+        write_session(
+            dir.path(),
+            "orphan-123.md",
+            "---\ntype: session\nsession_id: orphan-123\nplan_ref: plans/p.md\nstatus: running\nstarted_at: 2026-04-10T00:00:00Z\n---\n\nbody\n",
+        );
+        let swept = sweep_orphan_sessions(dir.path(), &[]).unwrap();
+        assert_eq!(swept, 1);
+        assert_eq!(read_status(dir.path(), "orphan-123.md").as_deref(), Some("aborted"));
+        let raw = std::fs::read_to_string(dir.path().join("sessions/orphan-123.md")).unwrap();
+        assert!(raw.contains("ended_at:"));
+        assert!(raw.contains("orphaned: true"));
+    }
+
+    #[test]
+    fn sweep_ignores_active_runs() {
+        let dir = TempDir::new().unwrap();
+        write_session(
+            dir.path(),
+            "active-456.md",
+            "---\ntype: session\nsession_id: active-456\nstatus: running\n---\n",
+        );
+        let swept = sweep_orphan_sessions(dir.path(), &["active-456".to_string()]).unwrap();
+        assert_eq!(swept, 0);
+        assert_eq!(read_status(dir.path(), "active-456.md").as_deref(), Some("running"));
+    }
+
+    #[test]
+    fn sweep_ignores_already_complete_sessions() {
+        let dir = TempDir::new().unwrap();
+        write_session(
+            dir.path(),
+            "done-789.md",
+            "---\ntype: session\nsession_id: done-789\nstatus: complete\nended_at: 2026-04-10T00:00:00Z\n---\n",
+        );
+        let swept = sweep_orphan_sessions(dir.path(), &[]).unwrap();
+        assert_eq!(swept, 0);
+        assert_eq!(read_status(dir.path(), "done-789.md").as_deref(), Some("complete"));
+    }
+
+    #[test]
+    fn sweep_ignores_retrospective_notes() {
+        let dir = TempDir::new().unwrap();
+        write_session(
+            dir.path(),
+            "abc-retrospective.md",
+            "---\ntype: retrospective\nsession_id: abc\n---\n",
+        );
+        let swept = sweep_orphan_sessions(dir.path(), &[]).unwrap();
+        assert_eq!(swept, 0);
+    }
+
+    #[test]
+    fn sweep_handles_missing_sessions_dir() {
+        let dir = TempDir::new().unwrap();
+        let swept = sweep_orphan_sessions(dir.path(), &[]).unwrap();
+        assert_eq!(swept, 0);
+    }
+
+    #[test]
+    fn extract_fm_field_roundtrip() {
+        let raw = "---\ntype: session\nsession_id: abc-123\nstatus: running\n---\n\nbody\n";
+        assert_eq!(extract_fm_field(raw, "session_id").as_deref(), Some("abc-123"));
+        assert_eq!(extract_fm_field(raw, "status").as_deref(), Some("running"));
+        assert_eq!(extract_fm_field(raw, "nonexistent"), None);
+    }
+
+    #[test]
+    fn extract_fm_field_handles_no_frontmatter() {
+        assert_eq!(extract_fm_field("no frontmatter here", "status"), None);
+    }
 }
 
 /// List all files in the currently open vault.
