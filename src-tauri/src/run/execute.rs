@@ -641,7 +641,6 @@ mod tests {
         assert!(joined.contains("--strict-mcp-config"));
         assert!(joined.contains("--output-format stream-json"));
         assert!(joined.contains("--include-partial-messages"));
-        assert!(joined.contains("--include-hook-events"));
         assert!(joined.contains("--max-turns 7"));
         assert!(joined.contains("--permission-mode acceptEdits"));
         assert!(joined.contains("--session-id 11111111-1111-4111-8111-111111111111"));
@@ -649,6 +648,20 @@ mod tests {
         // last two args are -p <prompt>
         assert_eq!(args[args.len() - 2], "-p");
         assert_eq!(args[args.len() - 1], "do it");
+    }
+
+    /// Regression guard: --include-hook-events caused spawned claude to
+    /// exit immediately with 0 events on every Phase B run. Removed in
+    /// commit 69cacb0. Do NOT add it back without re-validating against
+    /// the current Claude Code binary under Tauri shell spawn.
+    #[test]
+    fn build_args_does_not_include_hook_events_flag() {
+        let spec = fake_spec(vec![], vec![]);
+        let args = build_claude_args(&spec);
+        assert!(
+            !args.iter().any(|a| a == "--include-hook-events"),
+            "--include-hook-events must not be in argv; see project_phase_b_flag_quirks memory"
+        );
     }
 
     #[test]
