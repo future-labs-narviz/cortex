@@ -1,0 +1,642 @@
+{
+  "entities": {
+    "Payment System": {
+      "name": "Payment System",
+      "entity_type": "Project",
+      "description": "E-commerce payment processing project referenced in the Cortex vault",
+      "source_notes": [
+        "Welcome.md"
+      ],
+      "aliases": []
+    },
+    "cortex-search": {
+      "name": "cortex-search",
+      "entity_type": "Project",
+      "description": "Rust crate providing full-text search via Tantivy",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "Wave4 Graph Visualization": {
+      "name": "Wave4 Graph Visualization",
+      "entity_type": "Project",
+      "description": "Session note 2026-04-08_wave4-graph.md covering Graph Visualization",
+      "source_notes": [
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "Auth Module": {
+      "name": "Auth Module",
+      "entity_type": "Project",
+      "description": "Authentication and authorization module referenced in the Cortex vault",
+      "source_notes": [
+        "Welcome.md"
+      ],
+      "aliases": []
+    },
+    "MCP Server": {
+      "name": "MCP Server",
+      "entity_type": "Technology",
+      "description": "Axum HTTP server on port 3847 exposing 7 MCP tools to Claude Code via JSON-RPC",
+      "source_notes": [
+        "MCP Integration Guide.md"
+      ],
+      "aliases": []
+    },
+    "notify crate": {
+      "name": "notify crate",
+      "entity_type": "Technology",
+      "description": "Rust file-watching crate used by cortex-core for vault file monitoring",
+      "source_notes": [
+        "notify crate.md"
+      ],
+      "aliases": []
+    },
+    "tokio-postgres": {
+      "name": "tokio-postgres",
+      "entity_type": "Technology",
+      "description": "Asynchronous PostgreSQL client library that was originally used directly and created idle connection leaks",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "cpal": {
+      "name": "cpal",
+      "entity_type": "Technology",
+      "description": "Rust audio library used for the audio recorder extracted into cortex-voice",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "cortex-graph": {
+      "name": "cortex-graph",
+      "entity_type": "Project",
+      "description": "Rust crate for link indexing, backlinks, and knowledge graph",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "deadpool-postgres": {
+      "name": "deadpool-postgres",
+      "entity_type": "Technology",
+      "description": "Connection pooling library used to manage database connections with configurable pool size and idle timeouts",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "Wave notes": {
+      "name": "Wave notes",
+      "entity_type": "Concept",
+      "description": "Session documentation notes tracking different waves of development: Wave 1 (Foundation + MCP Server), Wave 3 (Knowledge Graph Integration), Wave 4 (Graph Visualization)",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42"
+      ],
+      "aliases": []
+    },
+    "Connection Pool Configuration": {
+      "name": "Connection Pool Configuration",
+      "entity_type": "Decision",
+      "description": "Configuration to set max pool size to 16 and idle timeout to 30 seconds using Pool::builder()",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "Claude Code": {
+      "name": "Claude Code",
+      "entity_type": "Technology",
+      "description": "Anthropic's AI coding CLI tool (~1,884 TS files), analyzed to understand MCP protocol and integration patterns",
+      "source_notes": [
+        "Claude Code Source Analysis.md"
+      ],
+      "aliases": []
+    },
+    "Silero VAD": {
+      "name": "Silero VAD",
+      "entity_type": "Technology",
+      "description": "Voice activity detection model used in cortex-voice for speech detection",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "Connection Lifecycle Management": {
+      "name": "Connection Lifecycle Management",
+      "entity_type": "Concept",
+      "description": "Pattern where deadpool-postgres explicitly tracks and manages connection lifecycle instead of relying on per-call connect/disconnect in tokio-postgres",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "Cortex App": {
+      "name": "Cortex App",
+      "entity_type": "Project",
+      "description": "Tauri 2.x desktop app serving as a development consciousness layer with markdown editing, knowledge graph, and voice capture",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "Wave1 Foundation": {
+      "name": "Wave1 Foundation",
+      "entity_type": "Project",
+      "description": "Session note 2026-04-08_wave1-foundation.md covering Foundation and MCP Server work",
+      "source_notes": [
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "Whisper": {
+      "name": "Whisper",
+      "entity_type": "Technology",
+      "description": "Speech-to-text ML model, one of 15+ models supported by Handy App",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "Tantivy": {
+      "name": "Tantivy",
+      "entity_type": "Technology",
+      "description": "Rust full-text search engine library used by cortex-search",
+      "source_notes": [
+        "Tantivy.md"
+      ],
+      "aliases": []
+    },
+    "rubato": {
+      "name": "rubato",
+      "entity_type": "Technology",
+      "description": "Rust audio resampler library used in cortex-voice",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "Knowledge Graph": {
+      "name": "Knowledge Graph",
+      "entity_type": "Concept",
+      "description": "Graph-based knowledge representation used in Cortex for linking notes, entities, and relations",
+      "source_notes": [
+        "Knowledge Graph.md"
+      ],
+      "aliases": []
+    },
+    "Axum": {
+      "name": "Axum",
+      "entity_type": "Technology",
+      "description": "Rust web framework used to serve the MCP HTTP server in Cortex",
+      "source_notes": [
+        "Axum.md"
+      ],
+      "aliases": []
+    },
+    "Wave3 Knowledge Graph": {
+      "name": "Wave3 Knowledge Graph",
+      "entity_type": "Project",
+      "description": "Session note 2026-04-08_wave3-knowledge.md covering Knowledge Graph Integration",
+      "source_notes": [
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "2026-04-08_wave3-knowledge.md": {
+      "name": "2026-04-08_wave3-knowledge.md",
+      "entity_type": "Project",
+      "description": "Wave 3 session note covering Knowledge Graph Integration",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42"
+      ],
+      "aliases": []
+    },
+    "Zustand": {
+      "name": "Zustand",
+      "entity_type": "Technology",
+      "description": "State management library used in the Cortex frontend",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "2026-04-08_wave1-foundation.md": {
+      "name": "2026-04-08_wave1-foundation.md",
+      "entity_type": "Project",
+      "description": "Wave 1 session note covering Foundation and MCP Server development",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42"
+      ],
+      "aliases": []
+    },
+    "Vault Directory Structure": {
+      "name": "Vault Directory Structure",
+      "entity_type": "Concept",
+      "description": "Organized directories including sessions/, projects/, patterns/, decisions/, voice-notes/, captured/, daily/, plans/, and .cortex/",
+      "source_notes": [
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "Tauri": {
+      "name": "Tauri",
+      "entity_type": "Technology",
+      "description": "Desktop app framework (v2.x) chosen over Electron for Cortex",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "Test Vault": {
+      "name": "Test Vault",
+      "entity_type": "Project",
+      "description": "A vault structure for Wave sessions documenting foundation, knowledge graph integration, and graph visualization work",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42",
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "Handy App": {
+      "name": "Handy App",
+      "entity_type": "Project",
+      "description": "Open-source offline speech-to-text desktop app (48 Rust files, 121 TS/TSX files) from which cortex-voice was extracted",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "src/db/client.rs": {
+      "name": "src/db/client.rs",
+      "entity_type": "Project",
+      "description": "Database client module that was refactored to use connection pooling instead of direct tokio-postgres connections",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "transcribe-rs": {
+      "name": "transcribe-rs",
+      "entity_type": "Technology",
+      "description": "Rust transcription technology used in the Cortex App",
+      "source_notes": [
+        "transcribe-rs.md"
+      ],
+      "aliases": []
+    },
+    "cortex-core": {
+      "name": "cortex-core",
+      "entity_type": "Project",
+      "description": "Rust crate handling vault management and file watching via the notify crate",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "README.md": {
+      "name": "README.md",
+      "entity_type": "Concept",
+      "description": "Documentation file in test vault root that describes vault structure and lists Wave session notes",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42",
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "2026-04-08_wave4-graph.md": {
+      "name": "2026-04-08_wave4-graph.md",
+      "entity_type": "Project",
+      "description": "Wave 4 session note covering Graph Visualization",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42"
+      ],
+      "aliases": []
+    },
+    "cortex-voice": {
+      "name": "cortex-voice",
+      "entity_type": "Project",
+      "description": "Rust crate for audio recording, extracted from the Handy App",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "D3.js": {
+      "name": "D3.js",
+      "entity_type": "Technology",
+      "description": "Data visualization library used to render the knowledge graph in Cortex",
+      "source_notes": [
+        "D3.js.md"
+      ],
+      "aliases": []
+    },
+    "React": {
+      "name": "React",
+      "entity_type": "Technology",
+      "description": "Frontend UI framework (v18) used with TypeScript in Cortex",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "Idle Connection Leak": {
+      "name": "Idle Connection Leak",
+      "entity_type": "Pattern",
+      "description": "Problem where tokio-postgres was accumulating idle connections up to ~200, not properly closing unused connections",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "MCP": {
+      "name": "MCP",
+      "entity_type": "Technology",
+      "description": "Model Context Protocol — primary integration layer between Cortex and Claude Code with 7 tools and 3 resources",
+      "source_notes": [
+        "Claude Code Source Analysis.md"
+      ],
+      "aliases": []
+    },
+    "CodeMirror 6": {
+      "name": "CodeMirror 6",
+      "entity_type": "Technology",
+      "description": "Text editor framework used for the markdown editor in Cortex",
+      "source_notes": [
+        "CodeMirror 6.md"
+      ],
+      "aliases": []
+    }
+  },
+  "relations": [
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "Tauri",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "React",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "Zustand",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "cortex-core",
+      "predicate": "part_of",
+      "target": "Cortex App",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "cortex-search",
+      "predicate": "part_of",
+      "target": "Cortex App",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "cortex-graph",
+      "predicate": "part_of",
+      "target": "Cortex App",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "cortex-voice",
+      "predicate": "part_of",
+      "target": "Cortex App",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "cortex-core",
+      "predicate": "depends_on",
+      "target": "notify crate",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "cortex-search",
+      "predicate": "depends_on",
+      "target": "Tantivy",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "CodeMirror 6",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "D3.js",
+      "source_note": "Architecture Overview.md"
+    },
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "Axum",
+      "source_note": "Axum.md"
+    },
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "MCP",
+      "source_note": "Claude Code Source Analysis.md"
+    },
+    {
+      "source": "MCP",
+      "predicate": "used_by",
+      "target": "Claude Code",
+      "source_note": "Claude Code Source Analysis.md"
+    },
+    {
+      "source": "MCP Integration Guide",
+      "predicate": "extracted_from",
+      "target": "Claude Code Source Analysis",
+      "source_note": "Claude Code Source Analysis.md"
+    },
+    {
+      "source": "cortex-voice",
+      "predicate": "extracted_from",
+      "target": "Handy App",
+      "source_note": "Handy App.md"
+    },
+    {
+      "source": "Handy App",
+      "predicate": "built_with",
+      "target": "cpal",
+      "source_note": "Handy App.md"
+    },
+    {
+      "source": "Handy App",
+      "predicate": "built_with",
+      "target": "rubato",
+      "source_note": "Handy App.md"
+    },
+    {
+      "source": "Handy App",
+      "predicate": "built_with",
+      "target": "Silero VAD",
+      "source_note": "Handy App.md"
+    },
+    {
+      "source": "Handy App",
+      "predicate": "built_with",
+      "target": "Whisper",
+      "source_note": "Handy App.md"
+    },
+    {
+      "source": "cortex-graph",
+      "predicate": "built_with",
+      "target": "Knowledge Graph",
+      "source_note": "Knowledge Graph.md"
+    },
+    {
+      "source": "MCP Server",
+      "predicate": "built_with",
+      "target": "Axum",
+      "source_note": "MCP Integration Guide.md"
+    },
+    {
+      "source": "MCP Server",
+      "predicate": "part_of",
+      "target": "Cortex App",
+      "source_note": "MCP Integration Guide.md"
+    },
+    {
+      "source": "Claude Code",
+      "predicate": "depends_on",
+      "target": "MCP Server",
+      "source_note": "MCP Integration Guide.md"
+    },
+    {
+      "source": "Cortex App",
+      "predicate": "built_with",
+      "target": "transcribe-rs",
+      "source_note": "transcribe-rs.md"
+    },
+    {
+      "source": "Payment System",
+      "predicate": "part_of",
+      "target": "Cortex App",
+      "source_note": "Welcome.md"
+    },
+    {
+      "source": "Auth Module",
+      "predicate": "part_of",
+      "target": "Cortex App",
+      "source_note": "Welcome.md"
+    },
+    {
+      "source": "src/db/client.rs",
+      "predicate": "built_with",
+      "target": "deadpool-postgres",
+      "source_note": "e2e-test-002"
+    },
+    {
+      "source": "deadpool-postgres",
+      "predicate": "supersedes",
+      "target": "tokio-postgres",
+      "source_note": "e2e-test-002"
+    },
+    {
+      "source": "Connection Pool Configuration",
+      "predicate": "applied_to",
+      "target": "deadpool-postgres",
+      "source_note": "e2e-test-002"
+    },
+    {
+      "source": "deadpool-postgres",
+      "predicate": "resolves",
+      "target": "Idle Connection Leak",
+      "source_note": "e2e-test-002"
+    },
+    {
+      "source": "deadpool-postgres",
+      "predicate": "uses",
+      "target": "Connection Lifecycle Management",
+      "source_note": "e2e-test-002"
+    },
+    {
+      "source": "Test Vault",
+      "predicate": "contains",
+      "target": "2026-04-08_wave1-foundation.md",
+      "source_note": "a638eaca-8bdc-4695-b151-82d355944d42"
+    },
+    {
+      "source": "Test Vault",
+      "predicate": "contains",
+      "target": "2026-04-08_wave3-knowledge.md",
+      "source_note": "a638eaca-8bdc-4695-b151-82d355944d42"
+    },
+    {
+      "source": "Test Vault",
+      "predicate": "contains",
+      "target": "2026-04-08_wave4-graph.md",
+      "source_note": "a638eaca-8bdc-4695-b151-82d355944d42"
+    },
+    {
+      "source": "Test Vault",
+      "predicate": "documented_by",
+      "target": "README.md",
+      "source_note": "a638eaca-8bdc-4695-b151-82d355944d42"
+    },
+    {
+      "source": "README.md",
+      "predicate": "lists",
+      "target": "Wave notes",
+      "source_note": "a638eaca-8bdc-4695-b151-82d355944d42"
+    },
+    {
+      "source": "README.md",
+      "predicate": "references",
+      "target": "Wave1 Foundation",
+      "source_note": "238a96bc-92be-40b5-a855-2c810da2c225"
+    },
+    {
+      "source": "README.md",
+      "predicate": "references",
+      "target": "Wave3 Knowledge Graph",
+      "source_note": "238a96bc-92be-40b5-a855-2c810da2c225"
+    },
+    {
+      "source": "README.md",
+      "predicate": "references",
+      "target": "Wave4 Graph Visualization",
+      "source_note": "238a96bc-92be-40b5-a855-2c810da2c225"
+    },
+    {
+      "source": "Test Vault",
+      "predicate": "uses_structure",
+      "target": "Vault Directory Structure",
+      "source_note": "238a96bc-92be-40b5-a855-2c810da2c225"
+    }
+  ],
+  "alias_to_canonical": {},
+  "processed_notes": [
+    "Architecture Overview.md",
+    "Axum.md",
+    "Claude Code Source Analysis.md",
+    "CodeMirror 6.md",
+    "D3.js.md",
+    "Handy App.md",
+    "Knowledge Graph.md",
+    "MCP Integration Guide.md",
+    "notify crate.md",
+    "Tantivy.md",
+    "transcribe-rs.md",
+    "Welcome.md",
+    "e2e-test-002",
+    "1a4f8b0f-d679-45f1-a963-9ca8f1fe1e03",
+    "a638eaca-8bdc-4695-b151-82d355944d42",
+    "238a96bc-92be-40b5-a855-2c810da2c225"
+  ]
+}

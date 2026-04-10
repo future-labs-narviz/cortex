@@ -25,10 +25,15 @@ src-tauri/icons/*.icns
 
 # Vault data (user content, not committed)
 vault/
-test-vault/
 
-# Cortex app data
+# Cortex app data (for any vault, including test-vault by default)
 .cortex/
+
+# ...except test-vault IS committed so Cortex works on a fresh clone.
+# The negation lifts the .cortex/ exclusion just for this path, then the
+# final line re-excludes the regenerated Tantivy binary search index.
+!test-vault/.cortex/
+test-vault/.cortex/search-index/
 
 # Environment
 .env

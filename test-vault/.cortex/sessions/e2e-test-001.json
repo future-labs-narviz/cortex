@@ -1,0 +1,18 @@
+{
+  "session_id": "e2e-test-001",
+  "project": null,
+  "cwd": "/Users/jamq/Desktop/Cortex/test-vault",
+  "started_at": "2026-04-09T10:54:04Z",
+  "ended_at": null,
+  "goal": null,
+  "summary": null,
+  "tool_uses": [],
+  "insights": [],
+  "files_modified": [],
+  "tools_used": [],
+  "prompts_count": null,
+  "key_decisions": [],
+  "what_worked": null,
+  "what_failed": null,
+  "prompts": []
+}
