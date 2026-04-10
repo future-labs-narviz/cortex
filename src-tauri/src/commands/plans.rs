@@ -200,12 +200,190 @@ fn slugify(title: &str) -> String {
     }
 }
 
+/// Tokenize a goal string into meaningful keywords suitable for KG
+/// entity search. Drops common English stopwords and anything shorter
+/// than 4 characters so a goal like "add a README explaining cortex"
+/// becomes `["readme", "explaining", "cortex"]`.
+fn goal_keywords(goal: &str) -> Vec<String> {
+    const STOPWORDS: &[&str] = &[
+        "the", "and", "for", "with", "from", "that", "this", "some", "into",
+        "will", "would", "could", "should", "shall", "need", "needs", "want",
+        "wants", "make", "makes", "made", "add", "adding", "added", "add",
+        "when", "what", "where", "which", "about", "have", "been", "also",
+        "their", "there", "these", "those", "over", "under", "than", "then",
+        "just", "like", "each", "more", "most", "here", "only", "them",
+        "they", "your", "you're", "its", "it's", "dont", "don't",
+    ];
+    let mut seen = std::collections::HashSet::new();
+    let mut out = Vec::new();
+    for raw in goal.split(|c: char| !c.is_alphanumeric()) {
+        let word = raw.trim().to_ascii_lowercase();
+        if word.len() < 4 {
+            continue;
+        }
+        if STOPWORDS.contains(&word.as_str()) {
+            continue;
+        }
+        if seen.insert(word.clone()) {
+            out.push(word);
+        }
+    }
+    out
+}
+
+/// Score KG entities by how many goal keywords match their name or
+/// description (case-insensitive substring), and return the top `top_n`
+/// entity names. Uses the existing `search_entities` method for
+/// consistency with elsewhere in the app.
+fn rank_entities_for_goal(
+    kg: &cortex_kg::TypedKnowledgeGraph,
+    goal: &str,
+    top_n: usize,
+) -> Vec<String> {
+    use std::collections::HashMap;
+
+    let keywords = goal_keywords(goal);
+    if keywords.is_empty() {
+        return Vec::new();
+    }
+
+    let mut scores: HashMap<String, usize> = HashMap::new();
+    for kw in &keywords {
+        for entity in kg.search_entities(kw) {
+            *scores.entry(entity.name.clone()).or_insert(0) += 1;
+        }
+    }
+
+    let mut ranked: Vec<(String, usize)> = scores.into_iter().collect();
+    ranked.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+    ranked.into_iter().take(top_n).map(|(name, _)| name).collect()
+}
+
+/// Build an `--append-system-prompt-file` markdown bundle that tells
+/// plan-mode claude what the user's knowledge graph already knows about
+/// entities relevant to the goal. Returns `(bundle_text, entity_names)`
+/// where `entity_names` gets written into the drafted plan's
+/// `context_entities` frontmatter field so the eventual execute_plan
+/// run inherits the same KG context automatically.
+fn build_kg_context_for_goal(
+    kg: &cortex_kg::TypedKnowledgeGraph,
+    goal: &str,
+) -> (String, Vec<String>) {
+    let top_entities = rank_entities_for_goal(kg, goal, 5);
+    let kg_graph = kg.to_graph_data();
+
+    let mut out = String::new();
+    out.push_str("# Cortex knowledge graph context\n\n");
+    out.push_str(
+        "The user has a typed knowledge graph from prior Cortex sessions. You are\n\
+         running in plan mode inside their vault; use both the raw filesystem\n\
+         (via Read/Glob/Grep) AND the structured knowledge below when drafting\n\
+         your plan. Reference entities by name when relevant.\n\n",
+    );
+
+    if kg_graph.entities.is_empty() {
+        out.push_str("## Graph is empty\n\nNo entities have been captured yet.\n");
+        return (out, top_entities);
+    }
+
+    out.push_str(&format!(
+        "## Vault graph summary\n\n{} entities, {} relations across the graph.\n\n",
+        kg_graph.entities.len(),
+        kg_graph.relations.len()
+    ));
+
+    // A brief index of every entity name + type so the model knows
+    // what the vault knows about even if the goal doesn't textually
+    // match any entity directly.
+    out.push_str("### Entity index\n\n");
+    let mut all_names: Vec<(String, String)> = kg_graph
+        .entities
+        .iter()
+        .map(|e| (e.name.clone(), e.entity_type.to_string()))
+        .collect();
+    all_names.sort();
+    for (name, etype) in all_names.iter().take(60) {
+        out.push_str(&format!("- **{}** _({})_\n", name, etype));
+    }
+    if all_names.len() > 60 {
+        out.push_str(&format!(
+            "- _…and {} more_\n",
+            all_names.len() - 60
+        ));
+    }
+    out.push('\n');
+
+    if top_entities.is_empty() {
+        out.push_str(
+            "## Most relevant to this goal\n\nNo entities directly matched the goal\n\
+             text. Use the entity index above to orient yourself if any of the\n\
+             listed entities are relevant.\n",
+        );
+    } else {
+        out.push_str("## Most relevant entities for this goal\n\n");
+        out.push_str(&format!(
+            "_Auto-selected by fuzzy-matching the goal text against the KG:_\n\n{}\n\n",
+            top_entities
+                .iter()
+                .map(|n| format!("- {}", n))
+                .collect::<Vec<_>>()
+                .join("\n")
+        ));
+
+        for name in &top_entities {
+            if let Some(profile) = kg.entity_profile(name) {
+                out.push_str(&format!(
+                    "### {} _({})_\n\n{}\n\n",
+                    profile.entity.name, profile.entity.entity_type, profile.entity.description
+                ));
+                if !profile.entity.source_notes.is_empty() {
+                    out.push_str("**Source notes:** ");
+                    out.push_str(
+                        &profile
+                            .entity
+                            .source_notes
+                            .iter()
+                            .take(5)
+                            .map(|s| format!("`{}`", s))
+                            .collect::<Vec<_>>()
+                            .join(", "),
+                    );
+                    out.push_str("\n\n");
+                }
+            }
+            let subgraph = kg.serialize_subgraph(name, 2);
+            if !subgraph.is_empty() {
+                out.push_str("**Related (2 hops):**\n\n```\n");
+                out.push_str(&subgraph);
+                out.push_str("\n```\n\n");
+            }
+        }
+    }
+
+    out.push_str(
+        "---\n\nWhen drafting the plan, you MAY reference these entities by name in\n\
+         the plan text. Your plan will later be executed by another claude run\n\
+         which can be pointed at these same entities via the plan's\n\
+         `context_entities` frontmatter field — so naming them clearly is useful.\n",
+    );
+
+    (out, top_entities)
+}
+
 /// Spawn `claude --print --permission-mode plan` against the open vault
 /// and use Anthropic's canonical 5-phase plan-mode workflow (Explore →
 /// Design → Review → Finalize → ExitPlanMode) to draft a plan from a
 /// short user goal. Captures the `ExitPlanMode` tool_use input.plan
 /// field from the stream-json output, then writes it as the body of a
 /// new Cortex plan note.
+///
+/// KG-aware: before spawning, the active typed knowledge graph is
+/// fuzzy-matched against the goal text to pick the top ~5 relevant
+/// entities. Their 2-hop subgraphs + a full entity index are written
+/// to a temp context bundle and passed via `--append-system-prompt-file`.
+/// The matched entity names are also injected into the drafted plan's
+/// `context_entities: [...]` field so a subsequent execute_plan run
+/// inherits the same KG context automatically.
 ///
 /// This is the symmetric counterpart to `execute_plan`: that command
 /// spawns `claude` to *execute* a plan, this one spawns `claude` (in
@@ -231,12 +409,35 @@ pub async fn draft_plan_from_goal(
             .to_path_buf()
     };
 
+    // Build KG context bundle for the goal. We drop the lock before the
+    // (long-running) spawn so the rest of the app isn't blocked while
+    // claude explores the vault.
+    let (kg_context_md, matched_entities) = {
+        let guard = state.knowledge_graph.read().map_err(|e| e.to_string())?;
+        match guard.as_ref() {
+            Some(kg) => build_kg_context_for_goal(kg, &goal),
+            None => (String::new(), Vec::new()),
+        }
+    };
+
     let draft_id = uuid::Uuid::new_v4().to_string();
+
+    // Materialize the context bundle to disk so --append-system-prompt-file
+    // can point at it. Scratch dir mirrors the Phase B cortex-run-<id>
+    // pattern from prepare.rs.
+    let draft_dir = std::env::temp_dir().join(format!("cortex-draft-{}", draft_id));
+    std::fs::create_dir_all(&draft_dir)
+        .map_err(|e| format!("failed to create draft scratch dir: {}", e))?;
+    let context_path = draft_dir.join("context.md");
+    if !kg_context_md.is_empty() {
+        std::fs::write(&context_path, &kg_context_md)
+            .map_err(|e| format!("failed to write draft context bundle: {}", e))?;
+    }
 
     // Build args for the plan-mode spawn. Same flag spine as execute_plan
     // but with --permission-mode plan and a tighter budget — plan mode
     // typically completes in 30-60s with a few exploration tool calls.
-    let args: Vec<String> = vec![
+    let mut args: Vec<String> = vec![
         "--print".to_string(),
         "--verbose".to_string(),
         "--setting-sources".to_string(),
@@ -258,18 +459,27 @@ pub async fn draft_plan_from_goal(
         draft_id.clone(),
         "--add-dir".to_string(),
         vault_root.to_string_lossy().to_string(),
-        "-p".to_string(),
-        goal.clone(),
     ];
+    if !kg_context_md.is_empty() {
+        args.push("--append-system-prompt-file".to_string());
+        args.push(context_path.to_string_lossy().to_string());
+    }
+    args.push("-p".to_string());
+    args.push(goal.clone());
 
     log::info!(
-        "draft_plan_from_goal: spawning plan-mode claude (draft_id={})",
-        draft_id
+        "draft_plan_from_goal: spawning plan-mode claude (draft_id={}, kg_entities={})",
+        draft_id,
+        matched_entities.len()
     );
 
     let _ = app.emit(
         "cortex://draft/started",
-        serde_json::json!({ "draft_id": draft_id, "goal": goal }),
+        serde_json::json!({
+            "draft_id": draft_id,
+            "goal": goal,
+            "matched_entities": matched_entities,
+        }),
     );
 
     let shell = app.shell();
@@ -278,7 +488,10 @@ pub async fn draft_plan_from_goal(
         .args(&args)
         .current_dir(&vault_root)
         .spawn()
-        .map_err(|e| format!("Failed to spawn claude (plan mode): {}", e))?;
+        .map_err(|e| {
+            let _ = std::fs::remove_dir_all(&draft_dir);
+            format!("Failed to spawn claude (plan mode): {}", e)
+        })?;
 
     // Drain the stream until termination, looking for the ExitPlanMode
     // tool_use whose input.plan field carries the freeform markdown plan
@@ -365,6 +578,9 @@ pub async fn draft_plan_from_goal(
         }
     }
 
+    // Temp scratch dir is no longer needed once the spawn has finished.
+    let _ = std::fs::remove_dir_all(&draft_dir);
+
     let body_md = match plan_text.or(last_assistant_text) {
         Some(t) => t,
         None => {
@@ -407,14 +623,29 @@ pub async fn draft_plan_from_goal(
 
     // Build the file content directly. status starts at `ready` because
     // a drafted plan is meant to be reviewed and run, not parked as a
-    // draft template. last_drafted_at marks provenance.
+    // draft template. drafted_by / drafted_at mark provenance. Matched
+    // entity names are preserved in context_entities so a later
+    // execute_plan run inherits the same KG context.
     let drafted_at = chrono::Utc::now().to_rfc3339();
     let escaped_goal = goal.replace('\n', " ").replace('"', "\\\"");
     let escaped_title = drafted_title.replace('\n', " ").replace('"', "\\\"");
+    let context_entities_yaml = if matched_entities.is_empty() {
+        "[]".to_string()
+    } else {
+        format!(
+            "[{}]",
+            matched_entities
+                .iter()
+                .map(|n| format!("\"{}\"", n.replace('"', "\\\"")))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
     let body = format!(
-        "---\ntype: plan\ntitle: \"{title}\"\nstatus: ready\ngoal: \"{goal}\"\nmcp_servers: []\nallowed_tools: [\"Read\", \"Write\", \"Edit\", \"Grep\", \"Glob\"]\ndenied_tools: [\"Bash(rm *)\", \"Bash(git push *)\"]\ncontext_entities: []\ncontext_notes: []\nmodel: claude-sonnet-4-5\nmax_turns: 30\nmax_budget_usd: 5\npermission_mode: acceptEdits\nworktree: false\ndrafted_by: claude-plan-mode\ndrafted_at: {drafted_at}\n---\n\n<!-- Drafted by Claude in plan mode from the goal above. Review and edit before executing. -->\n\n{body_md}\n",
+        "---\ntype: plan\ntitle: \"{title}\"\nstatus: ready\ngoal: \"{goal}\"\nmcp_servers: []\nallowed_tools: [\"Read\", \"Write\", \"Edit\", \"Grep\", \"Glob\"]\ndenied_tools: [\"Bash(rm *)\", \"Bash(git push *)\"]\ncontext_entities: {context_entities}\ncontext_notes: []\nmodel: claude-sonnet-4-5\nmax_turns: 30\nmax_budget_usd: 5\npermission_mode: acceptEdits\nworktree: false\ndrafted_by: claude-plan-mode\ndrafted_at: {drafted_at}\n---\n\n<!-- Drafted by Claude in plan mode from the goal above. Review and edit before executing. -->\n\n{body_md}\n",
         title = escaped_title,
         goal = escaped_goal,
+        context_entities = context_entities_yaml,
         drafted_at = drafted_at,
         body_md = body_md,
     );
@@ -429,6 +660,7 @@ pub async fn draft_plan_from_goal(
             "draft_id": draft_id,
             "plan_path": rel,
             "event_count": event_count,
+            "matched_entities": matched_entities,
         }),
     );
 
@@ -438,6 +670,8 @@ pub async fn draft_plan_from_goal(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use cortex_kg::types::{EntityType, KgEntity, KgRelation};
+    use cortex_kg::TypedKnowledgeGraph;
 
     #[test]
     fn slugify_basic() {
@@ -446,6 +680,99 @@ mod tests {
         assert_eq!(slugify("   "), "untitled");
         assert_eq!(slugify("foo  bar  baz"), "foo-bar-baz");
         assert_eq!(slugify("---weird---"), "weird");
+    }
+
+    #[test]
+    fn goal_keywords_drops_stopwords_and_short_tokens() {
+        let kws = goal_keywords("Add a README explaining Cortex to the vault");
+        assert!(kws.contains(&"readme".to_string()));
+        assert!(kws.contains(&"explaining".to_string()));
+        assert!(kws.contains(&"cortex".to_string()));
+        assert!(kws.contains(&"vault".to_string()));
+        assert!(!kws.contains(&"add".to_string()));
+        assert!(!kws.contains(&"the".to_string()));
+        assert!(!kws.contains(&"to".to_string()));
+    }
+
+    #[test]
+    fn goal_keywords_dedupes() {
+        let kws = goal_keywords("cortex cortex CORTEX");
+        assert_eq!(kws, vec!["cortex"]);
+    }
+
+    fn seeded_kg_for_goal_tests() -> TypedKnowledgeGraph {
+        let mut kg = TypedKnowledgeGraph::new();
+        kg.store_entities(
+            "notes/seed.md",
+            vec![
+                KgEntity {
+                    name: "Cortex".to_string(),
+                    entity_type: EntityType::Project,
+                    description: "A knowledge graph desktop app".to_string(),
+                    source_notes: vec!["notes/seed.md".to_string()],
+                    aliases: vec![],
+                },
+                KgEntity {
+                    name: "Knowledge Graph".to_string(),
+                    entity_type: EntityType::Concept,
+                    description: "Typed entities + relations".to_string(),
+                    source_notes: vec!["notes/seed.md".to_string()],
+                    aliases: vec![],
+                },
+                KgEntity {
+                    name: "Axum".to_string(),
+                    entity_type: EntityType::Technology,
+                    description: "Rust web framework".to_string(),
+                    source_notes: vec!["notes/seed.md".to_string()],
+                    aliases: vec![],
+                },
+            ],
+        );
+        kg.store_relations(
+            "notes/seed.md",
+            vec![KgRelation {
+                source: "Cortex".to_string(),
+                predicate: "built_with".to_string(),
+                target: "Axum".to_string(),
+                source_note: "notes/seed.md".to_string(),
+            }],
+        );
+        kg
+    }
+
+    #[test]
+    fn rank_entities_for_goal_matches_relevant_entities() {
+        let kg = seeded_kg_for_goal_tests();
+        let ranked = rank_entities_for_goal(&kg, "extend cortex with a new endpoint", 5);
+        assert!(ranked.contains(&"Cortex".to_string()));
+    }
+
+    #[test]
+    fn rank_entities_for_goal_returns_empty_when_no_keywords_match() {
+        let kg = seeded_kg_for_goal_tests();
+        let ranked =
+            rank_entities_for_goal(&kg, "unrelated tangent about cooking recipes", 5);
+        // No entity in the seeded KG matches any of the food-related keywords.
+        assert!(ranked.is_empty());
+    }
+
+    #[test]
+    fn build_kg_context_for_goal_includes_entity_index_and_relevant_subgraph() {
+        let kg = seeded_kg_for_goal_tests();
+        let (bundle, matched) = build_kg_context_for_goal(&kg, "extend cortex somehow");
+        assert!(bundle.contains("Cortex knowledge graph context"));
+        assert!(bundle.contains("Entity index"));
+        assert!(bundle.contains("Cortex"));
+        assert!(bundle.contains("Axum"));
+        assert!(matched.contains(&"Cortex".to_string()));
+    }
+
+    #[test]
+    fn build_kg_context_for_goal_handles_empty_graph() {
+        let kg = TypedKnowledgeGraph::new();
+        let (bundle, matched) = build_kg_context_for_goal(&kg, "anything at all");
+        assert!(bundle.contains("Graph is empty"));
+        assert!(matched.is_empty());
     }
 }
 
