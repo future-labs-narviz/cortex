@@ -5,7 +5,7 @@ status: complete
 goal: "Mirror the existing abort_run pattern to let users cancel an in-flight Phase B drafting spawn. Currently draft_plan_from_goal runs ~30-60s and there's no way to stop it. Add a CommandChild handle tracked by draft_id in AppState, an abort_draft Tauri command that SIGTERMs it, and a cancel X button in PlansPanel's 'Drafting plan…' pill. Update draft_plan_from_goal to track the child handle."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash(cargo check *)", "Bash(cargo test *)", "Bash(cargo build *)", "Bash(bun run build*)"]
-denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)", "Bash(cargo install *)"]
+denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)", "Bash(cargo install *)", "Skill"]
 context_entities: []
 context_notes:
   - "patterns/Pattern - Safari 15 Compatibility.md"
@@ -16,6 +16,18 @@ permission_mode: acceptEdits
 worktree: false
 last_run_id: f72f55ac-699b-4923-940d-dd042c7f14b5
 last_run_at: 2026-04-10T14:52:38.577030+00:00
+completed_manually_at: 2026-04-10T15:30:00.000000+00:00
+completed_note: |
+  The Phase B run f72f55ac did NOT actually implement this feature —
+  the spawned claude invoked an interactive superpowers:brainstorming
+  Skill, asked a question into a headless --print session, and exited
+  "success" with zero code changes. This plan was subsequently
+  implemented manually from an external Claude Code session (the
+  correct execution model for plans that modify Cortex itself — see
+  CLAUDE.md "Phase B self-modification rule") and landed in the
+  commits following 2184a5b. The `Skill` tool has been added to
+  denied_tools above as a regression guard if this plan is ever
+  re-executed.
 ---
 
 # Add abort_draft — cancel in-flight plan drafting

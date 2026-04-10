@@ -95,6 +95,7 @@ pub fn run() {
         commands::plans::list_plan_notes,
         commands::plans::create_plan_note,
         commands::plans::draft_plan_from_goal,
+        commands::plans::abort_draft,
         commands::plans::load_run_transcript,
         run::execute::execute_plan,
         run::execute::abort_run,

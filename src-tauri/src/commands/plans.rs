@@ -483,15 +483,28 @@ pub async fn draft_plan_from_goal(
     );
 
     let shell = app.shell();
-    let (mut rx, _child) = shell
+    // macOS GUI apps don't inherit the user's shell PATH. Mirror the
+    // PATH extension we do in execute.rs so the shell plugin can find
+    // `claude` when Cortex is launched from Finder. See
+    // feedback_tauri_gotchas memory + CLAUDE.md.
+    let current_path = std::env::var("PATH").unwrap_or_default();
+    let extended_path = format!("/opt/homebrew/bin:/usr/local/bin:{}", current_path);
+    let (mut rx, child) = shell
         .command("claude")
         .args(&args)
         .current_dir(&vault_root)
+        .env("PATH", &extended_path)
         .spawn()
         .map_err(|e| {
             let _ = std::fs::remove_dir_all(&draft_dir);
             format!("Failed to spawn claude (plan mode): {}", e)
         })?;
+
+    // Track the child so abort_draft can SIGTERM it.
+    {
+        let mut drafts = state.active_drafts.lock().await;
+        drafts.insert(draft_id.clone(), child);
+    }
 
     // Drain the stream until termination, looking for the ExitPlanMode
     // tool_use whose input.plan field carries the freeform markdown plan
@@ -500,6 +513,7 @@ pub async fn draft_plan_from_goal(
     let mut plan_text: Option<String> = None;
     let mut last_assistant_text: Option<String> = None;
     let mut event_count = 0u32;
+    let mut aborted = false;
 
     while let Some(ev) = rx.recv().await {
         match ev {
@@ -565,6 +579,12 @@ pub async fn draft_plan_from_goal(
                     payload.signal,
                     event_count
                 );
+                // Treat exit code 143 (128 + SIGTERM) as an abort signal.
+                // macOS delivers this to spawned processes killed via
+                // CommandChild::kill() from abort_draft.
+                if payload.code == Some(143) || payload.signal == Some(15) {
+                    aborted = true;
+                }
                 break;
             }
             CommandEvent::Error(err) => {
@@ -572,10 +592,36 @@ pub async fn draft_plan_from_goal(
                     "cortex://draft/error",
                     serde_json::json!({ "draft_id": draft_id, "message": err }),
                 );
+                // Remove the child handle before bailing out.
+                {
+                    let mut drafts = state.active_drafts.lock().await;
+                    drafts.remove(&draft_id);
+                }
+                let _ = std::fs::remove_dir_all(&draft_dir);
                 return Err(format!("draft spawn errored: {}", err));
             }
             _ => {}
         }
+    }
+
+    // Drop the child handle from active_drafts on every exit path.
+    {
+        let mut drafts = state.active_drafts.lock().await;
+        drafts.remove(&draft_id);
+    }
+
+    // If abort_draft was called, emit the aborted event and bail out
+    // without writing a plan file.
+    if aborted {
+        let _ = app.emit(
+            "cortex://draft/aborted",
+            serde_json::json!({
+                "draft_id": draft_id,
+                "partial_event_count": event_count,
+            }),
+        );
+        let _ = std::fs::remove_dir_all(&draft_dir);
+        return Err("draft aborted by user".to_string());
     }
 
     // Temp scratch dir is no longer needed once the spawn has finished.
@@ -665,6 +711,32 @@ pub async fn draft_plan_from_goal(
     );
 
     Ok(rel)
+}
+
+/// Tauri command: SIGTERM an in-flight plan drafting spawn by draft_id.
+///
+/// The background event loop in `draft_plan_from_goal` detects the SIGTERM
+/// (exit code 143 / signal 15), emits `cortex://draft/aborted`, cleans up
+/// its temp scratch dir, and returns `Err("draft aborted by user")` to its
+/// original caller. The frontend's PlansPanel listens for the aborted
+/// event and clears its drafting state.
+///
+/// Mirrors `run::execute::abort_run` exactly — separate state, separate
+/// Tauri command, separate event channel.
+#[tauri::command]
+#[specta::specta]
+pub async fn abort_draft(
+    draft_id: String,
+    state: State<'_, Arc<AppState>>,
+) -> Result<(), String> {
+    let child = {
+        let mut drafts = state.active_drafts.lock().await;
+        drafts.remove(&draft_id)
+    };
+    match child {
+        Some(c) => c.kill().map_err(|e| format!("kill failed: {}", e)),
+        None => Err(format!("draft {} not active", draft_id)),
+    }
 }
 
 #[cfg(test)]

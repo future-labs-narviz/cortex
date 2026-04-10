@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Play, RefreshCw, FileText, Plus, Sparkles, Loader2 } from "lucide-react";
+import { Play, RefreshCw, FileText, Plus, Sparkles, Loader2, X } from "lucide-react";
 import { useLayoutStore } from "@/stores/layoutStore";
 
 interface PlanSummary {
@@ -20,6 +20,7 @@ export function PlansPanel() {
   const [error, setError] = useState<string | null>(null);
   const [drafting, setDrafting] = useState(false);
   const [draftStatus, setDraftStatus] = useState<string>("");
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [showNewPlanInput, setShowNewPlanInput] = useState(false);
   const [newPlanTitle, setNewPlanTitle] = useState("");
   const [showDraftInput, setShowDraftInput] = useState(false);
@@ -98,8 +99,9 @@ export function PlansPanel() {
   }, [newPlanTitle, fetchPlans]);
 
   // Subscribe to draft lifecycle events while a draft is in flight so the
-  // user gets a tiny status string instead of a blank spinner. Only
-  // listens while drafting=true to keep the channel quiet otherwise.
+  // user gets a tiny status string AND a cancel button wired to the
+  // draft_id. Only listens while drafting=true to keep the channel quiet
+  // otherwise.
   useEffect(() => {
     if (!drafting) return;
     let cancelled = false;
@@ -116,16 +118,22 @@ export function PlansPanel() {
         console.warn(`[Cortex] failed to subscribe to ${event}`, err);
       }
     };
-    let lastDraftId: string | null = null;
     subscribe("cortex://draft/started", (p) => {
       const payload = p as { draft_id?: string };
-      lastDraftId = payload.draft_id ?? null;
+      if (payload.draft_id) setCurrentDraftId(payload.draft_id);
       setDraftStatus("exploring vault…");
     });
-    // Listen on a wildcard isn't supported by Tauri events; instead we
-    // just bump the status periodically based on event count via the
-    // catch-all subscription pattern below.
-    void lastDraftId;
+    subscribe("cortex://draft/aborted", (p) => {
+      const payload = p as { draft_id?: string };
+      // Only clear state if this is OUR draft (guards against stale events).
+      setCurrentDraftId((prev) => {
+        if (prev && payload.draft_id && prev !== payload.draft_id) return prev;
+        return null;
+      });
+      setDrafting(false);
+      setDraftStatus("");
+      setError("Draft cancelled.");
+    });
     return () => {
       cancelled = true;
       unlistens.forEach((u) => u());
@@ -149,14 +157,29 @@ export function PlansPanel() {
       const layout = useLayoutStore.getState();
       layout.setSheetContent(layout.activeSheetId, { kind: "plan-runner", planPath: path });
     } catch (e) {
-      console.warn("[Cortex] draft_plan_from_goal failed", e);
-      setError(`Draft failed: ${e}`);
+      const msg = String(e);
+      // "draft aborted by user" is the expected error when abort_draft
+      // terminates the spawn — not an error worth surfacing loudly.
+      if (!msg.includes("aborted by user")) {
+        console.warn("[Cortex] draft_plan_from_goal failed", e);
+        setError(`Draft failed: ${msg}`);
+      }
     } finally {
       setDrafting(false);
       setDraftStatus("");
+      setCurrentDraftId(null);
     }
     setDraftGoal("");
   }, [draftGoal, fetchPlans]);
+
+  const handleAbortDraft = useCallback(async () => {
+    if (!currentDraftId) return;
+    try {
+      await invoke("abort_draft", { draftId: currentDraftId });
+    } catch (e) {
+      console.warn("[Cortex] abort_draft failed", e);
+    }
+  }, [currentDraftId]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
@@ -294,9 +317,40 @@ export function PlansPanel() {
           }}
         >
           <Loader2 size={12} className="animate-spin" />
-          <span>
+          <span style={{ flex: 1 }}>
             Drafting plan {draftStatus ? `— ${draftStatus}` : "…"}
           </span>
+          {currentDraftId && (
+            <button
+              onClick={handleAbortDraft}
+              title="Cancel drafting"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+                padding: "2px 6px",
+                fontSize: 10,
+                borderRadius: 4,
+                border: "1px solid var(--border)",
+                background: "transparent",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                transition: "all 150ms",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(239,68,68,0.1)";
+                e.currentTarget.style.color = "#ef4444";
+                e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "var(--text-muted)";
+                e.currentTarget.style.borderColor = "var(--border)";
+              }}
+            >
+              <X size={10} /> Cancel
+            </button>
+          )}
         </div>
       )}
 

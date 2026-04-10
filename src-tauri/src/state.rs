@@ -38,6 +38,12 @@ pub struct AppState {
     /// In-flight Phase B runs keyed by run_id, tracked so `abort_run` can
     /// SIGTERM the spawned `claude` child process.
     pub active_runs: AsyncMutex<HashMap<String, CommandChild>>,
+    /// In-flight Phase B drafts keyed by draft_id, tracked so `abort_draft`
+    /// can SIGTERM the spawned `claude --permission-mode plan` child.
+    /// Separate from active_runs so the two cancellation flows don't
+    /// collide (a draft and an execute could be in flight simultaneously
+    /// with different lifecycles).
+    pub active_drafts: AsyncMutex<HashMap<String, CommandChild>>,
 }
 
 impl AppState {
@@ -55,6 +61,7 @@ impl AppState {
             app_handle: Mutex::new(None),
             knowledge_graph: Arc::new(RwLock::new(None)),
             active_runs: AsyncMutex::new(HashMap::new()),
+            active_drafts: AsyncMutex::new(HashMap::new()),
         }
     }
 
