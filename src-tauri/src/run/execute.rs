@@ -65,10 +65,17 @@ pub async fn execute_plan(
     // 4. Spawn via tauri-plugin-shell. Inherit parent env unchanged so
     //    macOS keychain OAuth (Max plan) works.
     let shell = app.shell();
+    // macOS GUI apps don't inherit the user's shell PATH, so
+    // /opt/homebrew/bin (ARM) and /usr/local/bin (Intel) are missing.
+    // Extend PATH so the shell plugin can find `claude`.
+    let current_path = std::env::var("PATH").unwrap_or_default();
+    let extended_path = format!("/opt/homebrew/bin:/usr/local/bin:{}", current_path);
+    log::info!("execute_plan: PATH={}", extended_path);
     let (mut rx, child) = shell
         .command("claude")
         .args(&args)
         .current_dir(&run_spec.cwd)
+        .env("PATH", &extended_path)
         .spawn()
         .map_err(|e| format!("Failed to spawn claude: {}", e))?;
 
@@ -139,7 +146,6 @@ fn build_claude_args(spec: &RunSpec) -> Vec<String> {
         "--output-format".to_string(),
         "stream-json".to_string(),
         "--include-partial-messages".to_string(),
-        "--include-hook-events".to_string(),
         "--max-turns".to_string(),
         spec.plan.max_turns.unwrap_or(30).to_string(),
         "--max-budget-usd".to_string(),

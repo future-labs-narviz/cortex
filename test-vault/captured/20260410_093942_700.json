@@ -1,0 +1,9 @@
+{
+  "id": "20260410_093942_700",
+  "content": "Cortex architecture summary: A Tauri 2.x app split into four Rust crates — cortex-core (vault/file watching), cortex-search (Tantivy full-text search), cortex-graph (link indexing/backlinks/KG), and cortex-voice (audio recording from Handy). Frontend is React 18 + TypeScript with CodeMirror 6 for editing, D3.js for the knowledge graph visualization, and Zustand for state. Tauri was chosen over Electron for its lighter footprint. The MCP server bridges the backend to Claude Code for AI-powered workflows.",
+  "tags": [
+    "architecture",
+    "summary"
+  ],
+  "created_at": "2026-04-10T09:39:42.700365Z"
+}

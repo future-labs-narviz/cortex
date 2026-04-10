@@ -20,6 +20,10 @@ export function PlansPanel() {
   const [error, setError] = useState<string | null>(null);
   const [drafting, setDrafting] = useState(false);
   const [draftStatus, setDraftStatus] = useState<string>("");
+  const [showNewPlanInput, setShowNewPlanInput] = useState(false);
+  const [newPlanTitle, setNewPlanTitle] = useState("");
+  const [showDraftInput, setShowDraftInput] = useState(false);
+  const [draftGoal, setDraftGoal] = useState("");
 
   const fetchPlans = useCallback(async () => {
     setLoading(true);
@@ -73,19 +77,25 @@ export function PlansPanel() {
     layout.setSheetContent(layout.activeSheetId, { kind: "plan-runner", planPath: path });
   }, []);
 
-  const handleNewPlan = useCallback(async () => {
-    const title = window.prompt("New plan title:");
-    if (!title || !title.trim()) return;
+  const handleNewPlan = useCallback(() => {
+    setShowNewPlanInput(true);
+    setNewPlanTitle("");
+  }, []);
+
+  const submitNewPlan = useCallback(async () => {
+    if (!newPlanTitle.trim()) return;
+    setShowNewPlanInput(false);
     try {
-      const path = await invoke<string>("create_plan_note", { title: title.trim() });
+      const path = await invoke<string>("create_plan_note", { title: newPlanTitle.trim() });
       await fetchPlans();
       const layout = useLayoutStore.getState();
       layout.setSheetContent(layout.activeSheetId, { kind: "plan-runner", planPath: path });
     } catch (e) {
       console.warn("[Cortex] create_plan_note failed", e);
-      window.alert(`Failed to create plan: ${e}`);
+      setError(`Failed to create plan: ${e}`);
     }
-  }, [fetchPlans]);
+    setNewPlanTitle("");
+  }, [newPlanTitle, fetchPlans]);
 
   // Subscribe to draft lifecycle events while a draft is in flight so the
   // user gets a tiny status string instead of a blank spinner. Only
@@ -122,16 +132,19 @@ export function PlansPanel() {
     };
   }, [drafting]);
 
-  const handleDraftPlan = useCallback(async () => {
-    const goal = window.prompt(
-      "Describe what you want to do in one or two sentences. Claude will explore the vault and draft a plan for you."
-    );
-    if (!goal || !goal.trim()) return;
+  const handleDraftPlan = useCallback(() => {
+    setShowDraftInput(true);
+    setDraftGoal("");
+  }, []);
+
+  const submitDraftPlan = useCallback(async () => {
+    if (!draftGoal.trim()) return;
+    setShowDraftInput(false);
     setDrafting(true);
     setDraftStatus("spawning plan-mode claude…");
     setError(null);
     try {
-      const path = await invoke<string>("draft_plan_from_goal", { goal: goal.trim() });
+      const path = await invoke<string>("draft_plan_from_goal", { goal: draftGoal.trim() });
       await fetchPlans();
       const layout = useLayoutStore.getState();
       layout.setSheetContent(layout.activeSheetId, { kind: "plan-runner", planPath: path });
@@ -142,7 +155,8 @@ export function PlansPanel() {
       setDrafting(false);
       setDraftStatus("");
     }
-  }, [fetchPlans]);
+    setDraftGoal("");
+  }, [draftGoal, fetchPlans]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4 }}>
@@ -283,6 +297,84 @@ export function PlansPanel() {
           <span>
             Drafting plan {draftStatus ? `— ${draftStatus}` : "…"}
           </span>
+        </div>
+      )}
+
+      {showNewPlanInput && (
+        <div style={{ display: "flex", gap: 4, padding: "0 2px" }}>
+          <input
+            autoFocus
+            placeholder="Plan title…"
+            value={newPlanTitle}
+            onChange={(e) => setNewPlanTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submitNewPlan();
+              if (e.key === "Escape") { setShowNewPlanInput(false); setNewPlanTitle(""); }
+            }}
+            style={{
+              flex: 1,
+              fontSize: 12,
+              padding: "6px 8px",
+              borderRadius: 6,
+              border: "1px solid var(--border)",
+              background: "var(--bg-primary)",
+              color: "var(--text-primary)",
+              outline: "none",
+            }}
+          />
+          <button
+            onClick={submitNewPlan}
+            style={{
+              fontSize: 11,
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "1px solid var(--accent)",
+              background: "var(--accent)",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            Create
+          </button>
+        </div>
+      )}
+
+      {showDraftInput && (
+        <div style={{ display: "flex", gap: 4, padding: "0 2px" }}>
+          <input
+            autoFocus
+            placeholder="Describe your goal…"
+            value={draftGoal}
+            onChange={(e) => setDraftGoal(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submitDraftPlan();
+              if (e.key === "Escape") { setShowDraftInput(false); setDraftGoal(""); }
+            }}
+            style={{
+              flex: 1,
+              fontSize: 12,
+              padding: "6px 8px",
+              borderRadius: 6,
+              border: "1px solid var(--border)",
+              background: "var(--bg-primary)",
+              color: "var(--text-primary)",
+              outline: "none",
+            }}
+          />
+          <button
+            onClick={submitDraftPlan}
+            style={{
+              fontSize: 11,
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "1px solid var(--accent)",
+              background: "var(--accent)",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            Draft
+          </button>
         </div>
       )}
 

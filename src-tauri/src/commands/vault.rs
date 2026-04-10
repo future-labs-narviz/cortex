@@ -68,6 +68,15 @@ fn write_claude_settings(vault_path: &Path) -> anyhow::Result<()> {
     }
 
     let pretty = serde_json::to_string_pretty(&settings)?;
+    // Skip write if file already has the same content (avoids triggering Vite HMR reload loop).
+    if settings_path.exists() {
+        if let Ok(existing) = std::fs::read_to_string(&settings_path) {
+            if existing == pretty {
+                log::info!(".claude/settings.json unchanged, skipping write");
+                return Ok(());
+            }
+        }
+    }
     std::fs::write(&settings_path, pretty)?;
     log::info!("Wrote .claude/settings.json at {:?}", settings_path);
     Ok(())

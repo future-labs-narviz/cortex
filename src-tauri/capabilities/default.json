@@ -23,6 +23,17 @@
         }
       ]
     },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "claude",
+          "cmd": "claude",
+          "args": true,
+          "sidecar": false
+        }
+      ]
+    },
     "shell:allow-kill",
     "shell:allow-stdin-write"
   ]
