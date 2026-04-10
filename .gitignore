@@ -35,6 +35,13 @@ vault/
 !test-vault/.cortex/
 test-vault/.cortex/search-index/
 
+# Claude Code project-local settings at the repo root should NOT be
+# committed — they're per-user state (accepted permissions, hook config
+# that gets written if someone accidentally opens the repo root as a
+# Cortex vault). The leading slash scopes this to the repo root so it
+# does NOT affect test-vault/.claude/ which IS committed.
+/.claude/
+
 # Environment
 .env
 .env.*

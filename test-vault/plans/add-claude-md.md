@@ -1,7 +1,7 @@
 ---
 type: plan
 title: "Add CLAUDE.md at repo root encoding Cortex project constraints"
-status: ready
+status: complete
 goal: "Create ~/Desktop/Cortex/CLAUDE.md so future Claude Code sessions opened in this repo auto-inherit the hard-won project rules (Safari 15 compat, Tauri gotchas, Phase B flag quirks, which test-vault notes to ignore, auth paths). File must follow the structure described in the body below, reference real file paths that exist in the repo, and be <= 250 lines."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob"]
@@ -16,6 +16,8 @@ max_turns: 20
 max_budget_usd: 2
 permission_mode: acceptEdits
 worktree: false
+last_run_id: 828e24f5-f010-4470-9e5c-fce155863d61
+last_run_at: 2026-04-10T14:32:23.363684+00:00
 ---
 
 # Add CLAUDE.md at repo root

@@ -1,7 +1,7 @@
 ---
 type: plan
 title: "Add abort_draft Tauri command + cancel button for in-flight plan drafting"
-status: ready
+status: complete
 goal: "Mirror the existing abort_run pattern to let users cancel an in-flight Phase B drafting spawn. Currently draft_plan_from_goal runs ~30-60s and there's no way to stop it. Add a CommandChild handle tracked by draft_id in AppState, an abort_draft Tauri command that SIGTERMs it, and a cancel X button in PlansPanel's 'Drafting plan…' pill. Update draft_plan_from_goal to track the child handle."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash(cargo check *)", "Bash(cargo test *)", "Bash(cargo build *)", "Bash(bun run build*)"]
@@ -14,6 +14,8 @@ max_turns: 25
 max_budget_usd: 3
 permission_mode: acceptEdits
 worktree: false
+last_run_id: f72f55ac-699b-4923-940d-dd042c7f14b5
+last_run_at: 2026-04-10T14:52:38.577030+00:00
 ---
 
 # Add abort_draft — cancel in-flight plan drafting

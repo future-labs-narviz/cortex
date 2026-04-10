@@ -1,18 +1,54 @@
 {
   "entities": {
-    "Knowledge Graph": {
-      "name": "Knowledge Graph",
-      "entity_type": "Concept",
-      "description": "Graph-based knowledge representation used in Cortex for linking notes, entities, and relations",
+    "src/db/client.rs": {
+      "name": "src/db/client.rs",
+      "entity_type": "Project",
+      "description": "Database client module that was refactored to use connection pooling instead of direct tokio-postgres connections",
       "source_notes": [
-        "Knowledge Graph.md"
+        "e2e-test-002"
       ],
       "aliases": []
     },
-    "cortex-voice": {
-      "name": "cortex-voice",
+    "Phase B spawns": {
+      "name": "Phase B spawns",
+      "entity_type": "Concept",
+      "description": "One of three LLM contexts - subprocess contexts using Max plan OAuth for authentication.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61"
+      ],
+      "aliases": []
+    },
+    "sessions/ directory": {
+      "name": "sessions/ directory",
+      "entity_type": "Concept",
+      "description": "Directory containing Wave notes and session files within the test vault",
+      "source_notes": [
+        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5"
+      ],
+      "aliases": []
+    },
+    "rubato": {
+      "name": "rubato",
+      "entity_type": "Technology",
+      "description": "Rust audio resampler library used in cortex-voice",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "Wave notes": {
+      "name": "Wave notes",
+      "entity_type": "Concept",
+      "description": "Session documentation notes tracking different waves of development: Wave 1 (Foundation + MCP Server), Wave 3 (Knowledge Graph Integration), Wave 4 (Graph Visualization)",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42"
+      ],
+      "aliases": []
+    },
+    "Cortex App": {
+      "name": "Cortex App",
       "entity_type": "Project",
-      "description": "Rust crate for audio recording, extracted from the Handy App",
+      "description": "Tauri 2.x desktop app serving as a development consciousness layer with markdown editing, knowledge graph, and voice capture",
       "source_notes": [
         "Architecture Overview.md"
       ],
@@ -27,19 +63,281 @@
       ],
       "aliases": []
     },
-    "Connection Lifecycle Management": {
-      "name": "Connection Lifecycle Management",
+    "execute.rs": {
+      "name": "execute.rs",
+      "entity_type": "Technology",
+      "description": "Backend Rust module containing the abort_run implementation pattern (lines 121-130)",
+      "source_notes": [
+        "f72f55ac-699b-4923-940d-dd042c7f14b5"
+      ],
+      "aliases": []
+    },
+    "Wave1 Foundation": {
+      "name": "Wave1 Foundation",
+      "entity_type": "Project",
+      "description": "Session note 2026-04-08_wave1-foundation.md covering Foundation and MCP Server work",
+      "source_notes": [
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "Safari 15 Compatibility": {
+      "name": "Safari 15 Compatibility",
+      "entity_type": "Pattern",
+      "description": "Constraint pattern requiring no oklch/color-mix support, inline styles only, and Tailwind layout-only utilities due to browser limitations.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61",
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "2026-04-09-add-readme Plan": {
+      "name": "2026-04-09-add-readme Plan",
+      "entity_type": "Project",
+      "description": "A specific test plan that was successfully executed earlier in the session",
+      "source_notes": [
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "abort_draft": {
+      "name": "abort_draft",
+      "entity_type": "Decision",
+      "description": "New feature to add cancellation capability for draft plan generation, mirroring the abort_run pattern",
+      "source_notes": [
+        "f72f55ac-699b-4923-940d-dd042c7f14b5"
+      ],
+      "aliases": []
+    },
+    "src/components/sidebar/PlansPanel.tsx": {
+      "name": "src/components/sidebar/PlansPanel.tsx",
+      "entity_type": "Technology",
+      "description": "Real file path in Cortex project for UI component managing plans panel.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61"
+      ],
+      "aliases": []
+    },
+    "Tantivy": {
+      "name": "Tantivy",
+      "entity_type": "Technology",
+      "description": "Rust full-text search engine library used by cortex-search",
+      "source_notes": [
+        "Tantivy.md"
+      ],
+      "aliases": []
+    },
+    "MCP Tools": {
+      "name": "MCP Tools",
+      "entity_type": "Technology",
+      "description": "11 Model Context Protocol tools integrated into Cortex Phase C for knowledge graph queries and management, running on localhost with no authentication required.",
+      "source_notes": [
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "Silero VAD": {
+      "name": "Silero VAD",
+      "entity_type": "Technology",
+      "description": "Voice activity detection model used in cortex-voice for speech detection",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "Claude Code": {
+      "name": "Claude Code",
+      "entity_type": "Technology",
+      "description": "Anthropic's coding interface that Cortex captures sessions from. Phase B auto-captures sessions and Phase B plan execution uses Anthropic API (user-level key).",
+      "source_notes": [
+        "Claude Code Source Analysis.md",
+        "MCP Integration Guide.md",
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798",
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "AppState": {
+      "name": "AppState",
       "entity_type": "Concept",
-      "description": "Pattern where deadpool-postgres explicitly tracks and manages connection lifecycle instead of relying on per-call connect/disconnect in tokio-postgres",
+      "description": "Backend state manager containing active_runs HashMap for tracking running processes",
+      "source_notes": [
+        "f72f55ac-699b-4923-940d-dd042c7f14b5"
+      ],
+      "aliases": []
+    },
+    "Cortex.app Bundle": {
+      "name": "Cortex.app Bundle",
+      "entity_type": "Technology",
+      "description": "Compiled macOS application bundle created at /Users/jamq/Desktop/Cortex/src-tauri/target/release/bundle/macos/Cortex.app",
+      "source_notes": [
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "CodeMirror 6": {
+      "name": "CodeMirror 6",
+      "entity_type": "Technology",
+      "description": "Text editor framework used for the markdown editor in Cortex",
+      "source_notes": [
+        "CodeMirror 6.md"
+      ],
+      "aliases": []
+    },
+    "cortex-graph": {
+      "name": "cortex-graph",
+      "entity_type": "Project",
+      "description": "Rust crate for link indexing, backlinks, and knowledge graph",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "jamq": {
+      "name": "jamq",
+      "entity_type": "Person",
+      "description": "Developer working on the Cortex project",
+      "source_notes": [
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "Idle Connection Leak": {
+      "name": "Idle Connection Leak",
+      "entity_type": "Pattern",
+      "description": "Problem where tokio-postgres was accumulating idle connections up to ~200, not properly closing unused connections",
       "source_notes": [
         "e2e-test-002"
       ],
       "aliases": []
     },
-    "Wave 1 Foundation": {
-      "name": "Wave 1 Foundation",
+    "abort_run": {
+      "name": "abort_run",
+      "entity_type": "Pattern",
+      "description": "Existing cancellation pattern in execute.rs (lines 121-130) that serves as the template for implementing abort_draft functionality",
+      "source_notes": [
+        "f72f55ac-699b-4923-940d-dd042c7f14b5"
+      ],
+      "aliases": []
+    },
+    "GCP ADC": {
+      "name": "GCP ADC",
+      "entity_type": "Technology",
+      "description": "Google Cloud Platform Application Default Credentials authentication method used for Vertex AI integration in Cortex Phase B background jobs.",
+      "source_notes": [
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "Test Vault": {
+      "name": "Test Vault",
+      "entity_type": "Project",
+      "description": "A vault structure for Wave sessions documenting foundation, knowledge graph integration, and graph visualization work",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42",
+        "238a96bc-92be-40b5-a855-2c810da2c225",
+        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5",
+        "README.md",
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "Connection Pool Configuration": {
+      "name": "Connection Pool Configuration",
+      "entity_type": "Decision",
+      "description": "Configuration to set max pool size to 16 and idle timeout to 30 seconds using Pool::builder()",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "Payment System": {
+      "name": "Payment System",
+      "entity_type": "Project",
+      "description": "E-commerce payment processing project referenced in the Cortex vault",
+      "source_notes": [
+        "Welcome.md",
+        "README.md"
+      ],
+      "aliases": []
+    },
+    "Plan Execution": {
+      "name": "Plan Execution",
       "entity_type": "Concept",
-      "description": "First wave session covering foundation and MCP server setup for Cortex",
+      "description": "Process by which Cortex executes stored plans by triggering Claude Code sessions",
+      "source_notes": [
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "Phase B": {
+      "name": "Phase B",
+      "entity_type": "Concept",
+      "description": "Application phase with specific authentication strategy using Max plan OAuth, constraints on --setting-sources and --include-hook-events flags.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61",
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "2026-04-08_wave1-foundation.md": {
+      "name": "2026-04-08_wave1-foundation.md",
+      "entity_type": "Project",
+      "description": "Wave 1 session note covering Foundation and MCP Server development",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42"
+      ],
+      "aliases": []
+    },
+    "Handy App": {
+      "name": "Handy App",
+      "entity_type": "Project",
+      "description": "Open-source offline speech-to-text desktop app (48 Rust files, 121 TS/TSX files) from which cortex-voice was extracted",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "Daniel Martinez": {
+      "name": "Daniel Martinez",
+      "entity_type": "Person",
+      "description": "User working on the test vault project",
+      "source_notes": [
+        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5"
+      ],
+      "aliases": []
+    },
+    "Wave 4 Graph": {
+      "name": "Wave 4 Graph",
+      "entity_type": "Concept",
+      "description": "Fourth wave session covering graph visualization for Cortex",
+      "source_notes": [
+        "README.md"
+      ],
+      "aliases": []
+    },
+    "Whisper": {
+      "name": "Whisper",
+      "entity_type": "Technology",
+      "description": "Speech-to-text ML model, one of 15+ models supported by Handy App",
+      "source_notes": [
+        "Handy App.md"
+      ],
+      "aliases": []
+    },
+    "JSON-RPC": {
+      "name": "JSON-RPC",
+      "entity_type": "Technology",
+      "description": "Protocol used by Claude Code's MCP client to communicate with the Cortex MCP server",
+      "source_notes": [
+        "MCP Integration Guide.md"
+      ],
+      "aliases": []
+    },
+    "Wave 3 Knowledge": {
+      "name": "Wave 3 Knowledge",
+      "entity_type": "Concept",
+      "description": "Third wave session covering knowledge graph integration for Cortex",
       "source_notes": [
         "README.md"
       ],
@@ -54,48 +352,39 @@
       ],
       "aliases": []
     },
-    "Daniel Martinez": {
-      "name": "Daniel Martinez",
-      "entity_type": "Person",
-      "description": "User working on the test vault project",
-      "source_notes": [
-        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5"
-      ],
-      "aliases": []
-    },
-    "Vault Directory Structure": {
-      "name": "Vault Directory Structure",
+    "Interactive Claude": {
+      "name": "Interactive Claude",
       "entity_type": "Concept",
-      "description": "Organized directories including sessions/, projects/, patterns/, decisions/, voice-notes/, captured/, daily/, plans/, and .cortex/",
+      "description": "One of three LLM contexts - the main development interface with full access to tools and memory files.",
       "source_notes": [
-        "238a96bc-92be-40b5-a855-2c810da2c225"
+        "828e24f5-f010-4470-9e5c-fce155863d61"
       ],
       "aliases": []
     },
-    "src/db/client.rs": {
-      "name": "src/db/client.rs",
+    "Production Build": {
+      "name": "Production Build",
+      "entity_type": "Decision",
+      "description": "Decision to run and verify the Tauri production build for Cortex application",
+      "source_notes": [
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "test-vault": {
+      "name": "test-vault",
       "entity_type": "Project",
-      "description": "Database client module that was refactored to use connection pooling instead of direct tokio-postgres connections",
+      "description": "Testing vault directory with patterns/ subdirectory for reusable patterns; sessions/ should be avoided as it contains auto-generated files.",
       "source_notes": [
-        "e2e-test-002"
+        "828e24f5-f010-4470-9e5c-fce155863d61"
       ],
       "aliases": []
     },
-    "CodeMirror 6": {
-      "name": "CodeMirror 6",
+    "Tauri v2": {
+      "name": "Tauri v2",
       "entity_type": "Technology",
-      "description": "Text editor framework used for the markdown editor in Cortex",
+      "description": "Desktop application framework with specific gotchas including PATH extension issues, dual permissions requirements, no window.prompt support, and Vite ignore configurations.",
       "source_notes": [
-        "CodeMirror 6.md"
-      ],
-      "aliases": []
-    },
-    "tokio-postgres": {
-      "name": "tokio-postgres",
-      "entity_type": "Technology",
-      "description": "Asynchronous PostgreSQL client library that was originally used directly and created idle connection leaks",
-      "source_notes": [
-        "e2e-test-002"
+        "828e24f5-f010-4470-9e5c-fce155863d61"
       ],
       "aliases": []
     },
@@ -108,12 +397,103 @@
       ],
       "aliases": []
     },
-    "Idle Connection Leak": {
-      "name": "Idle Connection Leak",
-      "entity_type": "Pattern",
-      "description": "Problem where tokio-postgres was accumulating idle connections up to ~200, not properly closing unused connections",
+    "PlansPanel.tsx": {
+      "name": "PlansPanel.tsx",
+      "entity_type": "Technology",
+      "description": "Frontend component showing 'Drafting plan...' UI at line 298 where cancel button needs to be added",
+      "source_notes": [
+        "f72f55ac-699b-4923-940d-dd042c7f14b5"
+      ],
+      "aliases": []
+    },
+    "tokio-postgres": {
+      "name": "tokio-postgres",
+      "entity_type": "Technology",
+      "description": "Asynchronous PostgreSQL client library that was originally used directly and created idle connection leaks",
       "source_notes": [
         "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "Phase A": {
+      "name": "Phase A",
+      "entity_type": "Concept",
+      "description": "Core knowledge management phase of Cortex featuring search, file editor, file watcher, backlinks, and tags functionality.",
+      "source_notes": [
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "MCP Integration Guide": {
+      "name": "MCP Integration Guide",
+      "entity_type": "Concept",
+      "description": "Guide documenting the 7 MCP tools Cortex exposes to Claude Code via an Axum HTTP server on port 3847",
+      "source_notes": [
+        "MCP Integration Guide.md"
+      ],
+      "aliases": []
+    },
+    "Wave3 Knowledge Graph": {
+      "name": "Wave3 Knowledge Graph",
+      "entity_type": "Project",
+      "description": "Session note 2026-04-08_wave3-knowledge.md covering Knowledge Graph Integration",
+      "source_notes": [
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "cortex-voice": {
+      "name": "cortex-voice",
+      "entity_type": "Project",
+      "description": "Rust crate for audio recording, extracted from the Handy App",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "CLAUDE.md": {
+      "name": "CLAUDE.md",
+      "entity_type": "Project",
+      "description": "A 231-line project rules and constraints document for the Cortex application, consolidating hard-won knowledge about Safari 15 compatibility, Tauri v2 gotchas, Phase B authentication, and development workflows.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61"
+      ],
+      "aliases": []
+    },
+    "cortex-core": {
+      "name": "cortex-core",
+      "entity_type": "Project",
+      "description": "Rust crate handling vault management and file watching via the notify crate",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "Vertex AI": {
+      "name": "Vertex AI",
+      "entity_type": "Technology",
+      "description": "Google Cloud Platform's AI service used by Cortex Phase B background jobs for session analysis, authenticated via GCP ADC.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61",
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "Anthropic API": {
+      "name": "Anthropic API",
+      "entity_type": "Technology",
+      "description": "API used for Claude Code plan execution in Cortex, authenticated with user-level key.",
+      "source_notes": [
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "CommandChild": {
+      "name": "CommandChild",
+      "entity_type": "Concept",
+      "description": "Type used in active_runs HashMap to track running command processes",
+      "source_notes": [
+        "f72f55ac-699b-4923-940d-dd042c7f14b5"
       ],
       "aliases": []
     },
@@ -126,6 +506,61 @@
       ],
       "aliases": []
     },
+    "Knowledge Graph": {
+      "name": "Knowledge Graph",
+      "entity_type": "Concept",
+      "description": "Graph-based knowledge representation used in Cortex for linking notes, entities, and relations",
+      "source_notes": [
+        "Knowledge Graph.md"
+      ],
+      "aliases": []
+    },
+    "2026-04-08_wave3-knowledge.md": {
+      "name": "2026-04-08_wave3-knowledge.md",
+      "entity_type": "Project",
+      "description": "Wave 3 session note covering Knowledge Graph Integration",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42"
+      ],
+      "aliases": []
+    },
+    "cortex-extract": {
+      "name": "cortex-extract",
+      "entity_type": "Project",
+      "description": "One of three LLM contexts within Cortex, using Vertex AI authentication for extraction operations.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61"
+      ],
+      "aliases": []
+    },
+    "Zustand": {
+      "name": "Zustand",
+      "entity_type": "Technology",
+      "description": "State management library used in the Cortex frontend",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "Auth Module": {
+      "name": "Auth Module",
+      "entity_type": "Project",
+      "description": "Authentication and authorization module referenced in the Cortex vault",
+      "source_notes": [
+        "Welcome.md",
+        "README.md"
+      ],
+      "aliases": []
+    },
+    "React": {
+      "name": "React",
+      "entity_type": "Technology",
+      "description": "Frontend UI framework (v18) used with TypeScript in Cortex",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
     "MCP": {
       "name": "MCP",
       "entity_type": "Technology",
@@ -133,6 +568,121 @@
       "source_notes": [
         "Claude Code Source Analysis.md",
         "MCP Integration Guide.md"
+      ],
+      "aliases": []
+    },
+    "Vault Directory Structure": {
+      "name": "Vault Directory Structure",
+      "entity_type": "Concept",
+      "description": "Organized directories including sessions/, projects/, patterns/, decisions/, voice-notes/, captured/, daily/, plans/, and .cortex/",
+      "source_notes": [
+        "238a96bc-92be-40b5-a855-2c810da2c225"
+      ],
+      "aliases": []
+    },
+    "README.md": {
+      "name": "README.md",
+      "entity_type": "Concept",
+      "description": "Comprehensive documentation for Cortex repository covering quick start, feature tour by phase, architecture with diagrams, 3 LLM auth contexts, contributing guidelines, and bonus resources. 340 lines covering prerequisites, installation, development workflow, and tech stack.",
+      "source_notes": [
+        "a638eaca-8bdc-4695-b151-82d355944d42",
+        "238a96bc-92be-40b5-a855-2c810da2c225",
+        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5",
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "Tauri": {
+      "name": "Tauri",
+      "entity_type": "Technology",
+      "description": "Desktop application framework used to build Cortex frontend, with Safari 15 compatibility as a hard requirement and documented gotchas for developers.",
+      "source_notes": [
+        "Architecture Overview.md",
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798",
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "add-abort-draft.md": {
+      "name": "add-abort-draft.md",
+      "entity_type": "Project",
+      "description": "Detailed implementation plan document with specific steps, code examples, and verification criteria for adding abort_draft functionality",
+      "source_notes": [
+        "f72f55ac-699b-4923-940d-dd042c7f14b5"
+      ],
+      "aliases": []
+    },
+    "Wave 1 Foundation": {
+      "name": "Wave 1 Foundation",
+      "entity_type": "Concept",
+      "description": "First wave session covering foundation and MCP server setup for Cortex",
+      "source_notes": [
+        "README.md"
+      ],
+      "aliases": []
+    },
+    "MCP Server": {
+      "name": "MCP Server",
+      "entity_type": "Technology",
+      "description": "Protocol server integrated into Cortex for handling plan execution and vault operations",
+      "source_notes": [
+        "MCP Integration Guide.md",
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "Phase C": {
+      "name": "Phase C",
+      "entity_type": "Concept",
+      "description": "Knowledge graph phase with D3.js visualization, entity extraction, and 11 MCP tools for querying and managing knowledge.",
+      "source_notes": [
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+      ],
+      "aliases": []
+    },
+    "cortex-search": {
+      "name": "cortex-search",
+      "entity_type": "Project",
+      "description": "Rust crate providing full-text search via Tantivy",
+      "source_notes": [
+        "Architecture Overview.md"
+      ],
+      "aliases": []
+    },
+    "src-tauri/src/run/execute.rs": {
+      "name": "src-tauri/src/run/execute.rs",
+      "entity_type": "Technology",
+      "description": "Real file path in Cortex project handling Tauri process execution.",
+      "source_notes": [
+        "828e24f5-f010-4470-9e5c-fce155863d61"
+      ],
+      "aliases": []
+    },
+    "Cortex": {
+      "name": "Cortex",
+      "entity_type": "Project",
+      "description": "A Claude Code session capture and knowledge management system with three-phase architecture (Phase A: core knowledge management, Phase B: session capture with Vertex AI analysis, Phase C: knowledge graph with D3.js visualization and 11 MCP tools). Built with Rust and TypeScript for desktop via Tauri.",
+      "source_notes": [
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798",
+        "736cec88-b016-405c-b947-073e788bd6a6"
+      ],
+      "aliases": []
+    },
+    "Connection Lifecycle Management": {
+      "name": "Connection Lifecycle Management",
+      "entity_type": "Concept",
+      "description": "Pattern where deadpool-postgres explicitly tracks and manages connection lifecycle instead of relying on per-call connect/disconnect in tokio-postgres",
+      "source_notes": [
+        "e2e-test-002"
+      ],
+      "aliases": []
+    },
+    "notify crate": {
+      "name": "notify crate",
+      "entity_type": "Technology",
+      "description": "Rust file-watching crate used by cortex-core for vault file monitoring",
+      "source_notes": [
+        "notify crate.md"
       ],
       "aliases": []
     },
@@ -155,290 +705,13 @@
       ],
       "aliases": []
     },
-    "Wave 4 Graph": {
-      "name": "Wave 4 Graph",
-      "entity_type": "Concept",
-      "description": "Fourth wave session covering graph visualization for Cortex",
-      "source_notes": [
-        "README.md"
-      ],
-      "aliases": []
-    },
-    "Wave notes": {
-      "name": "Wave notes",
-      "entity_type": "Concept",
-      "description": "Session documentation notes tracking different waves of development: Wave 1 (Foundation + MCP Server), Wave 3 (Knowledge Graph Integration), Wave 4 (Graph Visualization)",
-      "source_notes": [
-        "a638eaca-8bdc-4695-b151-82d355944d42"
-      ],
-      "aliases": []
-    },
-    "Connection Pool Configuration": {
-      "name": "Connection Pool Configuration",
-      "entity_type": "Decision",
-      "description": "Configuration to set max pool size to 16 and idle timeout to 30 seconds using Pool::builder()",
-      "source_notes": [
-        "e2e-test-002"
-      ],
-      "aliases": []
-    },
-    "Zustand": {
-      "name": "Zustand",
-      "entity_type": "Technology",
-      "description": "State management library used in the Cortex frontend",
-      "source_notes": [
-        "Architecture Overview.md"
-      ],
-      "aliases": []
-    },
-    "Cortex App": {
-      "name": "Cortex App",
-      "entity_type": "Project",
-      "description": "Tauri 2.x desktop app serving as a development consciousness layer with markdown editing, knowledge graph, and voice capture",
-      "source_notes": [
-        "Architecture Overview.md"
-      ],
-      "aliases": []
-    },
-    "Silero VAD": {
-      "name": "Silero VAD",
-      "entity_type": "Technology",
-      "description": "Voice activity detection model used in cortex-voice for speech detection",
-      "source_notes": [
-        "Handy App.md"
-      ],
-      "aliases": []
-    },
-    "JSON-RPC": {
-      "name": "JSON-RPC",
-      "entity_type": "Technology",
-      "description": "Protocol used by Claude Code's MCP client to communicate with the Cortex MCP server",
-      "source_notes": [
-        "MCP Integration Guide.md"
-      ],
-      "aliases": []
-    },
-    "cortex-graph": {
-      "name": "cortex-graph",
-      "entity_type": "Project",
-      "description": "Rust crate for link indexing, backlinks, and knowledge graph",
-      "source_notes": [
-        "Architecture Overview.md"
-      ],
-      "aliases": []
-    },
-    "Payment System": {
-      "name": "Payment System",
-      "entity_type": "Project",
-      "description": "E-commerce payment processing project referenced in the Cortex vault",
-      "source_notes": [
-        "Welcome.md",
-        "README.md"
-      ],
-      "aliases": []
-    },
-    "Whisper": {
-      "name": "Whisper",
-      "entity_type": "Technology",
-      "description": "Speech-to-text ML model, one of 15+ models supported by Handy App",
-      "source_notes": [
-        "Handy App.md"
-      ],
-      "aliases": []
-    },
-    "cortex-search": {
-      "name": "cortex-search",
-      "entity_type": "Project",
-      "description": "Rust crate providing full-text search via Tantivy",
-      "source_notes": [
-        "Architecture Overview.md"
-      ],
-      "aliases": []
-    },
-    "rubato": {
-      "name": "rubato",
-      "entity_type": "Technology",
-      "description": "Rust audio resampler library used in cortex-voice",
-      "source_notes": [
-        "Handy App.md"
-      ],
-      "aliases": []
-    },
-    "Claude Code": {
-      "name": "Claude Code",
-      "entity_type": "Technology",
-      "description": "Anthropic's AI coding CLI tool (~1,884 TS files), analyzed to understand MCP protocol and integration patterns",
-      "source_notes": [
-        "Claude Code Source Analysis.md",
-        "MCP Integration Guide.md"
-      ],
-      "aliases": []
-    },
-    "Handy App": {
-      "name": "Handy App",
-      "entity_type": "Project",
-      "description": "Open-source offline speech-to-text desktop app (48 Rust files, 121 TS/TSX files) from which cortex-voice was extracted",
-      "source_notes": [
-        "Handy App.md"
-      ],
-      "aliases": []
-    },
-    "cortex-core": {
-      "name": "cortex-core",
-      "entity_type": "Project",
-      "description": "Rust crate handling vault management and file watching via the notify crate",
-      "source_notes": [
-        "Architecture Overview.md"
-      ],
-      "aliases": []
-    },
-    "Tauri": {
-      "name": "Tauri",
-      "entity_type": "Technology",
-      "description": "Desktop app framework (v2.x) chosen over Electron for Cortex",
-      "source_notes": [
-        "Architecture Overview.md"
-      ],
-      "aliases": []
-    },
     "D3.js": {
       "name": "D3.js",
       "entity_type": "Technology",
-      "description": "Data visualization library used to render the knowledge graph in Cortex",
+      "description": "Visualization library used in Cortex Phase C for rendering the knowledge graph.",
       "source_notes": [
-        "D3.js.md"
-      ],
-      "aliases": []
-    },
-    "Wave3 Knowledge Graph": {
-      "name": "Wave3 Knowledge Graph",
-      "entity_type": "Project",
-      "description": "Session note 2026-04-08_wave3-knowledge.md covering Knowledge Graph Integration",
-      "source_notes": [
-        "238a96bc-92be-40b5-a855-2c810da2c225"
-      ],
-      "aliases": []
-    },
-    "2026-04-08_wave3-knowledge.md": {
-      "name": "2026-04-08_wave3-knowledge.md",
-      "entity_type": "Project",
-      "description": "Wave 3 session note covering Knowledge Graph Integration",
-      "source_notes": [
-        "a638eaca-8bdc-4695-b151-82d355944d42"
-      ],
-      "aliases": []
-    },
-    "2026-04-08_wave1-foundation.md": {
-      "name": "2026-04-08_wave1-foundation.md",
-      "entity_type": "Project",
-      "description": "Wave 1 session note covering Foundation and MCP Server development",
-      "source_notes": [
-        "a638eaca-8bdc-4695-b151-82d355944d42"
-      ],
-      "aliases": []
-    },
-    "Wave1 Foundation": {
-      "name": "Wave1 Foundation",
-      "entity_type": "Project",
-      "description": "Session note 2026-04-08_wave1-foundation.md covering Foundation and MCP Server work",
-      "source_notes": [
-        "238a96bc-92be-40b5-a855-2c810da2c225"
-      ],
-      "aliases": []
-    },
-    "Test Vault": {
-      "name": "Test Vault",
-      "entity_type": "Project",
-      "description": "A vault structure for Wave sessions documenting foundation, knowledge graph integration, and graph visualization work",
-      "source_notes": [
-        "a638eaca-8bdc-4695-b151-82d355944d42",
-        "238a96bc-92be-40b5-a855-2c810da2c225",
-        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5",
-        "README.md"
-      ],
-      "aliases": []
-    },
-    "notify crate": {
-      "name": "notify crate",
-      "entity_type": "Technology",
-      "description": "Rust file-watching crate used by cortex-core for vault file monitoring",
-      "source_notes": [
-        "notify crate.md"
-      ],
-      "aliases": []
-    },
-    "MCP Integration Guide": {
-      "name": "MCP Integration Guide",
-      "entity_type": "Concept",
-      "description": "Guide documenting the 7 MCP tools Cortex exposes to Claude Code via an Axum HTTP server on port 3847",
-      "source_notes": [
-        "MCP Integration Guide.md"
-      ],
-      "aliases": []
-    },
-    "Tantivy": {
-      "name": "Tantivy",
-      "entity_type": "Technology",
-      "description": "Rust full-text search engine library used by cortex-search",
-      "source_notes": [
-        "Tantivy.md"
-      ],
-      "aliases": []
-    },
-    "README.md": {
-      "name": "README.md",
-      "entity_type": "Concept",
-      "description": "Documentation file in test vault root that describes vault structure and lists Wave session notes",
-      "source_notes": [
-        "a638eaca-8bdc-4695-b151-82d355944d42",
-        "238a96bc-92be-40b5-a855-2c810da2c225",
-        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5"
-      ],
-      "aliases": []
-    },
-    "React": {
-      "name": "React",
-      "entity_type": "Technology",
-      "description": "Frontend UI framework (v18) used with TypeScript in Cortex",
-      "source_notes": [
-        "Architecture Overview.md"
-      ],
-      "aliases": []
-    },
-    "MCP Server": {
-      "name": "MCP Server",
-      "entity_type": "Technology",
-      "description": "Axum HTTP server on port 3847 exposing 7 MCP tools to Claude Code via JSON-RPC",
-      "source_notes": [
-        "MCP Integration Guide.md"
-      ],
-      "aliases": []
-    },
-    "Auth Module": {
-      "name": "Auth Module",
-      "entity_type": "Project",
-      "description": "Authentication and authorization module referenced in the Cortex vault",
-      "source_notes": [
-        "Welcome.md",
-        "README.md"
-      ],
-      "aliases": []
-    },
-    "sessions/ directory": {
-      "name": "sessions/ directory",
-      "entity_type": "Concept",
-      "description": "Directory containing Wave notes and session files within the test vault",
-      "source_notes": [
-        "71bd8f36-d5af-4df5-ad3f-0554b3e209b5"
-      ],
-      "aliases": []
-    },
-    "Wave 3 Knowledge": {
-      "name": "Wave 3 Knowledge",
-      "entity_type": "Concept",
-      "description": "Third wave session covering knowledge graph integration for Cortex",
-      "source_notes": [
-        "README.md"
+        "D3.js.md",
+        "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
       ],
       "aliases": []
     }
@@ -773,6 +1046,222 @@
       "predicate": "part_of",
       "target": "Cortex App",
       "source_note": "MCP Integration Guide.md"
+    },
+    {
+      "source": "CLAUDE.md",
+      "predicate": "documents_constraints_for",
+      "target": "Cortex",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "Safari 15 Compatibility",
+      "predicate": "is_constraint_of",
+      "target": "Cortex",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "Tauri v2",
+      "predicate": "is_used_by",
+      "target": "Cortex",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "Phase B",
+      "predicate": "depends_on",
+      "target": "Max plan OAuth",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "cortex-extract",
+      "predicate": "uses",
+      "target": "Vertex AI",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "Phase B spawns",
+      "predicate": "uses",
+      "target": "Max plan OAuth",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "test-vault",
+      "predicate": "contains",
+      "target": "patterns/",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "CLAUDE.md",
+      "predicate": "references",
+      "target": "src-tauri/src/run/execute.rs",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "CLAUDE.md",
+      "predicate": "references",
+      "target": "src/components/sidebar/PlansPanel.tsx",
+      "source_note": "828e24f5-f010-4470-9e5c-fce155863d61"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "built_with",
+      "target": "Rust",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "built_with",
+      "target": "TypeScript",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "built_with",
+      "target": "Tauri",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "part_of",
+      "target": "Phase A",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "part_of",
+      "target": "Phase B",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "part_of",
+      "target": "Phase C",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Phase B",
+      "predicate": "depends_on",
+      "target": "Vertex AI",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Phase B",
+      "predicate": "depends_on",
+      "target": "Claude Code",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Phase C",
+      "predicate": "depends_on",
+      "target": "MCP Tools",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Phase C",
+      "predicate": "built_with",
+      "target": "D3.js",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Phase B",
+      "predicate": "uses",
+      "target": "GCP ADC",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Phase B",
+      "predicate": "uses",
+      "target": "Anthropic API",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "README.md",
+      "predicate": "documents",
+      "target": "Cortex",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "requires",
+      "target": "Safari 15 Compatibility",
+      "source_note": "e9b9055d-a9ab-47e1-a39e-37f1756eb798"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "includes",
+      "target": "MCP Server",
+      "source_note": "736cec88-b016-405c-b947-073e788bd6a6"
+    },
+    {
+      "source": "Cortex",
+      "predicate": "integrates_with",
+      "target": "Claude Code",
+      "source_note": "736cec88-b016-405c-b947-073e788bd6a6"
+    },
+    {
+      "source": "Test Vault",
+      "predicate": "contains",
+      "target": "2026-04-09-add-readme Plan",
+      "source_note": "736cec88-b016-405c-b947-073e788bd6a6"
+    },
+    {
+      "source": "Cortex.app Bundle",
+      "predicate": "is_build_output_of",
+      "target": "Cortex",
+      "source_note": "736cec88-b016-405c-b947-073e788bd6a6"
+    },
+    {
+      "source": "Plan Execution",
+      "predicate": "uses",
+      "target": "MCP Server",
+      "source_note": "736cec88-b016-405c-b947-073e788bd6a6"
+    },
+    {
+      "source": "jamq",
+      "predicate": "develops",
+      "target": "Cortex",
+      "source_note": "736cec88-b016-405c-b947-073e788bd6a6"
+    },
+    {
+      "source": "Production Build",
+      "predicate": "targets",
+      "target": "Cortex",
+      "source_note": "736cec88-b016-405c-b947-073e788bd6a6"
+    },
+    {
+      "source": "abort_draft",
+      "predicate": "mirrors",
+      "target": "abort_run",
+      "source_note": "f72f55ac-699b-4923-940d-dd042c7f14b5"
+    },
+    {
+      "source": "abort_draft",
+      "predicate": "documented_in",
+      "target": "add-abort-draft.md",
+      "source_note": "f72f55ac-699b-4923-940d-dd042c7f14b5"
+    },
+    {
+      "source": "PlansPanel.tsx",
+      "predicate": "needs_update_for",
+      "target": "abort_draft",
+      "source_note": "f72f55ac-699b-4923-940d-dd042c7f14b5"
+    },
+    {
+      "source": "AppState",
+      "predicate": "tracks",
+      "target": "CommandChild",
+      "source_note": "f72f55ac-699b-4923-940d-dd042c7f14b5"
+    },
+    {
+      "source": "execute.rs",
+      "predicate": "implements",
+      "target": "abort_run",
+      "source_note": "f72f55ac-699b-4923-940d-dd042c7f14b5"
+    },
+    {
+      "source": "add-abort-draft.md",
+      "predicate": "based_on_pattern",
+      "target": "abort_run",
+      "source_note": "f72f55ac-699b-4923-940d-dd042c7f14b5"
     }
   ],
   "alias_to_canonical": {},
@@ -794,6 +1283,10 @@
     "a638eaca-8bdc-4695-b151-82d355944d42",
     "238a96bc-92be-40b5-a855-2c810da2c225",
     "71bd8f36-d5af-4df5-ad3f-0554b3e209b5",
-    "README.md"
+    "README.md",
+    "828e24f5-f010-4470-9e5c-fce155863d61",
+    "e9b9055d-a9ab-47e1-a39e-37f1756eb798",
+    "736cec88-b016-405c-b947-073e788bd6a6",
+    "f72f55ac-699b-4923-940d-dd042c7f14b5"
   ]
 }

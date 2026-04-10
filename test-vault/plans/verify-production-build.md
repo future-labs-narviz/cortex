@@ -1,7 +1,7 @@
 ---
 type: plan
 title: "Verify Cortex production build (bun run tauri build) and fix what breaks"
-status: ready
+status: complete
 goal: "Run `bun run tauri build` end-to-end. Fix any errors that prevent it from producing a valid .app bundle. Then verify the built .app can be launched from Finder, open the test-vault, and successfully execute the fixture plan `plans/2026-04-09-add-readme.md`. Report all issues encountered and how each was resolved."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash(bun *)", "Bash(cargo *)", "Bash(ls *)", "Bash(file *)", "Bash(stat *)", "Bash(open *)", "Bash(find *)", "Bash(du *)", "Bash(ps *)", "Bash(kill *)", "Bash(tail *)", "Bash(mkdir *)", "Bash(cp *)", "Bash(chmod *)"]
@@ -13,6 +13,8 @@ max_turns: 30
 max_budget_usd: 5
 permission_mode: acceptEdits
 worktree: false
+last_run_id: 736cec88-b016-405c-b947-073e788bd6a6
+last_run_at: 2026-04-10T14:48:55.468564+00:00
 ---
 
 # Verify Cortex production build

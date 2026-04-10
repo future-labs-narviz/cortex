@@ -1,7 +1,7 @@
 ---
 type: plan
 title: "Add README.md at repo root — quickstart, architecture, feature tour"
-status: ready
+status: complete
 goal: "Create ~/Desktop/Cortex/README.md so someone cloning the repo for the first time has a working mental model and a copy-pasteable quickstart. Covers prereqs, dev mode, feature tour (Phase A + B + KG + voice), architecture, the 3 LLM auth contexts, and contributing notes. <= 350 lines."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash(ls *)", "Bash(find *)", "Bash(wc *)"]
@@ -16,6 +16,8 @@ max_turns: 20
 max_budget_usd: 2
 permission_mode: acceptEdits
 worktree: false
+last_run_id: e9b9055d-a9ab-47e1-a39e-37f1756eb798
+last_run_at: 2026-04-10T14:37:42.284509+00:00
 ---
 
 # Add repo-level README.md
