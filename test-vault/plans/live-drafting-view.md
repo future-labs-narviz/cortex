@@ -5,7 +5,7 @@ status: ready
 goal: "When the user clicks ✨ Draft in PlansPanel, instead of a static 'Drafting plan…' spinner, open a live view that streams the plan-mode spawn's events in real time (tool calls, thinking blocks, text deltas, ExitPlanMode invocation). Reuse or mirror LiveSessionView so the experience matches Phase B execution. Keep the final hand-off: when drafting completes, route to the plan-runner sheet for the new plan."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash(cargo check *)", "Bash(cargo test *)", "Bash(bun run build*)"]
-denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)"]
+denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)", "Skill"]
 context_entities: []
 context_notes:
   - "patterns/Pattern - Safari 15 Compatibility.md"
@@ -18,6 +18,41 @@ worktree: false
 ---
 
 # Live drafting view
+
+## ⚠️ THIS PLAN SELF-MODIFIES CORTEX — DO NOT RUN VIA PHASE B AGAINST THE RUNNING DEV INSTANCE
+
+This plan rewires `src/components/session/LiveSessionView.tsx`,
+`src/lib/types/layout.ts`, `src/components/layout/Sheet.tsx`, and
+`src/components/sidebar/PlansPanel.tsx` — every file it touches is
+frontend code that the currently-running Cortex dev instance is
+executing.
+
+**If you try to run this plan through Phase B's ✨/Execute flow, it
+will likely fail in one of several ways:**
+
+- Vite HMR will reload the browser while your edits are mid-save
+- The live drafting UI you're modifying IS the UI showing the
+  drafting in progress (infinite recursion of experience)
+- Any unfortunate Skill invocation (e.g. superpowers:brainstorming)
+  will ask you a question and you have no way to answer
+
+**CORRECT execution model:** open a terminal, `cd ~/Desktop/Cortex`,
+run `claude` interactively. Paste this plan body or reference the
+path. Phase A auto-capture still records the session + generates a
+retrospective + grows the KG. You have an interactive feedback
+channel for any ambiguity. See the "Phase B self-modification rule"
+section of `CLAUDE.md` for the full rationale.
+
+## Autonomous execution stanza (applies if run via Phase B anyway)
+
+This is autonomous execution. There is no human to ask during this
+run. Do NOT invoke brainstorming, planning, or any interactive
+skills. Do NOT use the `Skill` tool (it's in `denied_tools` above as
+a hard denial). Make decisions yourself based on the spec below. If
+you encounter an ambiguity the spec doesn't cover, pick the most
+conservative option and document the decision in your final report.
+Implement all changes in this session; do not defer work to "next
+steps" or "follow-up sessions".
 
 ## Why this plan exists
 

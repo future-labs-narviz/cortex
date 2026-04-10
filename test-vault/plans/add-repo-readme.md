@@ -5,7 +5,7 @@ status: complete
 goal: "Create ~/Desktop/Cortex/README.md so someone cloning the repo for the first time has a working mental model and a copy-pasteable quickstart. Covers prereqs, dev mode, feature tour (Phase A + B + KG + voice), architecture, the 3 LLM auth contexts, and contributing notes. <= 350 lines."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash(ls *)", "Bash(find *)", "Bash(wc *)"]
-denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)"]
+denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)", "Skill"]
 context_entities: []
 context_notes:
   - "Architecture Overview.md"

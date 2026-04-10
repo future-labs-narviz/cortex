@@ -127,6 +127,44 @@ This flag causes `claude --print --output-format stream-json` to exit immediatel
 
 **Where to check:** `src-tauri/src/run/execute.rs::build_claude_args`
 
+A regression guard `build_args_does_not_include_hook_events_flag` in the test suite will fail loudly if this flag is re-added.
+
+### Phase B Self-Modification Rule (READ THIS BEFORE WRITING CORTEX PLANS)
+
+**Phase B is NOT safe for executing plans that modify Cortex itself while the Cortex dev app is running.** This is an undocumented boundary of what Phase B was designed for, and violating it produces several interacting failure modes:
+
+1. **The build paradox.** Plans that run `bun run tauri build` or `bun run tauri dev` recompile the binary that the Phase B `run_event_loop` task is currently executing inside. The tauri process gets replaced mid-run, the event loop task is dropped, the session note is orphaned (stuck in `status: running` forever — `sweep_orphan_sessions` on next vault open now transitions these to `aborted`). Observed real failure: the first attempt at `plans/verify-production-build.md` (run `6071c0ad-…` on 2026-04-10) orphaned exactly this way.
+
+2. **The feedback-loop paradox.** Plans that add Phase B features (e.g. `abort_draft`, `live-drafting-view`) are asking the agent to build the thing that would cancel or modify the very run it's in. The code exists, but the running binary is the OLD compiled version, so testing the change requires restarting — which kills the agent. Classic self-modification deadlock.
+
+3. **Interactive skills in autonomous mode.** Under `--setting-sources user`, spawned claude inherits user-level plugins including `superpowers:brainstorming` and similar skills that default to "ask the user before implementing." Phase B is headless (`--print` mode, no stdin) — there is no user to answer. The agent asks a question into the void, hits max_turns or concludes the question is its deliverable, and exits `status: success` with zero code changes. Observed real failure: `plans/add-abort-draft.md` run `f72f55ac-…` spent 21 turns exploring, invoked a Skill, asked for clarification, and did no work.
+
+**How to identify a Cortex self-modifying plan:**
+- Touches any file under `src-tauri/` (Rust backend)
+- Touches any file under `src/` (frontend)
+- Runs `cargo build`, `cargo check`, `bun run build`, `bun run tauri *`
+- Modifies `CLAUDE.md`, `tauri.conf.json`, `vite.config.ts`, `capabilities/*.json`
+- Modifies any file under `test-vault/.cortex/`, `test-vault/.claude/`, or the gitignored `/.claude/`
+
+**How to execute Cortex self-modifying plans (pick one):**
+
+**Option A — External Claude Code session (canonical, do this today):** Quit Cortex or leave it running (doesn't matter). Open a terminal, `cd ~/Desktop/Cortex`, run `claude`. Paste or reference the plan body. Phase A auto-capture still records the session (retrospective + KG growth happen via the hook loop). You get an interactive feedback channel so skills that ask questions work correctly. The terminal claude doesn't share process state with the running Cortex, so the self-modification paradox is impossible.
+
+**Option B — Git worktree isolation (future work, not yet implemented):** Phase B would detect "self-modifying" plans and automatically create a git worktree at `/tmp/cortex-worktree-<run_id>/`, spawn claude with `cwd` set there, let it work, and surface the worktree diff for manual review + merge. The currently-running Cortex instance is never touched during execution. This is a Phase B v2 feature — not available yet.
+
+**For all Cortex self-modifying plans, the frontmatter should include:**
+
+```yaml
+# Block interactive skills that assume a human is in the loop.
+denied_tools: ["Skill", "Bash(rm *)", "Bash(git push *)"]
+```
+
+And the body should have an **Autonomous execution** stanza at the top:
+
+> **This is autonomous execution.** There is no human to ask during this run. Do NOT invoke brainstorming, planning, or any interactive skills. Do NOT use the `Skill` tool. Make decisions yourself based on the spec below. If you encounter an ambiguity the spec doesn't cover, pick the most conservative option and document the decision in your final report. Implement all changes in this session; do not defer work to "next steps" or "follow-up sessions".
+
+**When in doubt:** if the plan touches any code file in `src-tauri/` or `src/`, execute it from an external terminal `claude` session, NOT from inside Cortex Phase B.
+
 ---
 
 ## Cortex's Three LLM Contexts (Do Not Conflate)

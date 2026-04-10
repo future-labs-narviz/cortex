@@ -5,7 +5,7 @@ status: complete
 goal: "Create ~/Desktop/Cortex/CLAUDE.md so future Claude Code sessions opened in this repo auto-inherit the hard-won project rules (Safari 15 compat, Tauri gotchas, Phase B flag quirks, which test-vault notes to ignore, auth paths). File must follow the structure described in the body below, reference real file paths that exist in the repo, and be <= 250 lines."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob"]
-denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)"]
+denied_tools: ["Bash(rm *)", "Bash(git push *)", "Bash(git commit *)", "Skill"]
 context_entities: []
 context_notes:
   - "patterns/Pattern - Safari 15 Compatibility.md"

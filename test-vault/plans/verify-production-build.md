@@ -5,7 +5,7 @@ status: complete
 goal: "Run `bun run tauri build` end-to-end. Fix any errors that prevent it from producing a valid .app bundle. Then verify the built .app can be launched from Finder, open the test-vault, and successfully execute the fixture plan `plans/2026-04-09-add-readme.md`. Report all issues encountered and how each was resolved."
 mcp_servers: []
 allowed_tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash(bun *)", "Bash(cargo *)", "Bash(ls *)", "Bash(file *)", "Bash(stat *)", "Bash(open *)", "Bash(find *)", "Bash(du *)", "Bash(ps *)", "Bash(kill *)", "Bash(tail *)", "Bash(mkdir *)", "Bash(cp *)", "Bash(chmod *)"]
-denied_tools: ["Bash(rm -rf /*)", "Bash(git push *)", "Bash(git commit *)", "Bash(sudo *)"]
+denied_tools: ["Bash(rm -rf /*)", "Bash(git push *)", "Bash(git commit *)", "Bash(sudo *)", "Skill"]
 context_entities: []
 context_notes: []
 model: claude-sonnet-4-5
