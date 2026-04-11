@@ -436,22 +436,42 @@ export const useLayoutStore = create<LayoutStore>()(
         root: state.root,
         activeSheetId: state.activeSheetId,
         sheets: Object.fromEntries(
-          Object.entries(state.sheets).map(([id, sheet]) => [
-            id,
-            {
-              ...sheet,
-              // Strip file content from tabs to keep storage small
-              tabs: sheet.tabs.map((t) => ({
-                id: t.id,
-                filePath: t.filePath,
-                fileName: t.fileName,
-                title: t.title,
-                content: "",
-                savedContent: "",
-                isDirty: false,
-              })),
-            },
-          ]),
+          Object.entries(state.sheets).map(([id, sheet]) => {
+            // Downgrade `session` sheets to `empty` before persist.
+            // Session sheets only make sense while their underlying
+            // Phase B run is in flight (or replayable from a vault-local
+            // JSONL). Restoring a session sheet for a run that
+            // terminated in a previous app launch produces a phantom
+            // live view with a broken abort button — the run is no
+            // longer in `active_runs`, so `abort_run` returns "not
+            // active" errors. Past runs are still accessible via the
+            // Sessions panel → click-to-replay flow, which loads the
+            // JSONL from disk and rebuilds runStore state fresh.
+            // (The future `draft-live` sheet kind from
+            // plans/live-drafting-view.md should also be downgraded
+            // here when it lands — add it to the condition then.)
+            const content: SheetContent =
+              sheet.content.kind === "session"
+                ? { kind: "empty" }
+                : sheet.content;
+            return [
+              id,
+              {
+                ...sheet,
+                content,
+                // Strip file content from tabs to keep storage small
+                tabs: sheet.tabs.map((t) => ({
+                  id: t.id,
+                  filePath: t.filePath,
+                  fileName: t.fileName,
+                  title: t.title,
+                  content: "",
+                  savedContent: "",
+                  isDirty: false,
+                })),
+              },
+            ];
+          }),
         ),
       }),
     },

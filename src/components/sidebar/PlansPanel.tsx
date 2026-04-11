@@ -98,12 +98,18 @@ export function PlansPanel() {
     setNewPlanTitle("");
   }, [newPlanTitle, fetchPlans]);
 
-  // Subscribe to draft lifecycle events while a draft is in flight so the
-  // user gets a tiny status string AND a cancel button wired to the
-  // draft_id. Only listens while drafting=true to keep the channel quiet
-  // otherwise.
+  // Subscribe to Phase B draft lifecycle events ONCE when PlansPanel
+  // mounts — not per-draft. Previously this effect ran only while
+  // `drafting === true`, which created a race: the backend emits
+  // `cortex://draft/started` almost immediately after the frontend's
+  // `invoke("draft_plan_from_goal", ...)` call begins, and React's
+  // effect fires + async `await listen(...)` hadn't completed yet,
+  // so the started event was lost. Symptom: UI stuck on "spawning
+  // plan-mode claude…" forever because the handler that would have
+  // updated the status string never ran. Attaching once on mount
+  // eliminates the race — listeners are live before any draft is
+  // ever initiated.
   useEffect(() => {
-    if (!drafting) return;
     let cancelled = false;
     const unlistens: Array<() => void> = [];
     const subscribe = async (event: string, handler: (p: unknown) => void) => {
@@ -134,11 +140,32 @@ export function PlansPanel() {
       setDraftStatus("");
       setError("Draft cancelled.");
     });
+    subscribe("cortex://draft/completed", (p) => {
+      const payload = p as { draft_id?: string };
+      // Clear transient state; the success path's route-to-plan-runner
+      // still happens inside submitDraftPlan's try block via the
+      // returned plan_path from the invoke.
+      setCurrentDraftId((prev) => {
+        if (prev && payload.draft_id && prev !== payload.draft_id) return prev;
+        return null;
+      });
+      setDraftStatus("");
+    });
+    subscribe("cortex://draft/error", (p) => {
+      const payload = p as { draft_id?: string; message?: string };
+      setCurrentDraftId((prev) => {
+        if (prev && payload.draft_id && prev !== payload.draft_id) return prev;
+        return null;
+      });
+      setDrafting(false);
+      setDraftStatus("");
+      if (payload.message) setError(`Draft error: ${payload.message}`);
+    });
     return () => {
       cancelled = true;
       unlistens.forEach((u) => u());
     };
-  }, [drafting]);
+  }, []);
 
   const handleDraftPlan = useCallback(() => {
     setShowDraftInput(true);

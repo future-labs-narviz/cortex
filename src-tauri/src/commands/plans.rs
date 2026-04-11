@@ -437,6 +437,14 @@ pub async fn draft_plan_from_goal(
     // Build args for the plan-mode spawn. Same flag spine as execute_plan
     // but with --permission-mode plan and a tighter budget — plan mode
     // typically completes in 30-60s with a few exploration tool calls.
+    // See CLAUDE.md "Phase B self-modification rule" and the regression
+    // guard `build_args_does_not_include_hook_events_flag` in execute.rs.
+    // `--include-hook-events` causes claude --print --output-format
+    // stream-json to hang or exit with 0 events under Tauri shell spawn.
+    // The fix in commit 69cacb0 removed it from execute.rs but missed
+    // this draft path — symptom: drafting spinner stuck indefinitely
+    // with only a "no stdin data received in 3s, proceeding without it"
+    // stderr warning and zero stream-json events. DO NOT re-add.
     let mut args: Vec<String> = vec![
         "--print".to_string(),
         "--verbose".to_string(),
@@ -448,7 +456,6 @@ pub async fn draft_plan_from_goal(
         "--output-format".to_string(),
         "stream-json".to_string(),
         "--include-partial-messages".to_string(),
-        "--include-hook-events".to_string(),
         "--max-turns".to_string(),
         "20".to_string(),
         "--max-budget-usd".to_string(),
