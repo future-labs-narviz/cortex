@@ -75,14 +75,20 @@ export const useVaultStore = create<VaultStore>((set, get) => ({
     if (!selected) return;
 
     const path = typeof selected === "string" ? selected : selected;
-    set({ vaultPath: path, isVaultOpen: true });
-
+    // Await the backend open_vault BEFORE flipping isVaultOpen to true.
+    // Otherwise Sheet.tsx's vault-open gate passes while the backend
+    // still has state.vault == None, and any sheet that tries to
+    // `read_note` or `list_plan_notes` on mount (e.g. a restored
+    // plan-runner sheet, or SessionsPanel) fails with "No vault is
+    // currently open" before the backend has finished opening it.
     try {
       await callCommand("open_vault", { path });
     } catch {
-      // Backend command may not exist yet; vault is still open locally
+      // Backend command may not exist yet; fall back to opening
+      // locally so the UI is not wedged.
     }
 
+    set({ vaultPath: path, isVaultOpen: true });
     localStorage.setItem("cortex-vault-path", path);
     await get().refreshFiles();
   },

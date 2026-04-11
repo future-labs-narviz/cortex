@@ -34,13 +34,27 @@ export function AppShell() {
     useSettingsStore.getState().applyAllSettings();
   }, []);
 
-  // Auto-reopen last vault on mount
+  // Auto-reopen last vault on mount.
+  //
+  // IMPORTANT: flip `isVaultOpen: true` only AFTER the backend
+  // `open_vault` command has returned successfully. Previously this
+  // effect set `isVaultOpen: true` synchronously and then kicked off
+  // `invoke("open_vault", ...)` in the background, which let the
+  // layoutStore's rehydrated sheets (e.g. a plan-runner restored from
+  // a previous session) mount and issue `read_note` calls against a
+  // backend that hadn't yet opened the vault. Symptom: "Failed to
+  // load plan: No vault is currently open" flash on first launch,
+  // which only disappeared after a manual reload because the second
+  // attempt saw a vault state.
   useEffect(() => {
     const savedPath = localStorage.getItem("cortex-vault-path");
     if (savedPath && !useVaultStore.getState().isVaultOpen) {
-      useVaultStore.setState({ vaultPath: savedPath, isVaultOpen: true });
+      // Set the path but NOT isVaultOpen yet — children still see a
+      // NoVaultState until the backend is ready.
+      useVaultStore.setState({ vaultPath: savedPath });
       invoke("open_vault", { path: savedPath })
         .then(() => {
+          useVaultStore.setState({ isVaultOpen: true });
           useVaultStore.getState().refreshFiles();
         })
         .catch(() => {
